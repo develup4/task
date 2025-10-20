@@ -1,0 +1,131 @@
+'use client';
+
+import { useState } from 'react';
+import { useAppStore } from '@/lib/store';
+import FileUploader from '@/components/FileUploader';
+import L5FlowGraph from '@/components/L5FlowGraph';
+import L6FlowGraph from '@/components/L6FlowGraph';
+import MMSummaryTable from '@/components/MMSummaryTable';
+
+type Tab = 'graph' | 'l5-table' | 'final-table';
+
+export default function Home() {
+  const { processedData, viewMode, setViewMode, setSelectedL5 } = useAppStore();
+  const [activeTab, setActiveTab] = useState<Tab>('graph');
+
+  const handleBackToL5 = () => {
+    setViewMode('l5-all');
+    setSelectedL5(null);
+  };
+
+  return (
+    <div className="flex flex-col h-screen">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">DTF Process Viewer</h1>
+          <FileUploader />
+        </div>
+      </header>
+
+      {/* Content */}
+      {!processedData ? (
+        <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="text-6xl mb-4">📊</div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">
+              엑셀 파일을 업로드하세요
+            </h2>
+            <p className="text-gray-500">
+              프로세스 workflow를 시각화하고 분석할 수 있습니다.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Tabs */}
+          <div className="bg-white border-b border-gray-200 px-6">
+            <div className="flex gap-4">
+              <button
+                onClick={() => setActiveTab('graph')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'graph'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Workflow 그래프
+              </button>
+              <button
+                onClick={() => setActiveTab('l5-table')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'l5-table'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                L5 MM 요약
+              </button>
+              <button
+                onClick={() => setActiveTab('final-table')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'final-table'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                최종 노드 MM 요약
+              </button>
+            </div>
+          </div>
+
+          {/* Navigation breadcrumb for L6 view */}
+          {viewMode === 'l6-detail' && activeTab === 'graph' && (
+            <div className="bg-blue-50 px-6 py-3 border-b border-blue-200">
+              <button
+                onClick={handleBackToL5}
+                className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
+              >
+                ← L5 그래프로 돌아가기
+              </button>
+            </div>
+          )}
+
+          {/* Main Content */}
+          <div className="flex-1 overflow-hidden bg-gray-50">
+            {activeTab === 'graph' && (
+              <div className="w-full h-full">
+                {viewMode === 'l6-detail' ? <L6FlowGraph /> : <L5FlowGraph />}
+              </div>
+            )}
+            {activeTab === 'l5-table' && (
+              <div className="w-full h-full p-6">
+                <div className="bg-white rounded-lg shadow h-full">
+                  <div className="p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800">
+                      L5 Task MM 요약 (내림차순)
+                    </h2>
+                  </div>
+                  <MMSummaryTable type="l5" />
+                </div>
+              </div>
+            )}
+            {activeTab === 'final-table' && (
+              <div className="w-full h-full p-6">
+                <div className="bg-white rounded-lg shadow h-full">
+                  <div className="p-
+                  4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800">
+                      최종 노드 누적 MM 요약 (내림차순)
+                    </h2>
+                  </div>
+                  <MMSummaryTable type="final" />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
