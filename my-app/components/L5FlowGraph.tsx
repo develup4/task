@@ -15,6 +15,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
 import TaskNode, { TaskNodeData } from './TaskNode';
+import L4CategoryLegend from './L4CategoryLegend';
 import { getColorForCategory } from '@/utils/colors';
 
 const nodeTypes = {
@@ -94,6 +95,7 @@ export default function L5FlowGraph() {
     viewMode,
     selectedL5,
     highlightedTasks,
+    visibleL4Categories,
     setSelectedL5,
     setViewMode,
     getFilteredL5Tasks,
@@ -153,7 +155,7 @@ export default function L5FlowGraph() {
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  }, [processedData, viewMode, selectedL5, highlightedTasks, getFilteredL5Tasks, setNodes, setEdges]);
+  }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, getFilteredL5Tasks, setNodes, setEdges]);
 
   // 노드 클릭 핸들러
   const onNodeClick = useCallback(
@@ -179,7 +181,10 @@ export default function L5FlowGraph() {
   }, [viewMode, setViewMode, setSelectedL5]);
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      {/* L4 카테고리 레전드 */}
+      <L4CategoryLegend className="absolute top-4 left-4 z-10 w-64" />
+      
       <ReactFlow
         nodes={nodes}
         edges={edges}

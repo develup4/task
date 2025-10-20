@@ -14,6 +14,9 @@ interface AppState {
   // 필터링 및 검색
   searchQuery: string;
   highlightedTasks: Set<string>;
+  
+  // L4 카테고리 필터
+  visibleL4Categories: Set<string>;
 
   // 액션
   setProcessedData: (data: ProcessedData) => void;
@@ -21,6 +24,12 @@ interface AppState {
   setSelectedL5: (taskId: string | null) => void;
   setSearchQuery: (query: string) => void;
   setHighlightedTasks: (tasks: Set<string>) => void;
+  
+  // L4 카테고리 필터 액션
+  toggleL4Category: (category: string) => void;
+  showAllL4Categories: () => void;
+  hideAllL4Categories: () => void;
+  getL4Categories: () => string[];
 
   // 유틸리티
   getL5Task: (id: string) => L5Task | undefined;
@@ -36,9 +45,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedL5: null,
   searchQuery: '',
   highlightedTasks: new Set(),
+  visibleL4Categories: new Set(),
 
   // 액션
-  setProcessedData: (data) => set({ processedData: data }),
+  setProcessedData: (data) => {
+    // 데이터가 설정될 때 모든 L4 카테고리를 기본적으로 표시
+    const categories = new Set<string>();
+    data.l5Tasks.forEach(task => categories.add(task.l4Category));
+    set({ processedData: data, visibleL4Categories: categories });
+  },
 
   setViewMode: (mode) => set({ viewMode: mode }),
 
@@ -47,6 +62,34 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
 
   setHighlightedTasks: (tasks) => set({ highlightedTasks: tasks }),
+  
+  // L4 카테고리 필터 액션
+  toggleL4Category: (category) => set((state) => {
+    const newVisible = new Set(state.visibleL4Categories);
+    if (newVisible.has(category)) {
+      newVisible.delete(category);
+    } else {
+      newVisible.add(category);
+    }
+    return { visibleL4Categories: newVisible };
+  }),
+
+  showAllL4Categories: () => set((state) => {
+    if (!state.processedData) return state;
+    const allCategories = new Set<string>();
+    state.processedData.l5Tasks.forEach(task => allCategories.add(task.l4Category));
+    return { visibleL4Categories: allCategories };
+  }),
+
+  hideAllL4Categories: () => set({ visibleL4Categories: new Set() }),
+
+  getL4Categories: () => {
+    const { processedData } = get();
+    if (!processedData) return [];
+    const categories = new Set<string>();
+    processedData.l5Tasks.forEach(task => categories.add(task.l4Category));
+    return Array.from(categories).sort();
+  },
 
   // 유틸리티
   getL5Task: (id) => {
@@ -60,10 +103,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   getFilteredL5Tasks: () => {
-    const { processedData, selectedL5, viewMode } = get();
+    const { processedData, selectedL5, viewMode, visibleL4Categories } = get();
     if (!processedData) return [];
 
-    const allTasks = Array.from(processedData.l5Tasks.values());
+    let allTasks = Array.from(processedData.l5Tasks.values());
+    
+    // L4 카테고리 필터 적용
+    allTasks = allTasks.filter(task => visibleL4Categories.has(task.l4Category));
 
     if (viewMode === 'l5-all') {
       return allTasks;
