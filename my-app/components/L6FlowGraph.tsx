@@ -32,15 +32,17 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
     visited.add(nodeId);
 
-    const incomingEdges = edges.filter(e => e.target === nodeId);
+    // 나가는 엣지 (후행 작업)을 기준으로 레벨 계산
+    const outgoingEdges = edges.filter(e => e.source === nodeId);
 
-    if (incomingEdges.length === 0) {
+    // 후행 작업이 없으면 level 0 (최후단)
+    if (outgoingEdges.length === 0) {
       levels.set(nodeId, 0);
       return 0;
     }
 
     const maxSuccessorLevel = Math.max(
-      ...incomingEdges.map(e => calculateLevel(e.source))
+      ...outgoingEdges.map(e => calculateLevel(e.target))
     );
     const level = maxSuccessorLevel + 1;
     levels.set(nodeId, level);
@@ -63,9 +65,6 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   const horizontalSpacing = 180;
   const verticalSpacing = 100;
 
-  // 최대 레벨 찾기 (우->좌 반전을 위해)
-  const maxLevel = Math.max(...Array.from(levels.values()));
-
   const layoutedNodes = nodes.map(node => {
     const level = levels.get(node.id) || 0;
     const nodesInLevel = levelGroups.get(level) || [];
@@ -74,8 +73,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     return {
       ...node,
       position: {
-        // 레벨을 역순으로 배치 (maxLevel - level)
-        x: (maxLevel - level) * (nodeWidth + horizontalSpacing),
+        // level 0이 왼쪽에 오도록 배치
+        x: level * (nodeWidth + horizontalSpacing),
         y: indexInLevel * (nodeHeight + verticalSpacing),
       },
     };

@@ -35,18 +35,18 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
     visited.add(nodeId);
 
-    // 이 노드로 들어오는 엣지들 찾기
-    const incomingEdges = edges.filter(e => e.target === nodeId);
+    // 나가는 엣지 (후행 작업)을 기준으로 레벨 계산
+    const outgoingEdges = edges.filter(e => e.source === nodeId);
 
-    if (incomingEdges.length === 0) {
-      // 최종 노드 (후행이 없음)
+    // 후행 작업이 없으면 level 0 (최후단)
+    if (outgoingEdges.length === 0) {
       levels.set(nodeId, 0);
       return 0;
     }
 
     // 후행 노드들의 최대 레벨 + 1
     const maxSuccessorLevel = Math.max(
-      ...incomingEdges.map(e => calculateLevel(e.source))
+      ...outgoingEdges.map(e => calculateLevel(e.target))
     );
     const level = maxSuccessorLevel + 1;
     levels.set(nodeId, level);
@@ -72,9 +72,6 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   const horizontalSpacing = 200;
   const verticalSpacing = 120;
 
-  // 최대 레벨 찾기 (우->좌 반전을 위해)
-  const maxLevel = Math.max(...Array.from(levels.values()));
-
   const layoutedNodes = nodes.map(node => {
     const level = levels.get(node.id) || 0;
     const nodesInLevel = levelGroups.get(level) || [];
@@ -83,8 +80,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     return {
       ...node,
       position: {
-        // 레벨을 역순으로 배치 (maxLevel - level)
-        x: (maxLevel - level) * (nodeWidth + horizontalSpacing),
+        // level 0이 왼쪽에 오도록 배치
+        x: level * (nodeWidth + horizontalSpacing),
         y: indexInLevel * (nodeHeight + verticalSpacing),
       },
     };
@@ -241,11 +238,10 @@ export default function L5FlowGraph() {
       initialEdges
     );
 
-    // 가장 왼쪽 노드들 찾기 (최대 레벨을 가진 노드들)
-    const maxLevel = Math.max(...Array.from(levels.values()));
+    // 가장 왼쪽 노드들 찾기 (레벨 0 노드들 = 최후단 작업)
     const startNodeIds = new Set<string>();
     initialNodes.forEach(node => {
-      if (levels.get(node.id) === maxLevel) {
+      if (levels.get(node.id) === 0) {
         startNodeIds.add(node.id);
       }
     });

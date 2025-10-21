@@ -63,7 +63,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
     >
       <Handle
         type="target"
-        position={Position.Left}
+        position={Position.Right}
         style={{ background: colors.border, width: '8px', height: '8px' }}
       />
 
@@ -99,7 +99,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
 
       <Handle
         type="source"
-        position={Position.Right}
+        position={Position.Left}
         style={{ background: colors.border, width: '8px', height: '8px' }}
       />
     </div>
