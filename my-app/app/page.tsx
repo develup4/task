@@ -8,6 +8,7 @@ import L6FlowGraph from '@/components/L6FlowGraph';
 import MMSummaryTable from '@/components/MMSummaryTable';
 import ErrorListTable from '@/components/ErrorListTable';
 import StartNodeMMTable from '@/components/StartNodeMMTable';
+import TeamFilter from '@/components/TeamFilter';
 
 type Tab = 'graph' | 'l5-table' | 'start-node-table' | 'final-table' | 'error-list';
 
@@ -110,9 +111,10 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Search box - only show in graph tab and l5-all mode */}
+              {/* Search box and filters - only show in graph tab and l5-all mode */}
               {activeTab === 'graph' && viewMode === 'l5-all' && (
                 <div className="flex gap-2 items-center">
+                  <TeamFilter />
                   <input
                     type="text"
                     placeholder="L5 노드 검색..."

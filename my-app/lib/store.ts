@@ -18,6 +18,9 @@ interface AppState {
   // L4 카테고리 필터
   visibleL4Categories: Set<string>;
 
+  // 작성팀 필터
+  visibleTeams: Set<string>;
+
   // 액션
   setProcessedData: (data: ProcessedData) => void;
   setViewMode: (mode: ViewMode) => void;
@@ -30,6 +33,12 @@ interface AppState {
   showAllL4Categories: () => void;
   hideAllL4Categories: () => void;
   getL4Categories: () => string[];
+
+  // 작성팀 필터 액션
+  toggleTeam: (team: string) => void;
+  showAllTeams: () => void;
+  hideAllTeams: () => void;
+  getTeams: () => string[];
 
   // 유틸리티
   getL5Task: (id: string) => L5Task | undefined;
@@ -46,13 +55,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   searchQuery: '',
   highlightedTasks: new Set(),
   visibleL4Categories: new Set(),
+  visibleTeams: new Set(),
 
   // 액션
   setProcessedData: (data) => {
-    // 데이터가 설정될 때 모든 L4 카테고리를 기본적으로 표시
+    // 데이터가 설정될 때 모든 L4 카테고리와 작성팀을 기본적으로 표시
     const categories = new Set<string>();
-    data.l5Tasks.forEach(task => categories.add(task.l4Category));
-    set({ processedData: data, visibleL4Categories: categories });
+    const teams = new Set<string>();
+    data.l5Tasks.forEach(task => {
+      categories.add(task.l4Category);
+      if (task.작성팀) teams.add(task.작성팀);
+    });
+    set({ processedData: data, visibleL4Categories: categories, visibleTeams: teams });
   },
 
   setViewMode: (mode) => set({ viewMode: mode }),
@@ -91,6 +105,38 @@ export const useAppStore = create<AppState>((set, get) => ({
     return Array.from(categories).sort();
   },
 
+  // 작성팀 필터 액션
+  toggleTeam: (team) => set((state) => {
+    const newVisible = new Set(state.visibleTeams);
+    if (newVisible.has(team)) {
+      newVisible.delete(team);
+    } else {
+      newVisible.add(team);
+    }
+    return { visibleTeams: newVisible };
+  }),
+
+  showAllTeams: () => set((state) => {
+    if (!state.processedData) return state;
+    const allTeams = new Set<string>();
+    state.processedData.l5Tasks.forEach(task => {
+      if (task.작성팀) allTeams.add(task.작성팀);
+    });
+    return { visibleTeams: allTeams };
+  }),
+
+  hideAllTeams: () => set({ visibleTeams: new Set() }),
+
+  getTeams: () => {
+    const { processedData } = get();
+    if (!processedData) return [];
+    const teams = new Set<string>();
+    processedData.l5Tasks.forEach(task => {
+      if (task.작성팀) teams.add(task.작성팀);
+    });
+    return Array.from(teams).sort();
+  },
+
   // 유틸리티
   getL5Task: (id) => {
     const { processedData } = get();
@@ -103,14 +149,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   getFilteredL5Tasks: () => {
-    const { processedData, selectedL5, viewMode, visibleL4Categories } = get();
+    const { processedData, selectedL5, viewMode, visibleL4Categories, visibleTeams } = get();
     if (!processedData) return [];
 
     let allTasks = Array.from(processedData.l5Tasks.values());
 
     if (viewMode === 'l5-all') {
-      // L5-all 모드에서만 L4 카테고리 필터 적용
-      allTasks = allTasks.filter(task => visibleL4Categories.has(task.l4Category));
+      // L5-all 모드에서만 L4 카테고리 및 작성팀 필터 적용
+      allTasks = allTasks.filter(task =>
+        visibleL4Categories.has(task.l4Category) &&
+        (!task.작성팀 || visibleTeams.has(task.작성팀))
+      );
 
       // L4 카테고리 필터로 인해 선후관계가 끊긴 노드 제거
       const visibleTaskIds = new Set(allTasks.map(t => t.id));

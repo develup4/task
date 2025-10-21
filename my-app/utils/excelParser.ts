@@ -128,6 +128,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
                 id: l5Id,
                 name: removePrefixes(taskData.L5),
                 l4Category: removePrefixes(taskData.L4),
+                작성팀: taskData.작성팀,
                 필요인력: taskData.필요인력,
                 필요기간: taskData.필요기간,
                 MM: taskData.MM,
