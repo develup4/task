@@ -16,6 +16,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('graph');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
+  const [searchResultCount, setSearchResultCount] = useState(0);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
 
   const handleBackToL5 = () => {
     setViewMode('l5-all');
@@ -115,7 +117,10 @@ export default function Home() {
                     type="text"
                     placeholder="L5 노드 검색..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentSearchIndex(0);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         setSearchTrigger(prev => prev + 1);
@@ -123,6 +128,11 @@ export default function Home() {
                     }}
                     className="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   />
+                  {searchResultCount > 0 && (
+                    <span className="text-sm text-gray-600 font-medium">
+                      {currentSearchIndex}/{searchResultCount}
+                    </span>
+                  )}
                   <button
                     onClick={() => setSearchTrigger(prev => prev + 1)}
                     disabled={!searchQuery.trim()}
@@ -154,7 +164,14 @@ export default function Home() {
                 {viewMode === 'l6-detail' ? (
                   <L6FlowGraph />
                 ) : (
-                  <L5FlowGraph searchQuery={searchQuery} searchTrigger={searchTrigger} />
+                  <L5FlowGraph
+                    searchQuery={searchQuery}
+                    searchTrigger={searchTrigger}
+                    onSearchResultsChange={(count, index) => {
+                      setSearchResultCount(count);
+                      setCurrentSearchIndex(index);
+                    }}
+                  />
                 )}
               </div>
             )}

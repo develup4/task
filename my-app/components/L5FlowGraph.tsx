@@ -95,9 +95,10 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 interface L5FlowGraphInnerProps {
   searchQuery: string;
   searchTrigger: number;
+  onSearchResultsChange?: (count: number, index: number) => void;
 }
 
-function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps) {
+function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }: L5FlowGraphInnerProps) {
   const {
     processedData,
     viewMode,
@@ -113,6 +114,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const [searchedNodeId, setSearchedNodeId] = useState<string | null>(null);
   const { setCenter } = useReactFlow();
 
   // 노드와 엣지 생성
@@ -313,6 +315,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
 
       const isStartNode = startNodeIds.has(node.id);
       const cumulativeMM = cumulativeMMs.get(node.id) || node.data.MM;
+      const isSearched = searchedNodeId === node.id;
 
       // l5-filtered 모드에서는 가장 왼쪽 말단 노드(level 0)는 하이라이트 및 누적 MM 표시 안 함
       const shouldShowHighlight = viewMode === 'l5-filtered' ? !isStartNode : isHighlighted;
@@ -325,6 +328,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
           isHighlighted: shouldShowHighlight && isHighlighted,
           isStartNode: shouldShowCumulativeMM ? isStartNode : false,
           cumulativeMM: shouldShowCumulativeMM ? cumulativeMM : node.data.MM,
+          isSearched,
         },
         style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
       };
@@ -388,6 +392,8 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
   useEffect(() => {
     if (!searchQuery.trim() || nodes.length === 0) {
       setCurrentSearchIndex(0);
+      setSearchedNodeId(null);
+      onSearchResultsChange?.(0, 0);
       return;
     }
 
@@ -400,6 +406,8 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
 
     if (matchingNodes.length === 0) {
       setCurrentSearchIndex(0);
+      setSearchedNodeId(null);
+      onSearchResultsChange?.(0, 0);
       return;
     }
 
@@ -408,6 +416,9 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
     const targetNode = matchingNodes[nextIndex];
 
     if (targetNode) {
+      // 검색된 노드 ID 설정
+      setSearchedNodeId(targetNode.id);
+
       // viewport를 해당 노드로 이동
       setCenter(
         targetNode.position.x + 110, // 노드 너비의 절반
@@ -417,6 +428,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
     }
 
     setCurrentSearchIndex(nextIndex + 1);
+    onSearchResultsChange?.(matchingNodes.length, nextIndex + 1);
   }, [searchTrigger]);
 
   return (
@@ -453,12 +465,13 @@ function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps)
 interface L5FlowGraphProps {
   searchQuery?: string;
   searchTrigger?: number;
+  onSearchResultsChange?: (count: number, index: number) => void;
 }
 
-export default function L5FlowGraph({ searchQuery = '', searchTrigger = 0 }: L5FlowGraphProps) {
+export default function L5FlowGraph({ searchQuery = '', searchTrigger = 0, onSearchResultsChange }: L5FlowGraphProps) {
   return (
     <ReactFlowProvider>
-      <L5FlowGraphInner searchQuery={searchQuery} searchTrigger={searchTrigger} />
+      <L5FlowGraphInner searchQuery={searchQuery} searchTrigger={searchTrigger} onSearchResultsChange={onSearchResultsChange} />
     </ReactFlowProvider>
   );
 }
