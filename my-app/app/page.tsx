@@ -14,6 +14,8 @@ type Tab = 'graph' | 'l5-table' | 'start-node-table' | 'final-table' | 'error-li
 export default function Home() {
   const { processedData, viewMode, setViewMode, setSelectedL5 } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>('graph');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchTrigger, setSearchTrigger] = useState(0);
 
   const handleBackToL5 = () => {
     setViewMode('l5-all');
@@ -47,62 +49,89 @@ export default function Home() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Tabs */}
           <div className="bg-white border-b border-gray-200 px-6">
-            <div className="flex gap-4">
-              <button
-                onClick={() => setActiveTab('graph')}
-                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                  activeTab === 'graph'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Workflow 그래프
-              </button>
-              <button
-                onClick={() => setActiveTab('l5-table')}
-                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                  activeTab === 'l5-table'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                L5 MM 요약
-              </button>
-              <button
-                onClick={() => setActiveTab('start-node-table')}
-                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                  activeTab === 'start-node-table'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                시작 노드 MM 요약
-              </button>
-              <button
-                onClick={() => setActiveTab('final-table')}
-                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                  activeTab === 'final-table'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                최종 노드 MM 요약
-              </button>
-              <button
-                onClick={() => setActiveTab('error-list')}
-                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                  activeTab === 'error-list'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                오류 목록
-                {processedData?.errors && processedData.errors.length > 0 && (
-                  <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                    {processedData.errors.length}
-                  </span>
-                )}
-              </button>
+            <div className="flex justify-between items-center">
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setActiveTab('graph')}
+                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                    activeTab === 'graph'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Workflow 그래프
+                </button>
+                <button
+                  onClick={() => setActiveTab('l5-table')}
+                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                    activeTab === 'l5-table'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  L5 MM 요약
+                </button>
+                <button
+                  onClick={() => setActiveTab('start-node-table')}
+                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                    activeTab === 'start-node-table'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  시작 노드 MM 요약
+                </button>
+                <button
+                  onClick={() => setActiveTab('final-table')}
+                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                    activeTab === 'final-table'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  최종 노드 MM 요약
+                </button>
+                <button
+                  onClick={() => setActiveTab('error-list')}
+                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                    activeTab === 'error-list'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  오류 목록
+                  {processedData?.errors && processedData.errors.length > 0 && (
+                    <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                      {processedData.errors.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Search box - only show in graph tab */}
+              {activeTab === 'graph' && (
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="L5 노드 검색..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setSearchTrigger(prev => prev + 1);
+                      }
+                    }}
+                    className="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                  <button
+                    onClick={() => setSearchTrigger(prev => prev + 1)}
+                    disabled={!searchQuery.trim()}
+                    className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -122,7 +151,11 @@ export default function Home() {
           <div className="flex-1 overflow-hidden bg-gray-50">
             {activeTab === 'graph' && (
               <div className="w-full h-full">
-                {viewMode === 'l6-detail' ? <L6FlowGraph /> : <L5FlowGraph />}
+                {viewMode === 'l6-detail' ? (
+                  <L6FlowGraph />
+                ) : (
+                  <L5FlowGraph searchQuery={searchQuery} searchTrigger={searchTrigger} />
+                )}
               </div>
             )}
             {activeTab === 'l5-table' && (

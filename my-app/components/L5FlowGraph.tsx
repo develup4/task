@@ -92,7 +92,12 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   return { nodes: layoutedNodes, edges, levels };
 };
 
-function L5FlowGraphInner() {
+interface L5FlowGraphInnerProps {
+  searchQuery: string;
+  searchTrigger: number;
+}
+
+function L5FlowGraphInner({ searchQuery, searchTrigger }: L5FlowGraphInnerProps) {
   const {
     processedData,
     viewMode,
@@ -107,6 +112,7 @@ function L5FlowGraphInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const { setCenter } = useReactFlow();
 
   // 노드와 엣지 생성
@@ -378,6 +384,41 @@ function L5FlowGraphInner() {
     }
   }, [viewMode, setViewMode, setSelectedL5, selectedEdge]);
 
+  // 검색 기능
+  useEffect(() => {
+    if (!searchQuery.trim() || nodes.length === 0) {
+      setCurrentSearchIndex(0);
+      return;
+    }
+
+    // 대소문자 구분 없이 노드 이름에서 검색
+    const query = searchQuery.toLowerCase();
+    const matchingNodes = (nodes as Node[]).filter(node => {
+      const label = (node.data as TaskNodeData).label || '';
+      return label.toLowerCase().includes(query);
+    });
+
+    if (matchingNodes.length === 0) {
+      setCurrentSearchIndex(0);
+      return;
+    }
+
+    // 다음 검색 결과로 이동
+    const nextIndex = currentSearchIndex % matchingNodes.length;
+    const targetNode = matchingNodes[nextIndex];
+
+    if (targetNode) {
+      // viewport를 해당 노드로 이동
+      setCenter(
+        targetNode.position.x + 110, // 노드 너비의 절반
+        targetNode.position.y + 50,  // 노드 높이의 절반
+        { zoom: 1.2, duration: 500 }
+      );
+    }
+
+    setCurrentSearchIndex(nextIndex + 1);
+  }, [searchTrigger]);
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       {/* L4 카테고리 레전드 */}
@@ -409,10 +450,15 @@ function L5FlowGraphInner() {
   );
 }
 
-export default function L5FlowGraph() {
+interface L5FlowGraphProps {
+  searchQuery?: string;
+  searchTrigger?: number;
+}
+
+export default function L5FlowGraph({ searchQuery = '', searchTrigger = 0 }: L5FlowGraphProps) {
   return (
     <ReactFlowProvider>
-      <L5FlowGraphInner />
+      <L5FlowGraphInner searchQuery={searchQuery} searchTrigger={searchTrigger} />
     </ReactFlowProvider>
   );
 }
