@@ -116,25 +116,54 @@ export default function L6FlowGraph() {
           const edgeId = `${task.id}-${successorId}`;
           const reverseEdgeId = `${successorId}-${task.id}`;
 
-          // 이미 처리한 엣지는 건너뛰기
-          if (processedL6Edges.has(reverseEdgeId)) {
-            return;
-          }
-
           const successor = l6Tasks.find(t => t.id === successorId);
 
           // 양방향 연결 체크 (cycle error)
           const isBidirectional = successor && successor.successors.includes(task.id);
 
-          l6EdgesBase.push({
-            id: edgeId,
-            source: task.id,
-            target: successorId,
-            isBidirectional: isBidirectional || false,
-            category: task.l4Category,
-          });
+          // 양방향인 경우 양쪽 엣지 모두 추가
+          if (isBidirectional) {
+            // 이미 처리한 엣지는 건너뛰기
+            if (processedL6Edges.has(edgeId) || processedL6Edges.has(reverseEdgeId)) {
+              return;
+            }
 
-          processedL6Edges.add(edgeId);
+            // 정방향 엣지
+            l6EdgesBase.push({
+              id: edgeId,
+              source: task.id,
+              target: successorId,
+              isBidirectional: true,
+              category: task.l4Category,
+            });
+
+            // 역방향 엣지
+            l6EdgesBase.push({
+              id: reverseEdgeId,
+              source: successorId,
+              target: task.id,
+              isBidirectional: true,
+              category: task.l4Category,
+            });
+
+            processedL6Edges.add(edgeId);
+            processedL6Edges.add(reverseEdgeId);
+          } else {
+            // 단방향인 경우 기존 로직
+            if (processedL6Edges.has(edgeId)) {
+              return;
+            }
+
+            l6EdgesBase.push({
+              id: edgeId,
+              source: task.id,
+              target: successorId,
+              isBidirectional: false,
+              category: task.l4Category,
+            });
+
+            processedL6Edges.add(edgeId);
+          }
         }
       });
     });
@@ -198,10 +227,18 @@ export default function L6FlowGraph() {
     });
 
     // L6 엣지를 ReactFlow Edge로 변환 (선택 상태 반영)
-    const l6Edges: Edge[] = l6EdgesBase.map((edge) => {
+    const l6Edges: Edge[] = l6EdgesBase.map((edge, index) => {
       const colors = getColorForCategory(edge.category);
-      const isSelected = selectedEdge === edge.id;
+      const reverseEdgeId = `${edge.target}-${edge.source}`;
+      const isSelected = selectedEdge === edge.id || selectedEdge === reverseEdgeId;
       const isHidden = selectedEdge !== null && !isSelected;
+
+      // 양방향인 경우 첫 번째 엣지에만 라벨 표시
+      const isFirstOfBidirectional = edge.isBidirectional &&
+        l6EdgesBase.findIndex(e =>
+          (e.source === edge.source && e.target === edge.target) ||
+          (e.source === edge.target && e.target === edge.source)
+        ) === index;
 
       return {
         id: edge.id,
@@ -216,11 +253,11 @@ export default function L6FlowGraph() {
         },
         style: {
           stroke: edge.isBidirectional ? '#F44336' : colors.border,
-          strokeWidth: isSelected ? 4 : edge.isBidirectional ? 3 : 2,
+          strokeWidth: isSelected ? 4 : (edge.isBidirectional ? 3 : 2),
           strokeDasharray: edge.isBidirectional ? '5,5' : undefined,
           opacity: isHidden ? 0.1 : 1,
         },
-        label: edge.isBidirectional ? '⚠ 양방향' : undefined,
+        label: edge.isBidirectional && isFirstOfBidirectional ? '⚠ 양방향' : undefined,
         labelStyle: edge.isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
         labelBgStyle: edge.isBidirectional ? { fill: '#FFEBEE' } : undefined,
       };
@@ -310,34 +347,7 @@ export default function L6FlowGraph() {
       allEdges
     );
 
-    // 제일 왼쪽 노드 찾기 (level 0인 L6 노드)
-    const startNodeIds = new Set<string>();
-    l6Nodes.forEach(node => {
-      if (levels.get(node.id) === 0) {
-        startNodeIds.add(node.id);
-      }
-    });
-
-    // 누적 MM 계산 (전체 L6 태스크의 합)
-    const totalMM = l6Tasks.reduce((sum, task) => sum + task.MM, 0);
-
-    // 노드에 시작 노드 플래그와 누적 MM 추가
-    const finalNodes = layoutedNodes.map(node => {
-      const isStartNode = startNodeIds.has(node.id);
-      if (isStartNode) {
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            isStartNode: true,
-            cumulativeMM: totalMM,
-          },
-        };
-      }
-      return node;
-    });
-
-    setNodes(finalNodes as any);
+    setNodes(layoutedNodes as any);
     setEdges(layoutedEdges as any);
   }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge]);
 

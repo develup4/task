@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Node,
@@ -23,7 +23,7 @@ const nodeTypes = {
 } as any;
 
 // 간단한 계층적 레이아웃 (최종 노드가 왼쪽)
-const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[] } => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const levels = new Map<string, number>();
   const visited = new Set<string>();
@@ -86,7 +86,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     };
   });
 
-  return { nodes: layoutedNodes, edges };
+  return { nodes: layoutedNodes, edges, levels };
 };
 
 export default function L5FlowGraph() {
@@ -103,6 +103,7 @@ export default function L5FlowGraph() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
 
   // 노드와 엣지 생성
   useEffect(() => {
@@ -137,52 +138,145 @@ export default function L5FlowGraph() {
           const edgeId = `${task.id}-${successorId}`;
           const reverseEdgeId = `${successorId}-${task.id}`;
 
-          // 이미 처리한 엣지는 건너뛰기
-          if (processedEdges.has(reverseEdgeId)) {
-            return;
-          }
-
           const colors = getColorForCategory(task.l4Category);
           const successor = tasks.find(t => t.id === successorId);
 
           // 양방향 연결 체크 (cycle error)
           const isBidirectional = successor && successor.successors.includes(task.id);
 
-          initialEdges.push({
-            id: edgeId,
-            source: task.id,
-            target: successorId,
-            type: ConnectionLineType.SmoothStep,
-            animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
-            markerEnd: {
-              type: 'arrowclosed',
-              width: 20,
-              height: 20,
-              color: isBidirectional ? '#F44336' : colors.border,
-            },
-            style: {
-              stroke: isBidirectional ? '#F44336' : colors.border,
-              strokeWidth: isBidirectional ? 3 : 2,
-              strokeDasharray: isBidirectional ? '5,5' : undefined,
-            },
-            label: isBidirectional ? '⚠ 양방향' : undefined,
-            labelStyle: isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
-            labelBgStyle: isBidirectional ? { fill: '#FFEBEE' } : undefined,
-          });
+          const isSelected = selectedEdge === edgeId || selectedEdge === reverseEdgeId;
+          const isHidden = selectedEdge !== null && !isSelected;
 
-          processedEdges.add(edgeId);
+          // 양방향인 경우 양쪽 화살표 모두 그리기
+          if (isBidirectional) {
+            // 이미 처리한 엣지는 건너뛰기
+            if (processedEdges.has(edgeId) || processedEdges.has(reverseEdgeId)) {
+              return;
+            }
+
+            // 정방향 엣지
+            initialEdges.push({
+              id: edgeId,
+              source: task.id,
+              target: successorId,
+              type: ConnectionLineType.SmoothStep,
+              animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
+              markerEnd: {
+                type: 'arrowclosed',
+                width: 20,
+                height: 20,
+                color: '#F44336',
+              },
+              style: {
+                stroke: '#F44336',
+                strokeWidth: isSelected ? 4 : 3,
+                strokeDasharray: '5,5',
+                opacity: isHidden ? 0.1 : 1,
+              },
+              label: '⚠ 양방향',
+              labelStyle: { fill: '#F44336', fontWeight: 'bold' },
+              labelBgStyle: { fill: '#FFEBEE' },
+            });
+
+            // 역방향 엣지
+            initialEdges.push({
+              id: reverseEdgeId,
+              source: successorId,
+              target: task.id,
+              type: ConnectionLineType.SmoothStep,
+              animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
+              markerEnd: {
+                type: 'arrowclosed',
+                width: 20,
+                height: 20,
+                color: '#F44336',
+              },
+              style: {
+                stroke: '#F44336',
+                strokeWidth: isSelected ? 4 : 3,
+                strokeDasharray: '5,5',
+                opacity: isHidden ? 0.1 : 1,
+              },
+            });
+
+            processedEdges.add(edgeId);
+            processedEdges.add(reverseEdgeId);
+          } else {
+            // 단방향인 경우 기존 로직
+            if (processedEdges.has(edgeId)) {
+              return;
+            }
+
+            initialEdges.push({
+              id: edgeId,
+              source: task.id,
+              target: successorId,
+              type: ConnectionLineType.SmoothStep,
+              animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
+              markerEnd: {
+                type: 'arrowclosed',
+                width: 20,
+                height: 20,
+                color: colors.border,
+              },
+              style: {
+                stroke: colors.border,
+                strokeWidth: isSelected ? 4 : 2,
+                opacity: isHidden ? 0.1 : 1,
+              },
+            });
+
+            processedEdges.add(edgeId);
+          }
         }
       });
     });
 
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+    const { nodes: layoutedNodes, edges: layoutedEdges, levels } = getLayoutedElements(
       initialNodes,
       initialEdges
     );
 
-    setNodes(layoutedNodes as any);
+    // 가장 왼쪽 노드들 찾기 (최대 레벨을 가진 노드들)
+    const maxLevel = Math.max(...Array.from(levels.values()));
+    const startNodeIds = new Set<string>();
+    initialNodes.forEach(node => {
+      if (levels.get(node.id) === maxLevel) {
+        startNodeIds.add(node.id);
+      }
+    });
+
+    // 전체 L5 태스크의 누적 MM 계산
+    const totalMM = tasks.reduce((sum, task) => sum + task.MM, 0);
+
+    // 노드에 하이라이팅 및 시작 노드 플래그 추가
+    const finalNodes = layoutedNodes.map(node => {
+      // 선택된 엣지와 연결된 노드인지 확인
+      let isHighlighted = node.data.isHighlighted;
+      if (selectedEdge) {
+        const edge = layoutedEdges.find(e => e.id === selectedEdge);
+        if (edge && (edge.source === node.id || edge.target === node.id)) {
+          isHighlighted = true;
+        }
+      }
+
+      const isStartNode = startNodeIds.has(node.id);
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          isHighlighted,
+          isStartNode,
+          cumulativeMM: isStartNode ? totalMM : node.data.cumulativeMM,
+        },
+        style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
+      };
+    });
+
+    setNodes(finalNodes as any);
     setEdges(layoutedEdges as any);
-  }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, getFilteredL5Tasks, setNodes, setEdges]);
+  }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, getFilteredL5Tasks, setNodes, setEdges, selectedEdge]);
 
   // 노드 클릭 핸들러
   const onNodeClick = useCallback(
@@ -199,13 +293,23 @@ export default function L5FlowGraph() {
     [viewMode, selectedL5, setSelectedL5, setViewMode]
   );
 
-  // 백그라운드 클릭: 전체 뷰로 복귀
+  // 엣지 클릭 핸들러
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.stopPropagation();
+    setSelectedEdge(edge.id === selectedEdge ? null : edge.id);
+  }, [selectedEdge]);
+
+  // 백그라운드 클릭: 전체 뷰로 복귀 또는 선택 해제
   const onPaneClick = useCallback(() => {
-    if (viewMode === 'l5-filtered') {
+    if (selectedEdge) {
+      // 엣지 선택 해제
+      setSelectedEdge(null);
+    } else if (viewMode === 'l5-filtered') {
+      // 전체 뷰로 복귀
       setViewMode('l5-all');
       setSelectedL5(null);
     }
-  }, [viewMode, setViewMode, setSelectedL5]);
+  }, [viewMode, setViewMode, setSelectedL5, selectedEdge]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -218,6 +322,7 @@ export default function L5FlowGraph() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         fitView
