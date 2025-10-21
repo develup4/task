@@ -302,13 +302,17 @@ export default function L5FlowGraph() {
       const isStartNode = startNodeIds.has(node.id);
       const cumulativeMM = cumulativeMMs.get(node.id) || node.data.MM;
 
+      // l5-filtered 모드에서는 가장 왼쪽 말단 노드(level 0)는 하이라이트 및 누적 MM 표시 안 함
+      const shouldShowHighlight = viewMode === 'l5-filtered' ? !isStartNode : isHighlighted;
+      const shouldShowCumulativeMM = viewMode === 'l5-filtered' ? !isStartNode : true;
+
       return {
         ...node,
         data: {
           ...node.data,
-          isHighlighted,
-          isStartNode,
-          cumulativeMM,
+          isHighlighted: shouldShowHighlight && isHighlighted,
+          isStartNode: shouldShowCumulativeMM ? isStartNode : false,
+          cumulativeMM: shouldShowCumulativeMM ? cumulativeMM : node.data.MM,
         },
         style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
       };
