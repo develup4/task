@@ -315,7 +315,8 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
 
       const isStartNode = startNodeIds.has(node.id);
       const cumulativeMM = cumulativeMMs.get(node.id) || node.data.MM;
-      const isSearched = searchedNodeId === node.id;
+      // Only set isSearched in l5-all mode
+      const isSearched = viewMode === 'l5-all' && searchedNodeId === node.id;
 
       // l5-filtered 모드에서는 가장 왼쪽 말단 노드(level 0)는 하이라이트 및 누적 MM 표시 안 함
       const shouldShowHighlight = viewMode === 'l5-filtered' ? !isStartNode : isHighlighted;
@@ -330,7 +331,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
           cumulativeMM: shouldShowCumulativeMM ? cumulativeMM : node.data.MM,
           isSearched,
         },
-        style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
+        style: selectedEdge && !isHighlighted && !isSearched ? { opacity: 0.3 } : undefined,
       };
     });
 
@@ -408,7 +409,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
     // 대소문자 구분 없이 노드 이름에서 검색
     const query = searchQuery.toLowerCase();
     const matchingNodes = (nodes as Node[]).filter(node => {
-      const label = (node.data as TaskNodeData).label || '';
+      const label = (node.data as any)?.label || '';
       return label.toLowerCase().includes(query);
     });
 
