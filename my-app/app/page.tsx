@@ -22,6 +22,7 @@ export default function Home() {
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
 
   const handleBackToL5 = () => {
+    // L6에서 L5-all로 복귀
     setViewMode('l5-all');
     setSelectedL5(null);
   };

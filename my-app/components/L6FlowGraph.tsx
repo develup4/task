@@ -181,7 +181,29 @@ export default function L6FlowGraph() {
     const relatedL5Nodes = Array.from(relatedL5Ids)
       .map((l5Id) => {
         const task = processedData.l5Tasks.get(l5Id);
-        if (!task) return null;
+
+        // L5 Task가 없으면 Unspecified로 생성
+        if (!task) {
+          return {
+            id: `l5-${l5Id}`,
+            type: 'task',
+            position: { x: 0, y: 0 },
+            data: {
+              label: `[L5] ${l5Id}`,
+              category: 'Unspecified',
+              필요인력: 0,
+              필요기간: 0,
+              MM: 0,
+              hasCycle: false,
+              isHighlighted: false,
+              isSelected: false,
+            },
+            style: {
+              opacity: 0.6,
+            },
+          };
+        }
+
         return {
           id: `l5-${l5Id}`,
           type: 'task',
@@ -200,8 +222,7 @@ export default function L6FlowGraph() {
             opacity: 0.6,
           },
         };
-      })
-      .filter((node): node is any => node !== null);
+      });
 
     // L5와 L6 간의 엣지 (기본 정보만)
     const l5ToL6EdgesBase: Array<{

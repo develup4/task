@@ -379,6 +379,32 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               });
             }
           });
+
+          // 선행 L5 체크
+          task['선행 L5']?.forEach(l5Id => {
+            if (!l5Tasks.has(l5Id)) {
+              errors.push({
+                type: 'missing_l5_reference',
+                sourceTask: task.id,
+                sourceLevel: 'L6',
+                missingTask: l5Id,
+                description: `L6 액티비티 "${task.name}"의 선행 L5 "${l5Id}"를 찾을 수 없습니다.`
+              });
+            }
+          });
+
+          // 후행 L5 체크
+          task['후행 L5']?.forEach(l5Id => {
+            if (!l5Tasks.has(l5Id)) {
+              errors.push({
+                type: 'missing_l5_reference',
+                sourceTask: task.id,
+                sourceLevel: 'L6',
+                missingTask: l5Id,
+                description: `L6 액티비티 "${task.name}"의 후행 L5 "${l5Id}"를 찾을 수 없습니다.`
+              });
+            }
+          });
         });
 
         resolve({
