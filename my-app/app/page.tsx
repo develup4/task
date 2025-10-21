@@ -238,10 +238,10 @@ export default function Home() {
                       프로세스 검증 오류 목록
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
-                      선행/후행 프로세스 중 정의되지 않은 프로세스들이 표시됩니다.
+                      선행/후행 프로세스 중 정의되지 않은 프로세스들이 표시됩니다. 클릭하면 해당 노드를 중심으로 그래프가 필터링됩니다.
                     </p>
                   </div>
-                  <ErrorListTable />
+                  <ErrorListTable onNavigateToGraph={() => setActiveTab('graph')} />
                 </div>
               </div>
             )}

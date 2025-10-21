@@ -207,6 +207,50 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
         // 누락된 프로세스 감지 및 추가
         const errors: ValidationError[] = [];
 
+        // 양방향 오류 수집 (L5)
+        l5Tasks.forEach(task => {
+          if (task.hasCycle) {
+            // 양방향 연결된 task 찾기
+            task.successors.forEach(succId => {
+              const successor = l5Tasks.get(succId);
+              if (successor?.successors.includes(task.id)) {
+                // 중복 방지를 위해 id가 작은 쪽에서만 에러 추가
+                if (task.id < succId) {
+                  errors.push({
+                    type: 'bidirectional_error',
+                    sourceTask: task.id,
+                    sourceLevel: 'L5',
+                    relatedTask: succId,
+                    description: `L5 프로세스 "${task.name}"와 "${successor.name}"가 서로 선행/후행 관계로 연결되어 있습니다.`
+                  });
+                }
+              }
+            });
+          }
+        });
+
+        // 양방향 오류 수집 (L6)
+        l6Tasks.forEach(task => {
+          if (task.hasCycle) {
+            // 양방향 연결된 task 찾기
+            task.successors.forEach(succId => {
+              const successor = l6Tasks.get(succId);
+              if (successor?.successors.includes(task.id)) {
+                // 중복 방지를 위해 id가 작은 쪽에서만 에러 추가
+                if (task.id < succId) {
+                  errors.push({
+                    type: 'bidirectional_error',
+                    sourceTask: task.id,
+                    sourceLevel: 'L6',
+                    relatedTask: succId,
+                    description: `L6 액티비티 "${task.name}"와 "${successor.name}"가 서로 선행/후행 관계로 연결되어 있습니다.`
+                  });
+                }
+              }
+            });
+          }
+        });
+
         // L5 프로세스의 선행/후행 검증
         l5Tasks.forEach(task => {
           // 선행 프로세스 체크
