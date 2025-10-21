@@ -110,8 +110,8 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Search box - only show in graph tab */}
-              {activeTab === 'graph' && (
+              {/* Search box - only show in graph tab and l5-all mode */}
+              {activeTab === 'graph' && viewMode === 'l5-all' && (
                 <div className="flex gap-2 items-center">
                   <input
                     type="text"

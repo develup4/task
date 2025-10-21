@@ -388,8 +388,16 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
     }
   }, [viewMode, setViewMode, setSelectedL5, selectedEdge]);
 
-  // 검색 기능
+  // 검색 기능 (l5-all 모드에서만 작동)
   useEffect(() => {
+    // l5-all 모드가 아니면 검색 비활성화
+    if (viewMode !== 'l5-all') {
+      setCurrentSearchIndex(0);
+      setSearchedNodeId(null);
+      onSearchResultsChange?.(0, 0);
+      return;
+    }
+
     if (!searchQuery.trim() || nodes.length === 0) {
       setCurrentSearchIndex(0);
       setSearchedNodeId(null);
@@ -429,7 +437,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
 
     setCurrentSearchIndex(nextIndex + 1);
     onSearchResultsChange?.(matchingNodes.length, nextIndex + 1);
-  }, [searchTrigger]);
+  }, [searchTrigger, viewMode]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
