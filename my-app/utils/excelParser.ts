@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { TaskData, L5Task, L6Task, ProcessedData } from '@/types/task';
+import { TaskData, L5Task, L6Task, ProcessedData, ValidationError } from '@/types/task';
 
 // [Sensor], [Sensor]_ 같은 prefix 제거
 const removePrefixes = (text: string): string => {
@@ -84,7 +84,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
         rawData.forEach((row) => {
           const taskData: TaskData = {
             작성팀: row['작성팀 (일자)'],
-            Level: row['Level(*)'] as any,
+            Level: row['Level (*)'] as any,
             L1: row['L1'],
             L2: row['L2'],
             L3: row['L3'],
@@ -203,10 +203,93 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
         // 누적 MM 계산
         calculateCumulativeMM(l5Tasks);
 
+        // 누락된 프로세스 감지 및 추가
+        const errors: ValidationError[] = [];
+
+        // L5 프로세스의 선행/후행 검증
+        l5Tasks.forEach(task => {
+          // 선행 프로세스 체크
+          task.predecessors.forEach(predId => {
+            if (!l5Tasks.has(predId)) {
+              // 누락된 선행 프로세스 발견
+              errors.push({
+                type: 'missing_predecessor',
+                sourceTask: task.id,
+                sourceLevel: 'L5',
+                missingTask: predId,
+                description: `L5 프로세스 "${task.name}"의 선행 프로세스 "${predId}"를 찾을 수 없습니다.`
+              });
+
+              // Unspecified 카테고리로 누락된 노드 추가
+              if (!l5Tasks.has(predId)) {
+                l5Tasks.set(predId, {
+                  id: predId,
+                  name: removePrefixes(predId),
+                  l4Category: 'Unspecified',
+                  필요인력: 0,
+                  필요기간: 0,
+                  MM: 0,
+                  predecessors: [],
+                  successors: [task.id],
+                  l6Tasks: [],
+                });
+                l4Categories.add('Unspecified');
+              }
+            }
+          });
+
+          // 후행 프로세스 체크
+          task.successors.forEach(succId => {
+            if (!l5Tasks.has(succId)) {
+              // 누락된 후행 프로세스 발견
+              errors.push({
+                type: 'missing_successor',
+                sourceTask: task.id,
+                sourceLevel: 'L5',
+                missingTask: succId,
+                description: `L5 프로세스 "${task.name}"의 후행 프로세스 "${succId}"를 찾을 수 없습니다.`
+              });
+
+              // Unspecified 카테고리로 누락된 노드 추가
+              if (!l5Tasks.has(succId)) {
+                l5Tasks.set(succId, {
+                  id: succId,
+                  name: removePrefixes(succId),
+                  l4Category: 'Unspecified',
+                  필요인력: 0,
+                  필요기간: 0,
+                  MM: 0,
+                  predecessors: [task.id],
+                  successors: [],
+                  l6Tasks: [],
+                });
+                l4Categories.add('Unspecified');
+              }
+            }
+          });
+        });
+
+        // L6 프로세스의 선행/후행 검증
+        l6Tasks.forEach(task => {
+          // 선행 액티비티 체크
+          task.predecessors.forEach(predId => {
+            if (!l6Tasks.has(predId)) {
+              errors.push({
+                type: 'missing_predecessor',
+                sourceTask: task.id,
+                sourceLevel: 'L6',
+                missingTask: predId,
+                description: `L6 액티비티 "${task.name}"의 선행 액티비티 "${predId}"를 찾을 수 없습니다.`
+              });
+            }
+          });
+        });
+
         resolve({
           l5Tasks,
           l6Tasks,
           l4Categories,
+          errors,
         });
       } catch (error) {
         reject(error);

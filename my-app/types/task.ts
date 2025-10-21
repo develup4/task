@@ -79,8 +79,17 @@ export interface L6Task {
   hasCycle?: boolean;
 }
 
+export interface ValidationError {
+  type: 'missing_predecessor' | 'missing_successor';
+  sourceTask: string;
+  sourceLevel: 'L5' | 'L6';
+  missingTask: string;
+  description: string;
+}
+
 export interface ProcessedData {
   l5Tasks: Map<string, L5Task>;
   l6Tasks: Map<string, L6Task>;
   l4Categories: Set<string>;
+  errors: ValidationError[];
 }

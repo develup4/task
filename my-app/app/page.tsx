@@ -6,8 +6,9 @@ import FileUploader from '@/components/FileUploader';
 import L5FlowGraph from '@/components/L5FlowGraph';
 import L6FlowGraph from '@/components/L6FlowGraph';
 import MMSummaryTable from '@/components/MMSummaryTable';
+import ErrorListTable from '@/components/ErrorListTable';
 
-type Tab = 'graph' | 'l5-table' | 'final-table';
+type Tab = 'graph' | 'l5-table' | 'final-table' | 'error-list';
 
 export default function Home() {
   const { processedData, viewMode, setViewMode, setSelectedL5 } = useAppStore();
@@ -76,6 +77,21 @@ export default function Home() {
               >
                 최종 노드 MM 요약
               </button>
+              <button
+                onClick={() => setActiveTab('error-list')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'error-list'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                오류 목록
+                {processedData?.errors && processedData.errors.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                    {processedData.errors.length}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
@@ -113,13 +129,27 @@ export default function Home() {
             {activeTab === 'final-table' && (
               <div className="w-full h-full p-6">
                 <div className="bg-white rounded-lg shadow h-full">
-                  <div className="p-
-                  4 border-b border-gray-200">
+                  <div className="p-4 border-b border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-800">
                       최종 노드 누적 MM 요약 (내림차순)
                     </h2>
                   </div>
                   <MMSummaryTable type="final" />
+                </div>
+              </div>
+            )}
+            {activeTab === 'error-list' && (
+              <div className="w-full h-full p-6">
+                <div className="bg-white rounded-lg shadow h-full">
+                  <div className="p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800">
+                      프로세스 검증 오류 목록
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      선행/후행 프로세스 중 정의되지 않은 프로세스들이 표시됩니다.
+                    </p>
+                  </div>
+                  <ErrorListTable />
                 </div>
               </div>
             )}

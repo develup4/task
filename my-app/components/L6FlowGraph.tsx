@@ -19,10 +19,10 @@ import { getColorForCategory } from '@/utils/colors';
 
 const nodeTypes = {
   task: TaskNode,
-};
+} as any;
 
 // 간단한 계층적 레이아웃
-const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[] } => {
   const levels = new Map<string, number>();
   const visited = new Set<string>();
 
@@ -100,7 +100,7 @@ export default function L6FlowGraph() {
     if (!l5Task) return;
 
     // L6 노드들
-    const l6Nodes: Node<TaskNodeData>[] = l6Tasks.map((task) => ({
+    const l6Nodes = l6Tasks.map((task) => ({
       id: task.id,
       type: 'task',
       position: { x: 0, y: 0 },
@@ -118,20 +118,47 @@ export default function L6FlowGraph() {
 
     // L6 간의 엣지
     const l6Edges: Edge[] = [];
+    const processedL6Edges = new Set<string>();
+
     l6Tasks.forEach((task) => {
       task.successors.forEach((successorId) => {
         if (l6Tasks.some((t) => t.id === successorId)) {
+          const edgeId = `${task.id}-${successorId}`;
+          const reverseEdgeId = `${successorId}-${task.id}`;
+
+          // 이미 처리한 엣지는 건너뛰기
+          if (processedL6Edges.has(reverseEdgeId)) {
+            return;
+          }
+
           const colors = getColorForCategory(task.l4Category);
+          const successor = l6Tasks.find(t => t.id === successorId);
+
+          // 양방향 연결 체크 (cycle error)
+          const isBidirectional = successor && successor.successors.includes(task.id);
+
           l6Edges.push({
-            id: `${task.id}-${successorId}`,
+            id: edgeId,
             source: task.id,
             target: successorId,
             type: ConnectionLineType.SmoothStep,
-            style: {
-              stroke: task.hasCycle ? '#F44336' : colors.border,
-              strokeWidth: 2,
+            markerEnd: {
+              type: 'arrowclosed',
+              width: 20,
+              height: 20,
+              color: isBidirectional ? '#F44336' : colors.border,
             },
+            style: {
+              stroke: isBidirectional ? '#F44336' : colors.border,
+              strokeWidth: isBidirectional ? 3 : 2,
+              strokeDasharray: isBidirectional ? '5,5' : undefined,
+            },
+            label: isBidirectional ? '⚠ 양방향' : undefined,
+            labelStyle: isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
+            labelBgStyle: isBidirectional ? { fill: '#FFEBEE' } : undefined,
           });
+
+          processedL6Edges.add(edgeId);
         }
       });
     });
@@ -143,7 +170,7 @@ export default function L6FlowGraph() {
       task['후행 L5']?.forEach((l5Id) => relatedL5Ids.add(l5Id));
     });
 
-    const relatedL5Nodes: Node<TaskNodeData>[] = Array.from(relatedL5Ids)
+    const relatedL5Nodes = Array.from(relatedL5Ids)
       .map((l5Id) => {
         const task = processedData.l5Tasks.get(l5Id);
         if (!task) return null;
@@ -166,7 +193,7 @@ export default function L6FlowGraph() {
           },
         };
       })
-      .filter((node): node is Node<TaskNodeData> => node !== null);
+      .filter((node): node is any => node !== null);
 
     // L5와 L6 간의 엣지
     const l5ToL6Edges: Edge[] = [];
@@ -178,6 +205,12 @@ export default function L6FlowGraph() {
           source: `l5-${l5Id}`,
           target: l6Task.id,
           type: ConnectionLineType.SmoothStep,
+          markerEnd: {
+            type: 'arrowclosed',
+            width: 15,
+            height: 15,
+            color: '#9E9E9E',
+          },
           style: {
             stroke: '#9E9E9E',
             strokeWidth: 1,
@@ -193,6 +226,12 @@ export default function L6FlowGraph() {
           source: l6Task.id,
           target: `l5-${l5Id}`,
           type: ConnectionLineType.SmoothStep,
+          markerEnd: {
+            type: 'arrowclosed',
+            width: 15,
+            height: 15,
+            color: '#9E9E9E',
+          },
           style: {
             stroke: '#9E9E9E',
             strokeWidth: 1,
@@ -210,8 +249,8 @@ export default function L6FlowGraph() {
       allEdges
     );
 
-    setNodes(layoutedNodes);
-    setEdges(layoutedEdges);
+    setNodes(layoutedNodes as any);
+    setEdges(layoutedEdges as any);
   }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges]);
 
   return (
@@ -230,7 +269,7 @@ export default function L6FlowGraph() {
         <Background />
         <MiniMap
           nodeColor={(node) => {
-            const data = node.data as TaskNodeData;
+            const data = node.data as any;
             return getColorForCategory(data.category).border;
           }}
         />

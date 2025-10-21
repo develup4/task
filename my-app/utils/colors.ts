@@ -14,6 +14,11 @@ const categoryColorMap = new Map<string, typeof colorPalette[0]>();
 let colorIndex = 0;
 
 export const getColorForCategory = (category: string) => {
+  // Unspecified 카테고리는 특별한 색상 (회색/점선)
+  if (category === 'Unspecified') {
+    return { bg: '#F5F5F5', border: '#9E9E9E', text: '#424242' };
+  }
+
   if (!categoryColorMap.has(category)) {
     categoryColorMap.set(category, colorPalette[colorIndex % colorPalette.length]);
     colorIndex++;

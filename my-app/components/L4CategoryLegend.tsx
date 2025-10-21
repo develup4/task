@@ -61,39 +61,49 @@ export default function L4CategoryLegend({ className = '' }: L4CategoryLegendPro
           const colors = getColorForCategory(category);
           const isVisible = visibleL4Categories.has(category);
           const count = getCategoryCount(category);
+          const isUnspecified = category === 'Unspecified';
 
           return (
             <div
               key={category}
               onClick={() => toggleL4Category(category)}
               className={`flex items-center p-2 rounded cursor-pointer transition-all ${
-                isVisible 
-                  ? 'hover:bg-gray-50' 
+                isVisible
+                  ? 'hover:bg-gray-50'
                   : 'opacity-50 hover:bg-gray-50'
-              }`}
+              } ${isUnspecified ? 'border border-dashed border-yellow-400 bg-yellow-50' : ''}`}
             >
               {/* 색상 표시 */}
               <div
                 className={`w-4 h-4 rounded mr-3 border-2 transition-all ${
-                  isVisible 
-                    ? 'border-transparent' 
+                  isVisible
+                    ? 'border-transparent'
                     : 'border-gray-300 bg-gray-100 bg-opacity-50'
                 }`}
                 style={{
                   backgroundColor: isVisible ? colors.border : undefined,
-                  backgroundImage: !isVisible 
+                  backgroundImage: !isVisible
                     ? 'repeating-linear-gradient(45deg, transparent, transparent 2px, #ccc 2px, #ccc 4px)'
+                    : isUnspecified
+                    ? 'repeating-linear-gradient(45deg, #9E9E9E, #9E9E9E 3px, transparent 3px, transparent 6px)'
                     : undefined,
                 }}
               />
 
               {/* 카테고리 이름 */}
-              <div className="flex-1 text-sm text-gray-700">
+              <div className={`flex-1 text-sm ${isUnspecified ? 'font-semibold text-yellow-800' : 'text-gray-700'}`}>
                 {category.replace(/^\[.*?\]/, '')}
+                {isUnspecified && (
+                  <span className="ml-2 text-xs text-yellow-600">(오류)</span>
+                )}
               </div>
 
               {/* 태스크 수 */}
-              <div className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+              <div className={`text-xs px-2 py-1 rounded-full ${
+                isUnspecified
+                  ? 'bg-yellow-200 text-yellow-800'
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
                 {count}
               </div>
             </div>

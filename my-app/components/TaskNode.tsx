@@ -17,7 +17,7 @@ export interface TaskNodeData {
   isSelected?: boolean;
 }
 
-const TaskNode = memo(({ data }: NodeProps<TaskNodeData>) => {
+const TaskNode = memo(({ data }: NodeProps<any>) => {
   const colors = getColorForCategory(data.category);
 
   const borderColor = data.hasCycle

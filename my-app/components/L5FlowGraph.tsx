@@ -20,10 +20,10 @@ import { getColorForCategory } from '@/utils/colors';
 
 const nodeTypes = {
   task: TaskNode,
-};
+} as any;
 
 // 간단한 계층적 레이아웃 (최종 노드가 왼쪽)
-const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[] } => {
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const levels = new Map<string, number>();
   const visited = new Set<string>();
@@ -110,7 +110,7 @@ export default function L5FlowGraph() {
 
     const tasks = getFilteredL5Tasks();
 
-    const initialNodes: Node<TaskNodeData>[] = tasks.map((task) => ({
+    const initialNodes = tasks.map((task) => ({
       id: task.id,
       type: 'task',
       position: { x: 0, y: 0 }, // 나중에 레이아웃으로 계산
@@ -129,21 +129,48 @@ export default function L5FlowGraph() {
     }));
 
     const initialEdges: Edge[] = [];
+    const processedEdges = new Set<string>();
+
     tasks.forEach((task) => {
       task.successors.forEach((successorId) => {
         if (tasks.some((t) => t.id === successorId)) {
+          const edgeId = `${task.id}-${successorId}`;
+          const reverseEdgeId = `${successorId}-${task.id}`;
+
+          // 이미 처리한 엣지는 건너뛰기
+          if (processedEdges.has(reverseEdgeId)) {
+            return;
+          }
+
           const colors = getColorForCategory(task.l4Category);
+          const successor = tasks.find(t => t.id === successorId);
+
+          // 양방향 연결 체크 (cycle error)
+          const isBidirectional = successor && successor.successors.includes(task.id);
+
           initialEdges.push({
-            id: `${task.id}-${successorId}`,
+            id: edgeId,
             source: task.id,
             target: successorId,
             type: ConnectionLineType.SmoothStep,
             animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
-            style: {
-              stroke: task.hasCycle ? '#F44336' : colors.border,
-              strokeWidth: 2,
+            markerEnd: {
+              type: 'arrowclosed',
+              width: 20,
+              height: 20,
+              color: isBidirectional ? '#F44336' : colors.border,
             },
+            style: {
+              stroke: isBidirectional ? '#F44336' : colors.border,
+              strokeWidth: isBidirectional ? 3 : 2,
+              strokeDasharray: isBidirectional ? '5,5' : undefined,
+            },
+            label: isBidirectional ? '⚠ 양방향' : undefined,
+            labelStyle: isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
+            labelBgStyle: isBidirectional ? { fill: '#FFEBEE' } : undefined,
           });
+
+          processedEdges.add(edgeId);
         }
       });
     });
@@ -153,8 +180,8 @@ export default function L5FlowGraph() {
       initialEdges
     );
 
-    setNodes(layoutedNodes);
-    setEdges(layoutedEdges);
+    setNodes(layoutedNodes as any);
+    setEdges(layoutedEdges as any);
   }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, getFilteredL5Tasks, setNodes, setEdges]);
 
   // 노드 클릭 핸들러
@@ -201,7 +228,7 @@ export default function L5FlowGraph() {
         <Background />
         <MiniMap
           nodeColor={(node) => {
-            const data = node.data as TaskNodeData;
+            const data = node.data as any;
             return getColorForCategory(data.category).border;
           }}
         />
