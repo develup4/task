@@ -40,11 +40,14 @@ export default function TeamFilter() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium flex items-center gap-2"
+        className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
       >
-        <span>작성팀 ({selectedCount}/{totalCount})</span>
+        <svg className="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        <span className="text-gray-700">Filter ({selectedCount}/{totalCount})</span>
         <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -54,20 +57,20 @@ export default function TeamFilter() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          <div className="p-3 border-b border-gray-200">
+        <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+          <div className="p-3 border-b border-gray-200 bg-gray-50">
             <div className="flex gap-2">
               <button
                 onClick={showAllTeams}
-                className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="flex-1 px-3 py-1.5 text-xs bg-sky-500 text-white rounded-md hover:bg-sky-600 transition-colors font-medium"
               >
-                전체 선택
+                Select All
               </button>
               <button
                 onClick={hideAllTeams}
-                className="flex-1 px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="flex-1 px-3 py-1.5 text-xs bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-medium"
               >
-                전체 해제
+                Clear All
               </button>
             </div>
           </div>
@@ -76,13 +79,13 @@ export default function TeamFilter() {
             {allTeams.map((team) => (
               <label
                 key={team}
-                className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                className="flex items-center px-4 py-2.5 hover:bg-sky-50 cursor-pointer transition-colors"
               >
                 <input
                   type="checkbox"
                   checked={visibleTeams.has(team)}
                   onChange={() => toggleTeam(team)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
                 />
                 <span className="ml-3 text-sm text-gray-700">{team}</span>
               </label>
@@ -91,7 +94,7 @@ export default function TeamFilter() {
 
           {allTeams.length === 0 && (
             <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              작성팀 정보가 없습니다
+              No team data available
             </div>
           )}
         </div>

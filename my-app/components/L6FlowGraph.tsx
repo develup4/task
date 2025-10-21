@@ -382,13 +382,20 @@ export default function L6FlowGraph() {
         minZoom={0.1}
         maxZoom={2}
       >
-        <Controls />
+        <Controls className="sky-controls" />
         <Background />
         <MiniMap
           nodeColor={(node) => {
             const data = node.data as any;
             return getColorForCategory(data.category).border;
           }}
+          maskColor="rgba(14, 165, 233, 0.1)"
+          style={{
+            backgroundColor: '#f8fafc',
+            border: '2px solid #e0f2fe',
+          }}
+          pannable
+          zoomable
         />
       </ReactFlow>
     </div>

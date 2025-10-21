@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* React Flow Controls 스타일 */
+.sky-controls button {
+  background-color: #0ea5e9 !important;
+  color: white !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.sky-controls button:hover {
+  background-color: #0284c7 !important;
+}
+
+.sky-controls button:last-child {
+  border-bottom: none !important;
+}

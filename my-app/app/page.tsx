@@ -26,41 +26,58 @@ export default function Home() {
     setSelectedL5(null);
   };
 
-  // 제목 생성 함수
-  const getTitle = () => {
-    const tabNames: Record<Tab, string> = {
-      'graph': 'Workflow 그래프',
-      'l5-table': 'L5 MM 요약',
-      'start-node-table': '시작 노드 MM 요약',
-      'final-table': '최종 노드 MM 요약',
-      'error-list': '오류 목록'
-    };
+  // 탭 정보 (아이콘 포함)
+  const tabInfo: Record<Tab, { name: string; icon: string }> = {
+    'graph': { name: 'Work Flow', icon: '⚡' },
+    'l5-table': { name: 'MM Summary', icon: '📊' },
+    'start-node-table': { name: 'Start Node Summary', icon: '🎯' },
+    'final-table': { name: 'Final Node Summary', icon: '🏁' },
+    'error-list': { name: 'Error Report', icon: '⚠️' }
+  };
 
-    let title = 'DTF Process Viewer';
+  // Breadcrumb 생성 함수
+  const getBreadcrumb = () => {
+    const parts = [tabInfo[activeTab].name];
 
-    if (processedData) {
-      title += ` - ${tabNames[activeTab]}`;
+    // L5-filtered나 L6 모드일 때 L4 정보 추가
+    if ((viewMode === 'l5-filtered' || viewMode === 'l6-detail') && selectedL5) {
+      const selectedTask = getL5Task(selectedL5);
+      if (selectedTask) {
+        // L4(부모) 정보 추가
+        if (selectedTask.l4Category) {
+          parts.push(selectedTask.l4Category);
+        }
+        // L5 정보 추가
+        parts.push(selectedTask.name);
 
-      // L5-filtered나 L6 모드일 때 선택된 노드 이름 추가
-      if ((viewMode === 'l5-filtered' || viewMode === 'l6-detail') && selectedL5) {
-        const selectedTask = getL5Task(selectedL5);
-        if (selectedTask) {
-          title += ` - ${selectedTask.name}`;
+        // L6 모드일 때 L6 표시 추가 (실제 L6 이름은 나중에 선택 시 추가 가능)
+        if (viewMode === 'l6-detail') {
+          parts.push('L6 Details');
         }
       }
     }
 
-    return title;
+    return parts.join(' > ');
   };
 
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">{getTitle()}</h1>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            {/* Workflow Logo */}
+            <svg className="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            {/* Breadcrumb */}
+            <div className="text-sm text-gray-600">
+              {getBreadcrumb()}
+            </div>
+          </div>
           <FileUploader />
         </div>
+        <h1 className="text-xl font-semibold text-gray-800">Workflow Viewer</h1>
       </header>
 
       {/* Content */}
@@ -79,73 +96,37 @@ export default function Home() {
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Tabs */}
-          <div className="bg-white border-b border-gray-200 px-6">
-            <div className="flex justify-between items-center">
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setActiveTab('graph')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                    activeTab === 'graph'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Workflow 그래프
-                </button>
-                <button
-                  onClick={() => setActiveTab('l5-table')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                    activeTab === 'l5-table'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  L5 MM 요약
-                </button>
-                <button
-                  onClick={() => setActiveTab('start-node-table')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                    activeTab === 'start-node-table'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  시작 노드 MM 요약
-                </button>
-                <button
-                  onClick={() => setActiveTab('final-table')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                    activeTab === 'final-table'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  최종 노드 MM 요약
-                </button>
-                <button
-                  onClick={() => setActiveTab('error-list')}
-                  className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-                    activeTab === 'error-list'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  오류 목록
-                  {processedData?.errors && processedData.errors.length > 0 && (
-                    <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                      {processedData.errors.length}
-                    </span>
-                  )}
-                </button>
+          <div className="bg-white px-6 relative">
+            <div className="flex justify-between items-end">
+              <div className="flex gap-6 -mb-px">
+                {(Object.keys(tabInfo) as Tab[]).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                      activeTab === tab
+                        ? 'border-sky-500 text-sky-600 font-bold'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <span>{tabInfo[tab].icon}</span>
+                    <span>{tabInfo[tab].name}</span>
+                    {tab === 'error-list' && processedData?.errors && processedData.errors.length > 0 && (
+                      <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                        {processedData.errors.length}
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
 
               {/* Search box and filters - only show in graph tab and l5-all mode */}
               {activeTab === 'graph' && viewMode === 'l5-all' && (
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center pb-3">
                   <TeamFilter />
                   <input
                     type="text"
-                    placeholder="L5 노드 검색..."
+                    placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -156,7 +137,7 @@ export default function Home() {
                         setSearchTrigger(prev => prev + 1);
                       }
                     }}
-                    className="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="input input-ghost input-sm px-3 py-1.5 border-none bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white text-sm"
                   />
                   {searchResultCount > 0 && (
                     <span className="text-sm text-gray-600 font-medium">
@@ -166,13 +147,14 @@ export default function Home() {
                   <button
                     onClick={() => setSearchTrigger(prev => prev + 1)}
                     disabled={!searchQuery.trim()}
-                    className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
+                    className="px-3 py-1.5 bg-sky-500 text-white rounded-md hover:bg-sky-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                   >
                     Next
                   </button>
                 </div>
               )}
             </div>
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200"></div>
           </div>
 
           {/* Navigation breadcrumb for L6 view */}

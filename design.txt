@@ -1,0 +1,25 @@
+<상단 디자인>
+
+(로고) [Breadcrumb > Breadcrumb > Breadcrumb]                                                                 [Upload 버튼]
+Workflow Viewer
+
+Work Flow | MM Summary | Error Report                                                               [Filter 열기] [Search]
+-------------------------------------------------------------------------------------------------------------------------
+
+<본문>
+그대로 유지
+
+
+
+
+<디자인 요구사항>
+- Logo는 Workflow에 어울리는 아이콘으로 하늘색 계열
+- Breadcrumb는 [현재 Tab 이름] > [L4(L5-Filtered, L6 모드일때만 표시)] > [L5(L5-Filtered, L6 모드일때만 표시)] > [L6(L6 모드일때만 표시)]
+- Workflow Viewer라는 이름은 그냥 고정
+- 탭은 현재 활성화된 탭에 로고와 같은 하늘색계열의 밑줄 그리고 Bold, 각 탭 항목 앞에 아이콘도 붙여주기
+- Upload 버튼도 로고에 쓴 하늘색
+- Filter는 디자인이 구리니까 개선
+- Search도 디자인 개선, Daisy UI의 ghost 디자인을 추천
+- 상단에는 border-b가 있는데 아까 활성화된 탭의 하늘색 밑줄과 겹치도록
+- React Flow에서 미니맵을 통해 뷰포트 이동이 안됨. 체크부탁. 그리고 미니맵의 색이 배경 하얀색과 비슷해서 잘 눈에 안들어옴.
+- React Flow toolbar의 색상도 로고의 하늘색 계열로 변경

@@ -55,25 +55,12 @@ export default function FileUploader() {
       />
       <button
         onClick={handleClick}
-        style={{
-          padding: '10px 20px',
-          backgroundColor: '#2196F3',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          fontWeight: 500,
-          transition: 'background-color 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#1976D2';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#2196F3';
-        }}
+        className="px-5 py-2.5 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium flex items-center gap-2 shadow-sm"
       >
-        엑셀 파일 업로드
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        Upload
       </button>
     </div>
   );
