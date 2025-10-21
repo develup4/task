@@ -63,6 +63,9 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   const horizontalSpacing = 180;
   const verticalSpacing = 100;
 
+  // 최대 레벨 찾기 (우->좌 반전을 위해)
+  const maxLevel = Math.max(...Array.from(levels.values()));
+
   const layoutedNodes = nodes.map(node => {
     const level = levels.get(node.id) || 0;
     const nodesInLevel = levelGroups.get(level) || [];
@@ -71,7 +74,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     return {
       ...node,
       position: {
-        x: level * (nodeWidth + horizontalSpacing),
+        // 레벨을 역순으로 배치 (maxLevel - level)
+        x: (maxLevel - level) * (nodeWidth + horizontalSpacing),
         y: indexInLevel * (nodeHeight + verticalSpacing),
       },
     };
