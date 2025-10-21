@@ -246,8 +246,47 @@ export default function L5FlowGraph() {
       }
     });
 
-    // 전체 L5 태스크의 누적 MM 계산
-    const totalMM = tasks.reduce((sum, task) => sum + task.MM, 0);
+    // 각 노드의 누적 MM 계산 (해당 노드부터 시작점까지의 모든 경로 중 최대값)
+    const cumulativeMMs = new Map<string, number>();
+    const calculateCumulativeMM = (nodeId: string, visited = new Set<string>()): number => {
+      // 이미 계산된 경우
+      if (cumulativeMMs.has(nodeId)) {
+        return cumulativeMMs.get(nodeId)!;
+      }
+
+      // 순환 참조 방지
+      if (visited.has(nodeId)) {
+        return 0;
+      }
+
+      const node = initialNodes.find(n => n.id === nodeId);
+      if (!node) return 0;
+
+      const newVisited = new Set(visited);
+      newVisited.add(nodeId);
+
+      // 이 노드로 들어오는 엣지들 (선행 작업들)
+      const incomingEdges = initialEdges.filter(e => e.target === nodeId);
+
+      let maxPredecessorMM = 0;
+      if (incomingEdges.length > 0) {
+        // 선행 작업들 중 최대 누적 MM
+        maxPredecessorMM = Math.max(
+          ...incomingEdges.map(e => calculateCumulativeMM(e.source, newVisited))
+        );
+      }
+
+      // 현재 노드의 MM + 선행 작업의 최대 누적 MM
+      const cumulativeMM = node.data.MM + maxPredecessorMM;
+      cumulativeMMs.set(nodeId, cumulativeMM);
+
+      return cumulativeMM;
+    };
+
+    // 모든 노드의 누적 MM 계산
+    initialNodes.forEach(node => {
+      calculateCumulativeMM(node.id);
+    });
 
     // 노드에 하이라이팅 및 시작 노드 플래그 추가
     const finalNodes = layoutedNodes.map(node => {
@@ -261,6 +300,7 @@ export default function L5FlowGraph() {
       }
 
       const isStartNode = startNodeIds.has(node.id);
+      const cumulativeMM = cumulativeMMs.get(node.id) || node.data.MM;
 
       return {
         ...node,
@@ -268,7 +308,7 @@ export default function L5FlowGraph() {
           ...node.data,
           isHighlighted,
           isStartNode,
-          cumulativeMM: isStartNode ? totalMM : node.data.cumulativeMM,
+          cumulativeMM,
         },
         style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
       };
