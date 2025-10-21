@@ -107,15 +107,35 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!processedData) return [];
 
     let allTasks = Array.from(processedData.l5Tasks.values());
-    
-    // L4 카테고리 필터 적용
-    allTasks = allTasks.filter(task => visibleL4Categories.has(task.l4Category));
 
     if (viewMode === 'l5-all') {
-      return allTasks;
+      // L5-all 모드에서만 L4 카테고리 필터 적용
+      allTasks = allTasks.filter(task => visibleL4Categories.has(task.l4Category));
+
+      // L4 카테고리 필터로 인해 선후관계가 끊긴 노드 제거
+      const visibleTaskIds = new Set(allTasks.map(t => t.id));
+
+      return allTasks.filter(task => {
+        // 선행 노드가 있는데 모두 필터링된 경우
+        const hasVisiblePredecessor = task.predecessors.length === 0 ||
+          task.predecessors.some(predId => visibleTaskIds.has(predId));
+
+        // 후행 노드가 있는데 모두 필터링된 경우
+        const hasVisibleSuccessor = task.successors.length === 0 ||
+          task.successors.some(succId => visibleTaskIds.has(succId));
+
+        // 선행 또는 후행 중 하나라도 연결이 있어야 표시
+        // 단, 선행/후행이 둘 다 없는 고립된 노드는 표시
+        if (task.predecessors.length === 0 && task.successors.length === 0) {
+          return true; // 고립된 노드는 표시
+        }
+
+        return hasVisiblePredecessor && hasVisibleSuccessor;
+      });
     }
 
     if (viewMode === 'l5-filtered' && selectedL5) {
+      // L5-filtered 모드에서는 L4 카테고리 필터를 무시하고 모든 관련 노드 표시
       const selected = processedData.l5Tasks.get(selectedL5);
       if (!selected) return allTasks;
 
