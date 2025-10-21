@@ -180,7 +180,18 @@ export default function Home() {
             )}
             {activeTab === 'l5-table' && (
               <div className="w-full h-full p-6 overflow-auto">
-                <div className="grid grid-cols-2 gap-6 h-full">
+                <div className="flex flex-col gap-6 h-full">
+                  <div className="bg-white rounded-lg shadow">
+                    <div className="p-4 border-b border-gray-200">
+                      <h2 className="text-lg font-semibold text-gray-800">
+                        가장 왼쪽 노드 누적 MM 요약 (내림차순)
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        L5-all 그래프에서 가장 왼쪽에 위치한 최하단 노드(더 이상 후행이 없는 노드)들의 누적 MM입니다. 클릭하면 해당 노드를 중심으로 필터링됩니다.
+                      </p>
+                    </div>
+                    <LeftmostNodeMMTable />
+                  </div>
                   <div className="bg-white rounded-lg shadow">
                     <div className="p-4 border-b border-gray-200">
                       <h2 className="text-lg font-semibold text-gray-800">
@@ -188,17 +199,6 @@ export default function Home() {
                       </h2>
                     </div>
                     <MMSummaryTable type="l5" />
-                  </div>
-                  <div className="bg-white rounded-lg shadow">
-                    <div className="p-4 border-b border-gray-200">
-                      <h2 className="text-lg font-semibold text-gray-800">
-                        가장 왼쪽 노드 누적 MM 요약 (내림차순)
-                      </h2>
-                      <p className="text-sm text-gray-500 mt-1">
-                        L5-all 그래프에서 가장 왼쪽에 위치한 시작 노드들의 누적 MM입니다. 클릭하면 해당 노드를 중심으로 필터링됩니다.
-                      </p>
-                    </div>
-                    <LeftmostNodeMMTable />
                   </div>
                 </div>
               </div>

@@ -32,40 +32,11 @@ export default function LeftmostNodeMMTable() {
       });
     });
 
-    // 레벨 계산 (후행 노드 기준)
-    const levels = new Map<string, number>();
-    const visited = new Set<string>();
-
-    const calculateLevel = (nodeId: string): number => {
-      if (levels.has(nodeId)) return levels.get(nodeId)!;
-      if (visited.has(nodeId)) return 0;
-
-      visited.add(nodeId);
-
-      const outgoingEdges = edges.filter(e => e.source === nodeId);
-
-      if (outgoingEdges.length === 0) {
-        levels.set(nodeId, 0);
-        return 0;
-      }
-
-      const maxSuccessorLevel = Math.max(
-        ...outgoingEdges.map(e => calculateLevel(e.target))
-      );
-      const level = maxSuccessorLevel + 1;
-      levels.set(nodeId, level);
-      return level;
-    };
-
-    tasks.forEach(task => calculateLevel(task.id));
-
-    // 최대 레벨 찾기
-    const maxLevel = Math.max(...Array.from(levels.values()));
-
-    // 가장 왼쪽 노드들 찾기 (최대 레벨)
+    // 가장 왼쪽 최하단 노드 찾기 (후행이 없는 노드 = leaf nodes)
     const leftmostNodeIds = new Set<string>();
     tasks.forEach(task => {
-      if (levels.get(task.id) === maxLevel) {
+      // 후행이 없는 노드만 선택
+      if (task.successors.length === 0) {
         leftmostNodeIds.add(task.id);
       }
     });
