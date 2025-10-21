@@ -160,10 +160,10 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               '참여부서(L6)': taskData['참여부서(L6)'],
               시스템: taskData.시스템,
               '작업방식(L6)': taskData['작업방식(L6)'],
-              predecessors: splitByPipe(taskData['후행 액티비티(L6)']).map(
+              predecessors: [],
+              successors: splitByPipe(taskData['후행 액티비티(L6)']).map(
                 name => `${l5Parent}::${name}`
               ),
-              successors: [],
               '선행 L5': splitByPipe(taskData['L6의 선행 L5']),
               '후행 L5': splitByPipe(taskData['L6의 후행 L5']),
             };
@@ -178,12 +178,12 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           }
         });
 
-        // L6의 successors 계산 (predecessors의 역방향)
+        // L6의 predecessors 계산 (successors의 역방향)
         l6Tasks.forEach(task => {
-          task.predecessors.forEach(predId => {
-            const predTask = l6Tasks.get(predId);
-            if (predTask && !predTask.successors.includes(task.id)) {
-              predTask.successors.push(task.id);
+          task.successors.forEach(succId => {
+            const succTask = l6Tasks.get(succId);
+            if (succTask && !succTask.predecessors.includes(task.id)) {
+              succTask.predecessors.push(task.id);
             }
           });
         });
@@ -363,6 +363,19 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
                 sourceLevel: 'L6',
                 missingTask: predId,
                 description: `L6 액티비티 "${task.name}"의 선행 액티비티 "${predId}"를 찾을 수 없습니다.`
+              });
+            }
+          });
+
+          // 후행 액티비티 체크
+          task.successors.forEach(succId => {
+            if (!l6Tasks.has(succId)) {
+              errors.push({
+                type: 'missing_successor',
+                sourceTask: task.id,
+                sourceLevel: 'L6',
+                missingTask: succId,
+                description: `L6 액티비티 "${task.name}"의 후행 액티비티 "${succId}"를 찾을 수 없습니다.`
               });
             }
           });
