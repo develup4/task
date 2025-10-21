@@ -337,7 +337,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
 
     setNodes(finalNodes as any);
     setEdges(layoutedEdges as any);
-  }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, getFilteredL5Tasks, setNodes, setEdges, selectedEdge]);
+  }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, getFilteredL5Tasks, setNodes, setEdges, selectedEdge, searchedNodeId]);
 
   // L5-filtered 모드 진입 시 선택된 노드를 화면 중앙으로 이동
   useEffect(() => {
