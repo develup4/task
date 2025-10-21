@@ -130,6 +130,9 @@ function L5FlowGraphInner() {
         hasCycle: task.hasCycle,
         isHighlighted: highlightedTasks.has(task.id),
         isSelected: task.id === selectedL5,
+        fullData: task,
+        isL5: true,
+        isL6: false,
       },
     }));
 

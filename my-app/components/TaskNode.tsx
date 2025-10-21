@@ -3,6 +3,8 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { getColorForCategory } from '@/utils/colors';
+import NodeTooltip from './NodeTooltip';
+import { L5Task, L6Task } from '@/types/task';
 
 export interface TaskNodeData {
   label: string;
@@ -16,6 +18,9 @@ export interface TaskNodeData {
   hasCycle?: boolean;
   isHighlighted?: boolean;
   isSelected?: boolean;
+  fullData?: Partial<L5Task> | Partial<L6Task>;
+  isL5?: boolean;
+  isL6?: boolean;
 }
 
 const TaskNode = memo(({ data }: NodeProps<any>) => {
@@ -48,60 +53,67 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
     : '0 1px 4px rgba(0,0,0,0.1)';
 
   return (
-    <div
-      style={{
-        padding: '12px 16px',
-        borderRadius: '8px',
-        border: `${borderWidth} solid ${borderColor}`,
-        backgroundColor: colors.bg,
-        color: colors.text,
-        minWidth: '180px',
-        maxWidth: '250px',
-        boxShadow,
-        transition: 'all 0.2s ease',
-      }}
-    >
-      <Handle
-        type="target"
-        position={Position.Right}
-        style={{ background: colors.border, width: '8px', height: '8px' }}
-      />
+    <div className="group relative">
+      <div
+        style={{
+          padding: '12px 16px',
+          borderRadius: '8px',
+          border: `${borderWidth} solid ${borderColor}`,
+          backgroundColor: colors.bg,
+          color: colors.text,
+          minWidth: '180px',
+          maxWidth: '250px',
+          boxShadow,
+          transition: 'all 0.2s ease',
+        }}
+      >
+        <Handle
+          type="target"
+          position={Position.Right}
+          style={{ background: colors.border, width: '8px', height: '8px' }}
+        />
 
-      <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', wordBreak: 'break-word' }}>
-        {data.label}
-        {data.hasCycle && (
-          <span style={{ color: '#F44336', fontSize: '12px', marginLeft: '4px' }}>⚠️</span>
-        )}
+        <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', wordBreak: 'break-word' }}>
+          {data.label}
+          {data.hasCycle && (
+            <span style={{ color: '#F44336', fontSize: '12px', marginLeft: '4px' }}>⚠️</span>
+          )}
+        </div>
+
+        <div style={{ fontSize: '11px', color: colors.text, opacity: 0.8, lineHeight: '1.4' }}>
+          <div>P: {data.필요인력} | T: {data.필요기간}W</div>
+          <div>MM: {data.MM.toFixed(1)}</div>
+          {data.isStartNode && data.cumulativeMM !== undefined && (
+            <div style={{
+              fontWeight: 700,
+              marginTop: '6px',
+              padding: '4px 8px',
+              backgroundColor: 'rgba(255, 107, 53, 0.15)',
+              borderRadius: '4px',
+              color: '#FF6B35',
+              fontSize: '12px'
+            }}>
+              누적: {data.cumulativeMM.toFixed(1)}MM
+            </div>
+          )}
+          {data.isFinalNode && data.cumulativeMM !== undefined && (
+            <div style={{ fontWeight: 600, marginTop: '4px', color: colors.border }}>
+              Total: {data.cumulativeMM.toFixed(1)}MM
+            </div>
+          )}
+        </div>
+
+        <Handle
+          type="source"
+          position={Position.Left}
+          style={{ background: colors.border, width: '8px', height: '8px' }}
+        />
       </div>
 
-      <div style={{ fontSize: '11px', color: colors.text, opacity: 0.8, lineHeight: '1.4' }}>
-        <div>P: {data.필요인력} | T: {data.필요기간}W</div>
-        <div>MM: {data.MM.toFixed(1)}</div>
-        {data.isStartNode && data.cumulativeMM !== undefined && (
-          <div style={{
-            fontWeight: 700,
-            marginTop: '6px',
-            padding: '4px 8px',
-            backgroundColor: 'rgba(255, 107, 53, 0.15)',
-            borderRadius: '4px',
-            color: '#FF6B35',
-            fontSize: '12px'
-          }}>
-            누적: {data.cumulativeMM.toFixed(1)}MM
-          </div>
-        )}
-        {data.isFinalNode && data.cumulativeMM !== undefined && (
-          <div style={{ fontWeight: 600, marginTop: '4px', color: colors.border }}>
-            Total: {data.cumulativeMM.toFixed(1)}MM
-          </div>
-        )}
-      </div>
-
-      <Handle
-        type="source"
-        position={Position.Left}
-        style={{ background: colors.border, width: '8px', height: '8px' }}
-      />
+      {/* Tooltip - only show if fullData exists and it's L5 or L6 */}
+      {data.fullData && (data.isL5 || data.isL6) && (
+        <NodeTooltip data={data.fullData} isL5={data.isL5} isL6={data.isL6} />
+      )}
     </div>
   );
 });

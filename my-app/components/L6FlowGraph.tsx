@@ -315,6 +315,9 @@ export default function L6FlowGraph() {
           hasCycle: task.hasCycle,
           isHighlighted,
           isSelected: false,
+          fullData: task,
+          isL5: false,
+          isL6: true,
         },
         style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
       };

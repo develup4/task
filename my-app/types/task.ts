@@ -51,6 +51,11 @@ export interface L5Task {
   정의?: string;
   '프로세스 오너부서(L5)'?: string;
   '산출물(L5)'?: string;
+  '준수지표(L5)'?: string;
+  '소요기간(L5)'?: string;
+  '수행주기(L5)'?: string;
+  '참여(L5)'?: string;
+  '바로가기 URL(L5)'?: string;
   predecessors: string[];
   successors: string[];
   l6Tasks: L6Task[];
