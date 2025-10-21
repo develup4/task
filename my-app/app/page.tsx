@@ -14,7 +14,7 @@ import LeftmostNodeMMTable from '@/components/LeftmostNodeMMTable';
 type Tab = 'graph' | 'l5-table' | 'start-node-table' | 'final-table' | 'error-list';
 
 export default function Home() {
-  const { processedData, viewMode, setViewMode, setSelectedL5 } = useAppStore();
+  const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>('graph');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -26,12 +26,39 @@ export default function Home() {
     setSelectedL5(null);
   };
 
+  // 제목 생성 함수
+  const getTitle = () => {
+    const tabNames: Record<Tab, string> = {
+      'graph': 'Workflow 그래프',
+      'l5-table': 'L5 MM 요약',
+      'start-node-table': '시작 노드 MM 요약',
+      'final-table': '최종 노드 MM 요약',
+      'error-list': '오류 목록'
+    };
+
+    let title = 'DTF Process Viewer';
+
+    if (processedData) {
+      title += ` - ${tabNames[activeTab]}`;
+
+      // L5-filtered나 L6 모드일 때 선택된 노드 이름 추가
+      if ((viewMode === 'l5-filtered' || viewMode === 'l6-detail') && selectedL5) {
+        const selectedTask = getL5Task(selectedL5);
+        if (selectedTask) {
+          title += ` - ${selectedTask.name}`;
+        }
+      }
+    }
+
+    return title;
+  };
+
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">DTF Process Viewer</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{getTitle()}</h1>
           <FileUploader />
         </div>
       </header>
