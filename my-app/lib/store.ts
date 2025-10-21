@@ -119,37 +119,18 @@ export const useAppStore = create<AppState>((set, get) => ({
       const selected = processedData.l5Tasks.get(selectedL5);
       if (!selected) return allTasks;
 
-      // 선택된 노드와 관련된 노드들만 반환
+      // 선택된 노드와 직접 연결된 선행/후행 노드만 반환
       const relatedIds = new Set<string>([selectedL5]);
 
-      // 선행 노드들 추가
-      const addPredecessors = (taskId: string) => {
-        const task = processedData.l5Tasks.get(taskId);
-        if (task) {
-          task.predecessors.forEach(predId => {
-            if (!relatedIds.has(predId)) {
-              relatedIds.add(predId);
-              addPredecessors(predId);
-            }
-          });
-        }
-      };
+      // 직접 선행 노드들만 추가 (재귀 없음)
+      selected.predecessors.forEach(predId => {
+        relatedIds.add(predId);
+      });
 
-      // 후행 노드들 추가
-      const addSuccessors = (taskId: string) => {
-        const task = processedData.l5Tasks.get(taskId);
-        if (task) {
-          task.successors.forEach(succId => {
-            if (!relatedIds.has(succId)) {
-              relatedIds.add(succId);
-              addSuccessors(succId);
-            }
-          });
-        }
-      };
-
-      addPredecessors(selectedL5);
-      addSuccessors(selectedL5);
+      // 직접 후행 노드들만 추가 (재귀 없음)
+      selected.successors.forEach(succId => {
+        relatedIds.add(succId);
+      });
 
       return allTasks.filter(task => relatedIds.has(task.id));
     }
