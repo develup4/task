@@ -190,7 +190,7 @@ export default function Home() {
                         L5-all 그래프에서 가장 왼쪽에 위치한 최하단 노드(더 이상 후행이 없는 노드)들의 누적 MM입니다. 클릭하면 해당 노드를 중심으로 필터링됩니다.
                       </p>
                     </div>
-                    <LeftmostNodeMMTable />
+                    <LeftmostNodeMMTable onNavigateToGraph={() => setActiveTab('graph')} />
                   </div>
                   <div className="bg-white rounded-lg shadow">
                     <div className="p-4 border-b border-gray-200">
@@ -198,7 +198,7 @@ export default function Home() {
                         L5 Task MM 요약 (내림차순)
                       </h2>
                     </div>
-                    <MMSummaryTable type="l5" />
+                    <MMSummaryTable type="l5" onNavigateToGraph={() => setActiveTab('graph')} />
                   </div>
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function Home() {
                       각 L5 작업의 가장 왼쪽 노드(시작 노드)에서 계산된 누적 MM입니다.
                     </p>
                   </div>
-                  <StartNodeMMTable />
+                  <StartNodeMMTable onNavigateToGraph={() => setActiveTab('graph')} />
                 </div>
               </div>
             )}
@@ -226,7 +226,7 @@ export default function Home() {
                       최종 노드 누적 MM 요약 (내림차순)
                     </h2>
                   </div>
-                  <MMSummaryTable type="final" />
+                  <MMSummaryTable type="final" onNavigateToGraph={() => setActiveTab('graph')} />
                 </div>
               </div>
             )}

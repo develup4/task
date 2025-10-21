@@ -14,7 +14,11 @@ interface LeftmostNodeData {
   MM: number;
 }
 
-export default function LeftmostNodeMMTable() {
+interface LeftmostNodeMMTableProps {
+  onNavigateToGraph?: () => void;
+}
+
+export default function LeftmostNodeMMTable({ onNavigateToGraph }: LeftmostNodeMMTableProps) {
   const { processedData, setSelectedL5, setViewMode } = useAppStore();
 
   const leftmostNodes = useMemo<LeftmostNodeData[]>(() => {
@@ -100,6 +104,7 @@ export default function LeftmostNodeMMTable() {
   const handleRowClick = (nodeId: string) => {
     setSelectedL5(nodeId);
     setViewMode('l5-filtered');
+    onNavigateToGraph?.();
   };
 
   if (leftmostNodes.length === 0) {

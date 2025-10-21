@@ -10,8 +10,12 @@ interface StartNodeData {
   cumulativeMM: number;
 }
 
-export default function StartNodeMMTable() {
-  const { processedData } = useAppStore();
+interface StartNodeMMTableProps {
+  onNavigateToGraph?: () => void;
+}
+
+export default function StartNodeMMTable({ onNavigateToGraph }: StartNodeMMTableProps) {
+  const { processedData, setSelectedL5, setViewMode } = useAppStore();
 
   const startNodeData = useMemo<StartNodeData[]>(() => {
     if (!processedData) return [];
@@ -56,6 +60,12 @@ export default function StartNodeMMTable() {
     return result.sort((a, b) => b.cumulativeMM - a.cumulativeMM);
   }, [processedData]);
 
+  const handleRowClick = (l5Id: string) => {
+    setSelectedL5(l5Id);
+    setViewMode('l6-detail');
+    onNavigateToGraph?.();
+  };
+
   if (startNodeData.length === 0) {
     return (
       <div className="p-8 text-center text-gray-500">
@@ -77,7 +87,11 @@ export default function StartNodeMMTable() {
         </thead>
         <tbody>
           {startNodeData.map((data, index) => (
-            <tr key={data.l5Id} className="hover">
+            <tr
+              key={data.l5Id}
+              className="hover cursor-pointer"
+              onClick={() => handleRowClick(data.l5Id)}
+            >
               <td>{index + 1}</td>
               <td className="font-medium">{data.l5Name}</td>
               <td>

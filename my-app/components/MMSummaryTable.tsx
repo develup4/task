@@ -8,9 +8,10 @@ type SortColumn = 'MM' | 'cumulativeMM';
 
 interface MMSummaryTableProps {
   type: 'l5' | 'final';
+  onNavigateToGraph?: () => void;
 }
 
-export default function MMSummaryTable({ type }: MMSummaryTableProps) {
+export default function MMSummaryTable({ type, onNavigateToGraph }: MMSummaryTableProps) {
   const { processedData, setSelectedL5, setViewMode, setHighlightedTasks } = useAppStore();
 
   const sortedTasks = useMemo(() => {
@@ -54,6 +55,7 @@ export default function MMSummaryTable({ type }: MMSummaryTableProps) {
       addPredecessors(taskId);
       setHighlightedTasks(highlightedSet);
     }
+    onNavigateToGraph?.();
   };
 
   if (sortedTasks.length === 0) {
