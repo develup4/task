@@ -251,6 +251,44 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           }
         });
 
+        // Self-loop 오류 수집 및 제거 (L5)
+        l5Tasks.forEach(task => {
+          // 자기 자신을 선행/후행으로 가지고 있는지 체크
+          const hasSelfLoop = task.predecessors.includes(task.id) || task.successors.includes(task.id);
+
+          if (hasSelfLoop) {
+            errors.push({
+              type: 'self_loop_error',
+              sourceTask: task.id,
+              sourceLevel: 'L5',
+              description: `L5 프로세스 "${task.name}"가 자기 자신을 선행 또는 후행 프로세스로 참조하고 있습니다.`
+            });
+
+            // Self-loop 제거
+            task.predecessors = task.predecessors.filter(id => id !== task.id);
+            task.successors = task.successors.filter(id => id !== task.id);
+          }
+        });
+
+        // Self-loop 오류 수집 및 제거 (L6)
+        l6Tasks.forEach(task => {
+          // 자기 자신을 선행/후행으로 가지고 있는지 체크
+          const hasSelfLoop = task.predecessors.includes(task.id) || task.successors.includes(task.id);
+
+          if (hasSelfLoop) {
+            errors.push({
+              type: 'self_loop_error',
+              sourceTask: task.id,
+              sourceLevel: 'L6',
+              description: `L6 액티비티 "${task.name}"가 자기 자신을 선행 또는 후행 액티비티로 참조하고 있습니다.`
+            });
+
+            // Self-loop 제거
+            task.predecessors = task.predecessors.filter(id => id !== task.id);
+            task.successors = task.successors.filter(id => id !== task.id);
+          }
+        });
+
         // L5 프로세스의 선행/후행 검증
         l5Tasks.forEach(task => {
           // 선행 프로세스 체크

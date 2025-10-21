@@ -150,6 +150,11 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
 
     tasks.forEach((task) => {
       task.successors.forEach((successorId) => {
+        // Self-loop 방지: 자기 자신을 successor로 가지는 경우 스킵
+        if (task.id === successorId) {
+          return;
+        }
+
         if (tasks.some((t) => t.id === successorId)) {
           const edgeId = `${task.id}-${successorId}`;
           const reverseEdgeId = `${successorId}-${task.id}`;
