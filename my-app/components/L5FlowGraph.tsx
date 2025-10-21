@@ -11,6 +11,8 @@ import {
   Background,
   MiniMap,
   ConnectionLineType,
+  useReactFlow,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
@@ -90,7 +92,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   return { nodes: layoutedNodes, edges, levels };
 };
 
-export default function L5FlowGraph() {
+function L5FlowGraphInner() {
   const {
     processedData,
     viewMode,
@@ -105,6 +107,7 @@ export default function L5FlowGraph() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
+  const { setCenter } = useReactFlow();
 
   // 노드와 엣지 생성
   useEffect(() => {
@@ -322,6 +325,23 @@ export default function L5FlowGraph() {
     setEdges(layoutedEdges as any);
   }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, getFilteredL5Tasks, setNodes, setEdges, selectedEdge]);
 
+  // L5-filtered 모드 진입 시 선택된 노드를 화면 중앙으로 이동
+  useEffect(() => {
+    if (viewMode === 'l5-filtered' && selectedL5 && nodes.length > 0) {
+      const selectedNode = (nodes as Node[]).find(n => n.id === selectedL5);
+      if (selectedNode) {
+        // 약간의 딜레이를 주어 레이아웃이 완료된 후 중앙 이동
+        setTimeout(() => {
+          setCenter(
+            selectedNode.position.x + 110, // 노드 너비의 절반 (220/2)
+            selectedNode.position.y + 50,  // 노드 높이의 절반 (100/2)
+            { zoom: 1, duration: 800 }      // 부드러운 애니메이션
+          );
+        }, 100);
+      }
+    }
+  }, [viewMode, selectedL5, nodes, setCenter]);
+
   // 노드 클릭 핸들러
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
@@ -359,7 +379,7 @@ export default function L5FlowGraph() {
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       {/* L4 카테고리 레전드 */}
       <L4CategoryLegend className="absolute top-4 left-4 z-10 w-64" />
-      
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -383,5 +403,13 @@ export default function L5FlowGraph() {
         />
       </ReactFlow>
     </div>
+  );
+}
+
+export default function L5FlowGraph() {
+  return (
+    <ReactFlowProvider>
+      <L5FlowGraphInner />
+    </ReactFlowProvider>
   );
 }
