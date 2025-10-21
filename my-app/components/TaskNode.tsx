@@ -12,6 +12,7 @@ export interface TaskNodeData {
   MM: number;
   cumulativeMM?: number;
   isFinalNode?: boolean;
+  isStartNode?: boolean;
   hasCycle?: boolean;
   isHighlighted?: boolean;
   isSelected?: boolean;
@@ -24,12 +25,23 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
     ? '#F44336' // Red for cycle error
     : data.isSelected
     ? '#000000' // Black for selected
+    : data.isStartNode
+    ? '#FF6B35' // Orange for start node
     : data.isHighlighted
     ? colors.border
     : colors.border;
 
-  const borderWidth = data.isSelected ? '3px' : data.isHighlighted ? '2px' : '1px';
-  const boxShadow = data.isSelected
+  const borderWidth = data.isStartNode
+    ? '3px'
+    : data.isSelected
+    ? '3px'
+    : data.isHighlighted
+    ? '2px'
+    : '1px';
+
+  const boxShadow = data.isStartNode
+    ? '0 6px 16px rgba(255, 107, 53, 0.4)'
+    : data.isSelected
     ? '0 4px 12px rgba(0,0,0,0.3)'
     : data.isHighlighted
     ? '0 2px 8px rgba(0,0,0,0.2)'
@@ -65,6 +77,19 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
       <div style={{ fontSize: '11px', color: colors.text, opacity: 0.8, lineHeight: '1.4' }}>
         <div>P: {data.필요인력} | T: {data.필요기간}W</div>
         <div>MM: {data.MM.toFixed(1)}</div>
+        {data.isStartNode && data.cumulativeMM !== undefined && (
+          <div style={{
+            fontWeight: 700,
+            marginTop: '6px',
+            padding: '4px 8px',
+            backgroundColor: 'rgba(255, 107, 53, 0.15)',
+            borderRadius: '4px',
+            color: '#FF6B35',
+            fontSize: '12px'
+          }}>
+            누적: {data.cumulativeMM.toFixed(1)}MM
+          </div>
+        )}
         {data.isFinalNode && data.cumulativeMM !== undefined && (
           <div style={{ fontWeight: 600, marginTop: '4px', color: colors.border }}>
             Total: {data.cumulativeMM.toFixed(1)}MM

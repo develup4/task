@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Node,
@@ -22,7 +22,7 @@ const nodeTypes = {
 } as any;
 
 // 간단한 계층적 레이아웃
-const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[] } => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
   const levels = new Map<string, number>();
   const visited = new Set<string>();
 
@@ -77,7 +77,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     };
   });
 
-  return { nodes: layoutedNodes, edges };
+  return { nodes: layoutedNodes, edges, levels };
 };
 
 export default function L6FlowGraph() {
@@ -89,6 +89,7 @@ export default function L6FlowGraph() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
 
   // 노드와 엣지 생성
   useEffect(() => {
@@ -99,25 +100,14 @@ export default function L6FlowGraph() {
 
     if (!l5Task) return;
 
-    // L6 노드들
-    const l6Nodes = l6Tasks.map((task) => ({
-      id: task.id,
-      type: 'task',
-      position: { x: 0, y: 0 },
-      data: {
-        label: task.name,
-        category: task.l4Category,
-        필요인력: task.필요인력,
-        필요기간: task.필요기간,
-        MM: task.MM,
-        hasCycle: task.hasCycle,
-        isHighlighted: false,
-        isSelected: false,
-      },
-    }));
-
-    // L6 간의 엣지
-    const l6Edges: Edge[] = [];
+    // L6 간의 엣지 먼저 생성 (기본 정보만)
+    const l6EdgesBase: Array<{
+      id: string;
+      source: string;
+      target: string;
+      isBidirectional: boolean;
+      category: string;
+    }> = [];
     const processedL6Edges = new Set<string>();
 
     l6Tasks.forEach((task) => {
@@ -131,31 +121,17 @@ export default function L6FlowGraph() {
             return;
           }
 
-          const colors = getColorForCategory(task.l4Category);
           const successor = l6Tasks.find(t => t.id === successorId);
 
           // 양방향 연결 체크 (cycle error)
           const isBidirectional = successor && successor.successors.includes(task.id);
 
-          l6Edges.push({
+          l6EdgesBase.push({
             id: edgeId,
             source: task.id,
             target: successorId,
-            type: ConnectionLineType.SmoothStep,
-            markerEnd: {
-              type: 'arrowclosed',
-              width: 20,
-              height: 20,
-              color: isBidirectional ? '#F44336' : colors.border,
-            },
-            style: {
-              stroke: isBidirectional ? '#F44336' : colors.border,
-              strokeWidth: isBidirectional ? 3 : 2,
-              strokeDasharray: isBidirectional ? '5,5' : undefined,
-            },
-            label: isBidirectional ? '⚠ 양방향' : undefined,
-            labelStyle: isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
-            labelBgStyle: isBidirectional ? { fill: '#FFEBEE' } : undefined,
+            isBidirectional: isBidirectional || false,
+            category: task.l4Category,
           });
 
           processedL6Edges.add(edgeId);
@@ -195,63 +171,186 @@ export default function L6FlowGraph() {
       })
       .filter((node): node is any => node !== null);
 
-    // L5와 L6 간의 엣지
-    const l5ToL6Edges: Edge[] = [];
+    // L5와 L6 간의 엣지 (기본 정보만)
+    const l5ToL6EdgesBase: Array<{
+      id: string;
+      source: string;
+      target: string;
+    }> = [];
     l6Tasks.forEach((l6Task) => {
       // 선행 L5
       l6Task['선행 L5']?.forEach((l5Id) => {
-        l5ToL6Edges.push({
+        l5ToL6EdgesBase.push({
           id: `l5-${l5Id}-${l6Task.id}`,
           source: `l5-${l5Id}`,
           target: l6Task.id,
-          type: ConnectionLineType.SmoothStep,
-          markerEnd: {
-            type: 'arrowclosed',
-            width: 15,
-            height: 15,
-            color: '#9E9E9E',
-          },
-          style: {
-            stroke: '#9E9E9E',
-            strokeWidth: 1,
-            strokeDasharray: '5,5',
-          },
         });
       });
 
       // 후행 L5
       l6Task['후행 L5']?.forEach((l5Id) => {
-        l5ToL6Edges.push({
+        l5ToL6EdgesBase.push({
           id: `${l6Task.id}-l5-${l5Id}`,
           source: l6Task.id,
           target: `l5-${l5Id}`,
-          type: ConnectionLineType.SmoothStep,
-          markerEnd: {
-            type: 'arrowclosed',
-            width: 15,
-            height: 15,
-            color: '#9E9E9E',
-          },
-          style: {
-            stroke: '#9E9E9E',
-            strokeWidth: 1,
-            strokeDasharray: '5,5',
-          },
         });
       });
     });
 
-    const allNodes = [...l6Nodes, ...relatedL5Nodes];
-    const allEdges = [...l6Edges, ...l5ToL6Edges];
+    // L6 엣지를 ReactFlow Edge로 변환 (선택 상태 반영)
+    const l6Edges: Edge[] = l6EdgesBase.map((edge) => {
+      const colors = getColorForCategory(edge.category);
+      const isSelected = selectedEdge === edge.id;
+      const isHidden = selectedEdge !== null && !isSelected;
 
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: ConnectionLineType.SmoothStep,
+        markerEnd: {
+          type: 'arrowclosed',
+          width: 20,
+          height: 20,
+          color: edge.isBidirectional ? '#F44336' : colors.border,
+        },
+        style: {
+          stroke: edge.isBidirectional ? '#F44336' : colors.border,
+          strokeWidth: isSelected ? 4 : edge.isBidirectional ? 3 : 2,
+          strokeDasharray: edge.isBidirectional ? '5,5' : undefined,
+          opacity: isHidden ? 0.1 : 1,
+        },
+        label: edge.isBidirectional ? '⚠ 양방향' : undefined,
+        labelStyle: edge.isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
+        labelBgStyle: edge.isBidirectional ? { fill: '#FFEBEE' } : undefined,
+      };
+    });
+
+    // L5-L6 엣지를 ReactFlow Edge로 변환 (선택 상태 반영)
+    const l5ToL6Edges: Edge[] = l5ToL6EdgesBase.map((edge) => {
+      const isSelected = selectedEdge === edge.id;
+      const isHidden = selectedEdge !== null && !isSelected;
+
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: ConnectionLineType.SmoothStep,
+        markerEnd: {
+          type: 'arrowclosed',
+          width: 15,
+          height: 15,
+          color: '#9E9E9E',
+        },
+        style: {
+          stroke: '#9E9E9E',
+          strokeWidth: isSelected ? 3 : 1,
+          strokeDasharray: '5,5',
+          opacity: isHidden ? 0.05 : 1,
+        },
+      };
+    });
+
+    const allEdges = [...l6Edges, ...l5ToL6Edges];
+    const l6Nodes = l6Tasks.map((task) => {
+      // 선택된 엣지와 연결된 노드인지 확인
+      let isHighlighted = false;
+      if (selectedEdge) {
+        const edge = allEdges.find(e => e.id === selectedEdge);
+        if (edge && (edge.source === task.id || edge.target === task.id)) {
+          isHighlighted = true;
+        }
+      }
+
+      return {
+        id: task.id,
+        type: 'task',
+        position: { x: 0, y: 0 },
+        data: {
+          label: task.name,
+          category: task.l4Category,
+          필요인력: task.필요인력,
+          필요기간: task.필요기간,
+          MM: task.MM,
+          hasCycle: task.hasCycle,
+          isHighlighted,
+          isSelected: false,
+        },
+        style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
+      };
+    });
+
+    // L5 노드도 하이라이팅 적용
+    const updatedRelatedL5Nodes = relatedL5Nodes.map((node) => {
+      let isHighlighted = false;
+      if (selectedEdge) {
+        const edge = allEdges.find(e => e.id === selectedEdge);
+        if (edge && (edge.source === node.id || edge.target === node.id)) {
+          isHighlighted = true;
+        }
+      }
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          isHighlighted,
+        },
+        style: {
+          ...node.style,
+          opacity: selectedEdge && !isHighlighted ? 0.2 : 0.6,
+        },
+      };
+    });
+
+    const allNodes = [...l6Nodes, ...updatedRelatedL5Nodes];
+
+    const { nodes: layoutedNodes, edges: layoutedEdges, levels } = getLayoutedElements(
       allNodes,
       allEdges
     );
 
-    setNodes(layoutedNodes as any);
+    // 제일 왼쪽 노드 찾기 (level 0인 L6 노드)
+    const startNodeIds = new Set<string>();
+    l6Nodes.forEach(node => {
+      if (levels.get(node.id) === 0) {
+        startNodeIds.add(node.id);
+      }
+    });
+
+    // 누적 MM 계산 (전체 L6 태스크의 합)
+    const totalMM = l6Tasks.reduce((sum, task) => sum + task.MM, 0);
+
+    // 노드에 시작 노드 플래그와 누적 MM 추가
+    const finalNodes = layoutedNodes.map(node => {
+      const isStartNode = startNodeIds.has(node.id);
+      if (isStartNode) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            isStartNode: true,
+            cumulativeMM: totalMM,
+          },
+        };
+      }
+      return node;
+    });
+
+    setNodes(finalNodes as any);
     setEdges(layoutedEdges as any);
-  }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges]);
+  }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge]);
+
+  // 엣지 클릭 핸들러
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.stopPropagation();
+    setSelectedEdge(edge.id === selectedEdge ? null : edge.id);
+  }, [selectedEdge]);
+
+  // 패널 클릭 시 선택 해제
+  const onPaneClick = useCallback(() => {
+    setSelectedEdge(null);
+  }, []);
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -260,6 +359,8 @@ export default function L6FlowGraph() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onEdgeClick={onEdgeClick}
+        onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         fitView
         minZoom={0.1}

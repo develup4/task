@@ -7,8 +7,9 @@ import L5FlowGraph from '@/components/L5FlowGraph';
 import L6FlowGraph from '@/components/L6FlowGraph';
 import MMSummaryTable from '@/components/MMSummaryTable';
 import ErrorListTable from '@/components/ErrorListTable';
+import StartNodeMMTable from '@/components/StartNodeMMTable';
 
-type Tab = 'graph' | 'l5-table' | 'final-table' | 'error-list';
+type Tab = 'graph' | 'l5-table' | 'start-node-table' | 'final-table' | 'error-list';
 
 export default function Home() {
   const { processedData, viewMode, setViewMode, setSelectedL5 } = useAppStore();
@@ -68,6 +69,16 @@ export default function Home() {
                 L5 MM 요약
               </button>
               <button
+                onClick={() => setActiveTab('start-node-table')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'start-node-table'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                시작 노드 MM 요약
+              </button>
+              <button
                 onClick={() => setActiveTab('final-table')}
                 className={`px-4 py-3 font-medium border-b-2 transition-colors ${
                   activeTab === 'final-table'
@@ -123,6 +134,21 @@ export default function Home() {
                     </h2>
                   </div>
                   <MMSummaryTable type="l5" />
+                </div>
+              </div>
+            )}
+            {activeTab === 'start-node-table' && (
+              <div className="w-full h-full p-6">
+                <div className="bg-white rounded-lg shadow h-full">
+                  <div className="p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800">
+                      시작 노드 누적 MM 요약 (내림차순)
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      각 L5 작업의 가장 왼쪽 노드(시작 노드)에서 계산된 누적 MM입니다.
+                    </p>
+                  </div>
+                  <StartNodeMMTable />
                 </div>
               </div>
             )}
