@@ -496,6 +496,9 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
           isStartNode: shouldShowCumulativeMM ? isStartNode : false,
           cumulativeMM: shouldShowCumulativeMM ? cumulativeMM : node.data.MM,
           isSearched,
+          // hasError와 onErrorClick은 명시적으로 유지
+          hasError: node.data.hasError,
+          onErrorClick: node.data.onErrorClick,
         },
         style: selectedEdge && !isHighlighted && !isSearched ? { opacity: 0.3 } : undefined,
       };
