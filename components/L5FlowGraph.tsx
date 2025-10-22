@@ -117,8 +117,9 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [searchedNodeId, setSearchedNodeId] = useState<string | null>(null);
   const [returnTarget, setReturnTarget] = useState<string | null>(null);
+  const [returnZoom, setReturnZoom] = useState<number | null>(null);
   const [shouldFitView, setShouldFitView] = useState(true);
-  const { setCenter, fitView } = useReactFlow();
+  const { setCenter, fitView, getZoom } = useReactFlow();
 
   // 노드와 엣지 생성
   useEffect(() => {
@@ -369,14 +370,17 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
     }
   }, [viewMode, selectedL5, nodes, setCenter]);
 
-  // L5-filtered 또는 L6 진입 시 복귀 대상 노드 저장
+  // L5-filtered 또는 L6 진입 시 복귀 대상 노드 및 줌 레벨 저장
   useEffect(() => {
     if ((viewMode === 'l5-filtered' || viewMode === 'l6-detail') && selectedL5) {
       setReturnTarget(selectedL5);
+      // 현재 줌 레벨 저장
+      const currentZoom = getZoom();
+      setReturnZoom(currentZoom);
     }
-  }, [viewMode, selectedL5]);
+  }, [viewMode, selectedL5, getZoom]);
 
-  // L5-all로 복귀 시 이전에 선택된 노드로 뷰포트 이동
+  // L5-all로 복귀 시 이전에 선택된 노드로 뷰포트 이동 (줌 레벨 유지)
   useEffect(() => {
     if (viewMode === 'l5-all' && returnTarget && nodes.length > 0) {
       // fitView 비활성화
@@ -385,20 +389,24 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
       const targetNode = (nodes as Node[]).find(n => n.id === returnTarget);
       if (targetNode) {
         setTimeout(() => {
+          // 저장된 줌 레벨 사용 (없으면 기본값 1)
+          const zoomLevel = returnZoom ?? 1;
           setCenter(
             targetNode.position.x + 110,
             targetNode.position.y + 50,
-            { zoom: 1, duration: 800 }
+            { zoom: zoomLevel, duration: 800 }
           );
-          // 복귀 완료 후 타겟 초기화
+          // 복귀 완료 후 타겟 및 줌 초기화
           setReturnTarget(null);
+          setReturnZoom(null);
         }, 100);
       } else {
         // 타겟 노드를 찾지 못한 경우에도 초기화
         setReturnTarget(null);
+        setReturnZoom(null);
       }
     }
-  }, [viewMode, returnTarget, nodes, setCenter]);
+  }, [viewMode, returnTarget, returnZoom, nodes, setCenter]);
 
   // 노드 클릭 핸들러
   const onNodeClick = useCallback(
