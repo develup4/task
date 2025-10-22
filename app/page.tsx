@@ -55,7 +55,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white">
         <div className="max-w-[95%] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export default function Home() {
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden max-w-[95%] mx-auto w-full">
           {/* Tabs */}
-          <div className="bg-white px-6">
+          <div className="bg-white px-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <div role="tablist" className="tabs tabs-bordered">
                 {(Object.keys(tabInfo) as Tab[]).map((tab) => (
