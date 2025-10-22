@@ -402,7 +402,12 @@ function L6FlowGraphInner() {
       }
     });
 
+    console.log('L6 Node Errors:', nodeErrors);
+    console.log('Total L6 errors:', processedData.errors.filter(e => e.sourceLevel === 'L6').length);
+
     const l6Nodes = l6Tasks.map((task) => {
+      const hasError = nodeErrors.has(task.id);
+      console.log(`L6 Task ${task.id}: hasError=${hasError}, hasCycle=${task.hasCycle}`);
       // 선택된 엣지와 연결된 노드인지 확인
       let isHighlighted = false;
       if (selectedEdge) {
@@ -428,7 +433,7 @@ function L6FlowGraphInner() {
           fullData: task,
           isL5: false,
           isL6: true,
-          hasError: nodeErrors.has(task.id),
+          hasError,
           onErrorClick: () => {
             // 첫 번째 에러로 스크롤
             const errorIndex = nodeErrors.get(task.id)?.[0];
