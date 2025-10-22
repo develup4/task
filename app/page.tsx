@@ -200,7 +200,7 @@ export default function Home() {
             )}
             {activeTab === 'error-list' && (
               <div className="w-full h-full p-6">
-                <div className="bg-white rounded-lg shadow h-full">
+                <div className="bg-white rounded-lg shadow h-full flex flex-col">
                   <div className="p-4 border-b border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-800">
                       프로세스 검증 오류 목록
@@ -209,7 +209,9 @@ export default function Home() {
                       선행/후행 프로세스 중 정의되지 않은 프로세스들이 표시됩니다. 클릭하면 해당 노드를 중심으로 그래프가 필터링됩니다.
                     </p>
                   </div>
-                  <ErrorListTable onNavigateToGraph={() => setActiveTab('graph')} />
+                  <div className="flex-1 overflow-hidden">
+                    <ErrorListTable onNavigateToGraph={() => setActiveTab('graph')} />
+                  </div>
                 </div>
               </div>
             )}
