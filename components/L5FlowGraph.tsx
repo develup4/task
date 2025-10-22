@@ -176,19 +176,19 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], isFilteredMode: boole
     const nodesInLevel = levelGroups.get(level) || [];
     const indexInLevel = nodesInLevel.indexOf(node);
 
-    // L5-filtered 모드에서는 x 위치에 약간의 offset 추가
-    let xOffset = 0;
+    // L5-filtered 모드에서는 y 위치에 약간의 offset 추가
+    let yOffset = 0;
     if (isFilteredMode && nodesInLevel.length > 1) {
-      // 인덱스에 따라 x 위치를 약간씩 조정 (지그재그 효과)
-      xOffset = (indexInLevel % 2) * 80;
+      // 인덱스에 따라 y 위치를 약간씩 조정 (지그재그 효과)
+      yOffset = (indexInLevel % 2) * 60;
     }
 
     return {
       ...node,
       position: {
         // level 0이 왼쪽에 오도록 배치
-        x: level * (nodeWidth + horizontalSpacing) + xOffset,
-        y: indexInLevel * (nodeHeight + verticalSpacing),
+        x: level * (nodeWidth + horizontalSpacing),
+        y: indexInLevel * (nodeHeight + verticalSpacing) + yOffset,
       },
     };
   });
