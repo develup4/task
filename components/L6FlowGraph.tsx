@@ -159,6 +159,7 @@ function L6FlowGraphInner() {
     processedData,
     selectedL5,
     getL6TasksForL5,
+    setViewMode,
   } = useAppStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -469,10 +470,16 @@ function L6FlowGraphInner() {
     setSelectedEdge(edge.id === selectedEdge ? null : edge.id);
   }, [selectedEdge]);
 
-  // 패널 클릭 시 선택 해제
+  // 패널 클릭 시 L5-filtered 모드로 복귀
   const onPaneClick = useCallback(() => {
-    setSelectedEdge(null);
-  }, []);
+    if (selectedEdge) {
+      // 엣지가 선택되어 있으면 선택 해제만
+      setSelectedEdge(null);
+    } else {
+      // 엣지가 선택되어 있지 않으면 L5-filtered로 복귀
+      setViewMode('l5-filtered');
+    }
+  }, [selectedEdge, setViewMode]);
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
