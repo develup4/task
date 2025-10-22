@@ -10,7 +10,7 @@ interface NodeTooltipProps {
 
 export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
   return (
-    <div className="absolute left-full ml-4 top-0 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out">
+    <div className="absolute left-full ml-4 top-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" style={{ zIndex: 9999 }}>
       <div className="bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700 p-5 min-w-[420px] max-w-[600px]" style={{ boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)' }}>
         {/* Header */}
         <div className="mb-4 pb-4 border-b-2 border-slate-700">
