@@ -751,11 +751,13 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
   }, [searchTrigger, viewMode]);
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      {/* L4 카테고리 레전드 */}
-      <L4CategoryLegend className="absolute top-4 left-4 z-10 w-64" />
+    <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      {/* L4 카테고리 필터 (상단 고정) */}
+      <L4CategoryLegend />
 
-      <ReactFlow
+      {/* ReactFlow 영역 */}
+      <div style={{ flex: 1, position: 'relative' }}>
+        <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}

@@ -12,112 +12,71 @@ export default function L4CategoryLegend({ className = '' }: L4CategoryLegendPro
     processedData,
     visibleL4Categories,
     toggleL4Category,
-    showAllL4Categories,
-    hideAllL4Categories,
     getL4Categories,
   } = useAppStore();
 
   if (!processedData) return null;
 
-  const categories = getL4Categories();
-  const visibleCount = visibleL4Categories.size;
-  const totalCount = categories.length;
+  const allCategories = getL4Categories();
 
-  // 각 카테고리의 태스크 수 계산
-  const getCategoryCount = (category: string): number => {
-    return Array.from(processedData.l5Tasks.values()).filter(
-      task => task.l4Category === category
-    ).length;
-  };
+  // Unspecified를 마지막으로 정렬
+  const categories = allCategories.filter(c => c !== 'Unspecified');
+  if (allCategories.includes('Unspecified')) {
+    categories.push('Unspecified');
+  }
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm ${className}`}>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">L4 카테고리 필터</h3>
-        <div className="text-xs text-gray-500">
-          {visibleCount}/{totalCount} 표시
-        </div>
-      </div>
-
-      {/* 전체 토글 버튼 */}
-      <div className="flex gap-2 mb-3">
-        <button
-          onClick={showAllL4Categories}
-          className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-        >
-          전체 보기
-        </button>
-        <button
-          onClick={hideAllL4Categories}
-          className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-        >
-          전체 숨기기
-        </button>
-      </div>
-
-      {/* 카테고리 목록 */}
-      <div className="space-y-2">
+    <div className={`bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 px-6 py-3 ${className}`}>
+      <div className="flex items-center gap-2 flex-wrap">
         {categories.map((category) => {
           const colors = getColorForCategory(category);
           const isVisible = visibleL4Categories.has(category);
-          const count = getCategoryCount(category);
           const isUnspecified = category === 'Unspecified';
 
           return (
-            <div
+            <button
               key={category}
               onClick={() => toggleL4Category(category)}
-              className={`flex items-center p-2 rounded cursor-pointer transition-all ${
-                isVisible
-                  ? 'hover:bg-gray-50'
-                  : 'opacity-50 hover:bg-gray-50'
-              } ${isUnspecified ? 'border border-dashed border-yellow-400 bg-yellow-50' : ''}`}
+              className={`
+                inline-flex items-center gap-2 px-4 py-2 rounded-full
+                font-medium text-sm transition-all duration-200
+                ${isVisible
+                  ? 'shadow-md hover:shadow-lg transform hover:scale-105'
+                  : 'opacity-40 hover:opacity-60 shadow-sm'
+                }
+                ${isUnspecified
+                  ? 'border-2 border-dashed border-yellow-500'
+                  : 'border-2'
+                }
+              `}
+              style={{
+                backgroundColor: isVisible ? colors.bg : '#f3f4f6',
+                borderColor: isVisible ? colors.border : '#d1d5db',
+                color: isVisible ? colors.text : '#6b7280',
+              }}
             >
-              {/* 색상 표시 */}
+              {/* 색상 점 */}
               <div
-                className={`w-4 h-4 rounded mr-3 border-2 transition-all ${
-                  isVisible
-                    ? 'border-transparent'
-                    : 'border-gray-300 bg-gray-100 bg-opacity-50'
-                }`}
+                className={`w-3 h-3 rounded-full ${isVisible ? 'ring-2 ring-white' : ''}`}
                 style={{
-                  backgroundColor: isVisible ? colors.border : undefined,
-                  backgroundImage: !isVisible
-                    ? 'repeating-linear-gradient(45deg, transparent, transparent 2px, #ccc 2px, #ccc 4px)'
-                    : isUnspecified
-                    ? 'repeating-linear-gradient(45deg, #9E9E9E, #9E9E9E 3px, transparent 3px, transparent 6px)'
-                    : undefined,
+                  backgroundColor: colors.border,
                 }}
               />
 
               {/* 카테고리 이름 */}
-              <div className={`flex-1 text-sm ${isUnspecified ? 'font-semibold text-yellow-800' : 'text-gray-700'}`}>
+              <span className="whitespace-nowrap">
                 {category.replace(/^\[.*?\]/, '')}
-                {isUnspecified && (
-                  <span className="ml-2 text-xs text-yellow-600">(오류)</span>
-                )}
-              </div>
+              </span>
 
-              {/* 태스크 수 */}
-              <div className={`text-xs px-2 py-1 rounded-full ${
-                isUnspecified
-                  ? 'bg-yellow-200 text-yellow-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {count}
-              </div>
-            </div>
+              {/* Unspecified 표시 */}
+              {isUnspecified && (
+                <span className="text-xs px-2 py-0.5 bg-yellow-200 text-yellow-800 rounded-full font-semibold">
+                  오류
+                </span>
+              )}
+            </button>
           );
         })}
-      </div>
-
-      {/* 통계 정보 */}
-      <div className="mt-3 pt-3 border-t border-gray-100">
-        <div className="text-xs text-gray-500">
-          표시된 태스크: {Array.from(processedData.l5Tasks.values()).filter(
-            task => visibleL4Categories.has(task.l4Category)
-          ).length}/{processedData.l5Tasks.size}
-        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source "../components";
+@source "../app";
 
 /* React Flow Controls 스타일 */
 .sky-controls button {

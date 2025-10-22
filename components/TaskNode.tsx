@@ -22,6 +22,8 @@ export interface TaskNodeData {
   fullData?: Partial<L5Task> | Partial<L6Task>;
   isL5?: boolean;
   isL6?: boolean;
+  hasError?: boolean; // 에러가 있는 노드인지
+  onErrorClick?: () => void; // 에러 아이콘 클릭 핸들러
 }
 
 const TaskNode = memo(({ data }: NodeProps<any>) => {
@@ -84,10 +86,39 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
           style={{ background: colors.border, width: '8px', height: '8px' }}
         />
 
-        <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', wordBreak: 'break-word' }}>
-          {data.label}
-          {data.hasCycle && (
-            <span style={{ color: '#F44336', fontSize: '12px', marginLeft: '4px' }}>⚠️</span>
+        <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', wordBreak: 'break-word', position: 'relative', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ flex: 1 }}>{data.label}</span>
+          {(data.hasError || data.hasCycle) && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                data.onErrorClick?.();
+              }}
+              style={{
+                cursor: 'pointer',
+                color: '#F44336',
+                fontSize: '18px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.2)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              title="에러 보기"
+            >
+              ⚠️
+            </span>
           )}
         </div>
 
