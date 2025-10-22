@@ -430,6 +430,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
               source: task.id,
               target: successorId,
               type: 'default',
+              animated: viewMode === 'l5-filtered',
               markerEnd: {
                 type: 'arrowclosed',
                 width: 16,
@@ -456,6 +457,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
               source: successorId,
               target: task.id,
               type: 'default',
+              animated: viewMode === 'l5-filtered',
               markerEnd: {
                 type: 'arrowclosed',
                 width: 16,
@@ -486,6 +488,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
               source: task.id,
               target: successorId,
               type: 'default',
+              animated: viewMode === 'l5-filtered',
               markerEnd: {
                 type: 'arrowclosed',
                 width: 16,
