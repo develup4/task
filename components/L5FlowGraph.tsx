@@ -580,17 +580,13 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
       // Only set isSearched in l5-all mode
       const isSearched = viewMode === 'l5-all' && searchedNodeId === node.id;
 
-      // l5-filtered 모드에서는 가장 왼쪽 말단 노드(level 0)는 하이라이트 및 누적 MM 표시 안 함
-      const shouldShowHighlight = viewMode === 'l5-filtered' ? !isStartNode : isHighlighted;
-      const shouldShowCumulativeMM = viewMode === 'l5-filtered' ? !isStartNode : true;
-
       return {
         ...node,
         data: {
           ...node.data,
-          isHighlighted: shouldShowHighlight && isHighlighted,
-          isStartNode: shouldShowCumulativeMM ? isStartNode : false,
-          cumulativeMM: shouldShowCumulativeMM ? cumulativeMM : node.data.MM,
+          isHighlighted,
+          isStartNode,
+          cumulativeMM,
           isSearched,
           // hasError와 onErrorClick은 명시적으로 유지
           hasError: node.data.hasError,
