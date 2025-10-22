@@ -410,61 +410,6 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           }
         });
 
-        // L5 순환 참조 검증
-        const detectCycleL5 = (startId: string): string[] | null => {
-          const path: string[] = [];
-          const visited = new Set<string>();
-
-          const dfs = (nodeId: string): boolean => {
-            if (path.includes(nodeId)) {
-              // 순환 발견
-              const cycleStart = path.indexOf(nodeId);
-              return true;
-            }
-
-            if (visited.has(nodeId)) return false;
-
-            visited.add(nodeId);
-            path.push(nodeId);
-
-            const task = l5Tasks.get(nodeId);
-            if (task) {
-              for (const succId of task.successors) {
-                if (dfs(succId)) {
-                  return true;
-                }
-              }
-            }
-
-            path.pop();
-            return false;
-          };
-
-          if (dfs(startId)) {
-            return [...path];
-          }
-          return null;
-        };
-
-        const reportedCycles = new Set<string>();
-        l5Tasks.forEach(task => {
-          const cycle = detectCycleL5(task.id);
-          if (cycle) {
-            // 순환 경로를 정렬하여 중복 방지
-            const sortedCycle = [...cycle].sort().join('->');
-            if (!reportedCycles.has(sortedCycle)) {
-              reportedCycles.add(sortedCycle);
-              errors.push({
-                type: 'cyclic_reference',
-                sourceTask: task.id,
-                sourceLevel: 'L5',
-                cyclePath: cycle,
-                description: `L5 프로세스 "${task.name}"이(가) 순환 참조에 포함되어 있습니다: ${cycle.join(' → ')}`
-              });
-            }
-          }
-        });
-
         // L6 프로세스의 선행/후행 검증
         l6Tasks.forEach(task => {
           // 선행 액티비티 체크
@@ -552,60 +497,6 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
                 });
               }
             });
-          }
-        });
-
-        // L6 순환 참조 검증
-        const detectCycleL6 = (startId: string): string[] | null => {
-          const path: string[] = [];
-          const visited = new Set<string>();
-
-          const dfs = (nodeId: string): boolean => {
-            if (path.includes(nodeId)) {
-              // 순환 발견
-              return true;
-            }
-
-            if (visited.has(nodeId)) return false;
-
-            visited.add(nodeId);
-            path.push(nodeId);
-
-            const task = l6Tasks.get(nodeId);
-            if (task) {
-              for (const succId of task.successors) {
-                if (dfs(succId)) {
-                  return true;
-                }
-              }
-            }
-
-            path.pop();
-            return false;
-          };
-
-          if (dfs(startId)) {
-            return [...path];
-          }
-          return null;
-        };
-
-        const reportedCyclesL6 = new Set<string>();
-        l6Tasks.forEach(task => {
-          const cycle = detectCycleL6(task.id);
-          if (cycle) {
-            // 순환 경로를 정렬하여 중복 방지
-            const sortedCycle = [...cycle].sort().join('->');
-            if (!reportedCyclesL6.has(sortedCycle)) {
-              reportedCyclesL6.add(sortedCycle);
-              errors.push({
-                type: 'cyclic_reference',
-                sourceTask: task.id,
-                sourceLevel: 'L6',
-                cyclePath: cycle,
-                description: `L6 액티비티 "${task.name}"이(가) 순환 참조에 포함되어 있습니다: ${cycle.join(' → ')}`
-              });
-            }
           }
         });
 

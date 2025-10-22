@@ -95,11 +95,13 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
             return (
               <tr
                 key={index}
+                id={`error-row-${error.sourceTask}-${index}`}
                 onClick={() => handleRowClick(error.sourceTask, error.sourceLevel)}
                 style={{
                   cursor: isL5 ? 'pointer' : 'default',
                   borderBottom: '1px solid #eee',
                   transition: 'background-color 0.2s',
+                  scrollMarginTop: '20px', // 스크롤 시 상단 여백
                 }}
                 onMouseEnter={(e) => {
                   if (isL5) {
