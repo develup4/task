@@ -261,7 +261,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
-  const { fitView } = useReactFlow();
+  const { fitView, setCenter } = useReactFlow();
 
   // 노드와 엣지 생성
   useEffect(() => {
