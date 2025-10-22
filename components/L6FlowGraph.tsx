@@ -37,7 +37,7 @@ function CustomEdge({
   labelStyle,
   labelBgStyle,
 }: EdgeProps) {
-  const offset = data?.offset || 0;
+  const offset = (typeof data?.offset === 'number' ? data.offset : 0);
 
   // offset을 y 좌표에 적용
   const [edgePath, labelX, labelY] = getBezierPath({
@@ -449,10 +449,12 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
         },
         style: {
           stroke: edge.isBidirectional ? 'rgba(244, 67, 54, 0.5)' : colors.border,
-          strokeWidth: isSelected ? 3 : (edge.isBidirectional ? 1.5 : 1.5),
-          strokeDasharray: edge.isBidirectional ? '8,4' : undefined,
+          strokeWidth: isSelected ? 3 : 1.5,
+          strokeDasharray: '8,4',
           opacity: isHidden ? 0.1 : (edge.isBidirectional ? 1 : 0.6),
+          cursor: 'pointer',
         },
+        interactionWidth: 20,
         data: { offset },
         label: edge.isBidirectional && isFirstOfBidirectional ? '⚠ 양방향' : undefined,
         labelStyle: edge.isBidirectional ? { fill: '#F44336', fontWeight: 'bold', fontSize: '11px' } : undefined,
@@ -481,7 +483,9 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
           strokeWidth: isSelected ? 2 : 1,
           strokeDasharray: '8,4',
           opacity: isHidden ? 0.05 : 0.6,
+          cursor: 'pointer',
         },
+        interactionWidth: 20,
       };
     });
 

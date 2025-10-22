@@ -38,7 +38,7 @@ function CustomEdge({
   labelStyle,
   labelBgStyle,
 }: EdgeProps) {
-  const offset = data?.offset || 0;
+  const offset = (typeof data?.offset === 'number' ? data.offset : 0);
 
   // offset을 y 좌표에 적용
   const [edgePath, labelX, labelY] = getBezierPath({
@@ -430,7 +430,6 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
               source: task.id,
               target: successorId,
               type: 'default',
-              animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
                 width: 16,
@@ -442,7 +441,9 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
                 strokeWidth: isSelected ? 3 : 1.5,
                 strokeDasharray: '8,4',
                 opacity: isHidden ? 0.1 : 1,
+                cursor: 'pointer',
               },
+              interactionWidth: 20,
               data: { offset: 15 }, // 위쪽으로 offset
               label: '⚠ 양방향',
               labelStyle: { fill: '#F44336', fontWeight: 'bold', fontSize: '11px' },
@@ -455,7 +456,6 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
               source: successorId,
               target: task.id,
               type: 'default',
-              animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
                 width: 16,
@@ -467,7 +467,9 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
                 strokeWidth: isSelected ? 3 : 1.5,
                 strokeDasharray: '8,4',
                 opacity: isHidden ? 0.1 : 1,
+                cursor: 'pointer',
               },
+              interactionWidth: 20,
               data: { offset: -15 }, // 아래쪽으로 offset
             });
 
@@ -484,7 +486,6 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
               source: task.id,
               target: successorId,
               type: 'default',
-              animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
                 width: 16,
@@ -494,8 +495,11 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
               style: {
                 stroke: colors.border,
                 strokeWidth: isSelected ? 3 : 1.5,
+                strokeDasharray: '8,4',
                 opacity: isHidden ? 0.1 : 0.6,
+                cursor: 'pointer',
               },
+              interactionWidth: 20,
             });
 
             processedEdges.add(edgeId);

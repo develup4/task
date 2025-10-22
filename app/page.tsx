@@ -20,12 +20,6 @@ export default function Home() {
   const [searchResultCount, setSearchResultCount] = useState(0);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
 
-  const handleBackToL5 = () => {
-    // L6에서 L5-all로 복귀
-    setViewMode('l5-all');
-    setSelectedL5(null);
-  };
-
   // 탭 정보 (아이콘 포함)
   const tabInfo: Record<Tab, { name: string; icon: string }> = {
     'graph': { name: 'Work Flow', icon: '⚡' },
@@ -150,15 +144,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Navigation breadcrumb for L6 view */}
-          {viewMode === 'l6-detail' && activeTab === 'graph' && (
+          {/* Current L5 display for L6 view */}
+          {viewMode === 'l6-detail' && activeTab === 'graph' && selectedL5 && (
             <div className="bg-blue-50 px-6 py-3 border-b border-blue-200">
-              <button
-                onClick={handleBackToL5}
-                className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
-              >
-                ← L5 그래프로 돌아가기
-              </button>
+              <div className="text-gray-700 font-medium flex items-center gap-2">
+                <span className="text-blue-600">현재 L5:</span>
+                <span>{getL5Task(selectedL5)?.name || selectedL5}</span>
+              </div>
             </div>
           )}
 

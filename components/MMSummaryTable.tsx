@@ -33,7 +33,8 @@ export default function MMSummaryTable({ type, onNavigateToGraph }: MMSummaryTab
   const handleRowClick = (taskId: string) => {
     setSelectedL5(taskId);
     if (type === 'l5') {
-      // L5 테이블: L6 상세 뷰로 이동
+      // L5 테이블: 해당 L5에 속한 L6 그래프로 이동
+      // L5 그래프의 노드 클릭 로직과 동일하게 l5-filtered를 거치지 않고 바로 l6-detail로 이동
       setViewMode('l6-detail');
     } else {
       // 최종 노드 테이블: 관련 workflow 하이라이트
