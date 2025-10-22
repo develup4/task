@@ -13,14 +13,83 @@ import {
   ConnectionLineType,
   useReactFlow,
   ReactFlowProvider,
+  EdgeProps,
+  getBezierPath,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
 import TaskNode, { TaskNodeData } from './TaskNode';
 import { getColorForCategory } from '@/utils/colors';
 
+// 커스텀 엣지 컴포넌트 - offset을 적용한 Bezier 곡선
+function CustomEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style = {},
+  markerEnd,
+  data,
+  label,
+  labelStyle,
+  labelBgStyle,
+}: EdgeProps) {
+  const offset = data?.offset || 0;
+
+  // offset을 y 좌표에 적용
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY: sourceY + offset,
+    sourcePosition,
+    targetX,
+    targetY: targetY + offset,
+    targetPosition,
+    curvature: 0.25, // 곡률 조정으로 더 부드러운 곡선
+  });
+
+  return (
+    <>
+      <path
+        id={id}
+        style={style}
+        className="react-flow__edge-path"
+        d={edgePath}
+        markerEnd={markerEnd}
+      />
+      {label && (
+        <g transform={`translate(${labelX}, ${labelY})`}>
+          <rect
+            x={-30}
+            y={-10}
+            width={60}
+            height={20}
+            fill={labelBgStyle?.fill || 'white'}
+            rx={3}
+          />
+          <text
+            style={labelStyle}
+            x={0}
+            y={5}
+            textAnchor="middle"
+            className="react-flow__edge-text"
+          >
+            {label}
+          </text>
+        </g>
+      )}
+    </>
+  );
+}
+
 const nodeTypes = {
   task: TaskNode,
+} as any;
+
+const edgeTypes = {
+  default: CustomEdge,
 } as any;
 
 // 간단한 계층적 레이아웃
@@ -267,11 +336,14 @@ function L6FlowGraphInner() {
           (e.source === edge.target && e.target === edge.source)
         ) === index;
 
+      // 양방향 엣지의 경우 offset 적용
+      const offset = edge.isBidirectional ? (edge.source < edge.target ? 15 : -15) : 0;
+
       return {
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        type: ConnectionLineType.SmoothStep,
+        type: 'default',
         markerEnd: {
           type: 'arrowclosed',
           width: 20,
@@ -284,6 +356,7 @@ function L6FlowGraphInner() {
           strokeDasharray: edge.isBidirectional ? '5,5' : undefined,
           opacity: isHidden ? 0.1 : 1,
         },
+        data: { offset },
         label: edge.isBidirectional && isFirstOfBidirectional ? '⚠ 양방향' : undefined,
         labelStyle: edge.isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
         labelBgStyle: edge.isBidirectional ? { fill: '#FFEBEE' } : undefined,
@@ -299,7 +372,7 @@ function L6FlowGraphInner() {
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        type: ConnectionLineType.SmoothStep,
+        type: 'default',
         markerEnd: {
           type: 'arrowclosed',
           width: 15,
@@ -411,6 +484,7 @@ function L6FlowGraphInner() {
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         minZoom={0.1}
         maxZoom={2}
       >

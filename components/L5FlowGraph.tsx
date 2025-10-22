@@ -13,6 +13,8 @@ import {
   ConnectionLineType,
   useReactFlow,
   ReactFlowProvider,
+  EdgeProps,
+  getBezierPath,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
@@ -20,8 +22,75 @@ import TaskNode, { TaskNodeData } from './TaskNode';
 import L4CategoryLegend from './L4CategoryLegend';
 import { getColorForCategory } from '@/utils/colors';
 
+// 커스텀 엣지 컴포넌트 - offset을 적용한 Bezier 곡선
+function CustomEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style = {},
+  markerEnd,
+  data,
+  label,
+  labelStyle,
+  labelBgStyle,
+}: EdgeProps) {
+  const offset = data?.offset || 0;
+
+  // offset을 y 좌표에 적용
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY: sourceY + offset,
+    sourcePosition,
+    targetX,
+    targetY: targetY + offset,
+    targetPosition,
+    curvature: 0.25, // 곡률 조정으로 더 부드러운 곡선
+  });
+
+  return (
+    <>
+      <path
+        id={id}
+        style={style}
+        className="react-flow__edge-path"
+        d={edgePath}
+        markerEnd={markerEnd}
+      />
+      {label && (
+        <g transform={`translate(${labelX}, ${labelY})`}>
+          <rect
+            x={-30}
+            y={-10}
+            width={60}
+            height={20}
+            fill={labelBgStyle?.fill || 'white'}
+            rx={3}
+          />
+          <text
+            style={labelStyle}
+            x={0}
+            y={5}
+            textAnchor="middle"
+            className="react-flow__edge-text"
+          >
+            {label}
+          </text>
+        </g>
+      )}
+    </>
+  );
+}
+
 const nodeTypes = {
   task: TaskNode,
+} as any;
+
+const edgeTypes = {
+  default: CustomEdge,
 } as any;
 
 // 간단한 계층적 레이아웃 (최종 노드가 왼쪽)
@@ -183,12 +252,12 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
               return;
             }
 
-            // 정방향 엣지
+            // 정방향 엣지 (위쪽으로 offset)
             initialEdges.push({
               id: edgeId,
               source: task.id,
               target: successorId,
-              type: ConnectionLineType.SmoothStep,
+              type: 'default',
               animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
@@ -202,17 +271,18 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
                 strokeDasharray: '5,5',
                 opacity: isHidden ? 0.1 : 1,
               },
+              data: { offset: 15 }, // 위쪽으로 offset
               label: '⚠ 양방향',
               labelStyle: { fill: '#F44336', fontWeight: 'bold' },
               labelBgStyle: { fill: '#FFEBEE' },
             });
 
-            // 역방향 엣지
+            // 역방향 엣지 (아래쪽으로 offset)
             initialEdges.push({
               id: reverseEdgeId,
               source: successorId,
               target: task.id,
-              type: ConnectionLineType.SmoothStep,
+              type: 'default',
               animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
@@ -226,6 +296,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
                 strokeDasharray: '5,5',
                 opacity: isHidden ? 0.1 : 1,
               },
+              data: { offset: -15 }, // 아래쪽으로 offset
             });
 
             processedEdges.add(edgeId);
@@ -240,7 +311,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
               id: edgeId,
               source: task.id,
               target: successorId,
-              type: ConnectionLineType.SmoothStep,
+              type: 'default',
               animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
@@ -517,6 +588,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView={shouldFitView}
         minZoom={0.1}
         maxZoom={2}
