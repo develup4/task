@@ -52,13 +52,13 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
 
   const tooltipContent = (
     <div
-      className="fixed pointer-events-none transition-all duration-300 ease-out"
+      className="fixed pointer-events-none"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
         zIndex: 999999,
         opacity: isHovered ? 1 : 0,
-        transform: isHovered ? 'translateX(0)' : 'translateX(-10px)',
+        transition: 'opacity 0.15s ease',
       }}
     >
       <div className="bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700 p-5 min-w-[420px] max-w-[600px]" style={{ boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)' }}>
