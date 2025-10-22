@@ -786,6 +786,8 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
         fitView={shouldFitView}
         minZoom={0.1}
         maxZoom={2}
+        edgesFocusable={true}
+        elementsSelectable={true}
       >
         <Controls className="sky-controls" />
         <Background />

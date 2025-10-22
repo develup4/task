@@ -104,11 +104,6 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
               누적: {data.cumulativeMM.toFixed(1)}MM
             </div>
           )}
-          {data.isFinalNode && data.cumulativeMM !== undefined && (
-            <div style={{ fontWeight: 600, marginTop: '4px', color: colors.border }}>
-              Total: {data.cumulativeMM.toFixed(1)}MM
-            </div>
-          )}
         </div>
 
         <Handle
