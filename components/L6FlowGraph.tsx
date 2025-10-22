@@ -11,6 +11,8 @@ import {
   Background,
   MiniMap,
   ConnectionLineType,
+  useReactFlow,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
@@ -83,7 +85,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   return { nodes: layoutedNodes, edges, levels };
 };
 
-export default function L6FlowGraph() {
+function L6FlowGraphInner() {
   const {
     processedData,
     selectedL5,
@@ -93,6 +95,7 @@ export default function L6FlowGraph() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
+  const { fitView } = useReactFlow();
 
   // 노드와 엣지 생성
   useEffect(() => {
@@ -378,6 +381,15 @@ export default function L6FlowGraph() {
     setEdges(layoutedEdges as any);
   }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge]);
 
+  // L6 진입 시 전체 그래프가 보이도록 fitView
+  useEffect(() => {
+    if (nodes.length > 0) {
+      setTimeout(() => {
+        fitView({ padding: 0.2, duration: 800 });
+      }, 100);
+    }
+  }, [nodes.length, fitView]);
+
   // 엣지 클릭 핸들러
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.stopPropagation();
@@ -399,7 +411,6 @@ export default function L6FlowGraph() {
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
-        fitView
         minZoom={0.1}
         maxZoom={2}
       >
@@ -420,5 +431,13 @@ export default function L6FlowGraph() {
         />
       </ReactFlow>
     </div>
+  );
+}
+
+export default function L6FlowGraph() {
+  return (
+    <ReactFlowProvider>
+      <L6FlowGraphInner />
+    </ReactFlowProvider>
   );
 }
