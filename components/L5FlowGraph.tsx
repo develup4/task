@@ -94,7 +94,7 @@ const edgeTypes = {
 } as any;
 
 // 간단한 계층적 레이아웃 (최종 노드가 왼쪽)
-const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[], isFilteredMode: boolean = false): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const levels = new Map<string, number>();
   const visited = new Set<string>();
@@ -143,16 +143,51 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   const horizontalSpacing = 200;
   const verticalSpacing = 120;
 
+  // L5-filtered 모드일 때 같은 레벨의 노드들 간 연결을 고려하여 위치 조정
+  if (isFilteredMode) {
+    levelGroups.forEach((nodesInLevel, level) => {
+      if (nodesInLevel.length <= 1) return;
+
+      // 같은 레벨 내에서 연결 관계 파악
+      const nodeConnections = new Map<string, Set<string>>();
+      nodesInLevel.forEach(node => {
+        const targets = new Set<string>();
+        edges.forEach(edge => {
+          if (edge.source === node.id && nodesInLevel.some(n => n.id === edge.target)) {
+            targets.add(edge.target);
+          }
+        });
+        nodeConnections.set(node.id, targets);
+      });
+
+      // 연결이 많은 노드를 먼저 배치 (토폴로지 정렬 스타일)
+      const sorted = [...nodesInLevel].sort((a, b) => {
+        const aTargets = nodeConnections.get(a.id)?.size || 0;
+        const bTargets = nodeConnections.get(b.id)?.size || 0;
+        return bTargets - aTargets; // 연결이 많은 것부터
+      });
+
+      levelGroups.set(level, sorted);
+    });
+  }
+
   const layoutedNodes = nodes.map(node => {
     const level = levels.get(node.id) || 0;
     const nodesInLevel = levelGroups.get(level) || [];
     const indexInLevel = nodesInLevel.indexOf(node);
 
+    // L5-filtered 모드에서는 x 위치에 약간의 offset 추가
+    let xOffset = 0;
+    if (isFilteredMode && nodesInLevel.length > 1) {
+      // 인덱스에 따라 x 위치를 약간씩 조정 (지그재그 효과)
+      xOffset = (indexInLevel % 2) * 80;
+    }
+
     return {
       ...node,
       position: {
         // level 0이 왼쪽에 오도록 배치
-        x: level * (nodeWidth + horizontalSpacing),
+        x: level * (nodeWidth + horizontalSpacing) + xOffset,
         y: indexInLevel * (nodeHeight + verticalSpacing),
       },
     };
@@ -334,7 +369,8 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
 
     const { nodes: layoutedNodes, edges: layoutedEdges, levels } = getLayoutedElements(
       initialNodes,
-      initialEdges
+      initialEdges,
+      viewMode === 'l5-filtered'
     );
 
     // 가장 왼쪽 노드들 찾기 (레벨 0 노드들 = 최후단 작업)
