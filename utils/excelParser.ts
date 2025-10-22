@@ -311,13 +311,22 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               if (successor?.successors.includes(task.id)) {
                 // 중복 방지를 위해 id가 작은 쪽에서만 에러 추가
                 if (task.id < succId) {
-                  errors.push({
-                    type: 'bidirectional_error',
-                    sourceTask: task.id,
-                    sourceLevel: 'L5',
-                    relatedTask: succId,
-                    description: `L5 프로세스 "${task.name}"와 "${successor.name}"가 서로 선행/후행 관계로 연결되어 있습니다.`
-                  });
+                  // case_mismatch 에러가 이미 있는지 확인
+                  const hasCaseMismatch = caseMismatchErrors.some(
+                    err => (err.sourceTask === task.id && err.relatedTask === succId) ||
+                           (err.sourceTask === succId && err.relatedTask === task.id)
+                  );
+
+                  // case_mismatch가 없는 경우에만 양방향 에러 추가
+                  if (!hasCaseMismatch) {
+                    errors.push({
+                      type: 'bidirectional_error',
+                      sourceTask: task.id,
+                      sourceLevel: 'L5',
+                      relatedTask: succId,
+                      description: `L5 프로세스 "${task.name}"와 "${successor.name}"가 서로 선행/후행 관계로 연결되어 있습니다.`
+                    });
+                  }
                 }
               }
             });
@@ -333,13 +342,22 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               if (successor?.successors.includes(task.id)) {
                 // 중복 방지를 위해 id가 작은 쪽에서만 에러 추가
                 if (task.id < succId) {
-                  errors.push({
-                    type: 'bidirectional_error',
-                    sourceTask: task.id,
-                    sourceLevel: 'L6',
-                    relatedTask: succId,
-                    description: `L6 액티비티 "${task.name}"와 "${successor.name}"가 서로 선행/후행 관계로 연결되어 있습니다.`
-                  });
+                  // case_mismatch 에러가 이미 있는지 확인
+                  const hasCaseMismatch = caseMismatchErrors.some(
+                    err => (err.sourceTask === task.id && err.relatedTask === succId) ||
+                           (err.sourceTask === succId && err.relatedTask === task.id)
+                  );
+
+                  // case_mismatch가 없는 경우에만 양방향 에러 추가
+                  if (!hasCaseMismatch) {
+                    errors.push({
+                      type: 'bidirectional_error',
+                      sourceTask: task.id,
+                      sourceLevel: 'L6',
+                      relatedTask: succId,
+                      description: `L6 액티비티 "${task.name}"와 "${successor.name}"가 서로 선행/후행 관계로 연결되어 있습니다.`
+                    });
+                  }
                 }
               }
             });
