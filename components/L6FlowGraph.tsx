@@ -47,7 +47,7 @@ function CustomEdge({
     targetX,
     targetY: targetY + offset,
     targetPosition,
-    curvature: 0.25, // 곡률 조정으로 더 부드러운 곡선
+    curvature: 0.5, // 곡률을 높여서 더 부드러운 곡선
   });
 
   return (
