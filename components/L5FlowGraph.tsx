@@ -133,19 +133,20 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], isFilteredMode: boole
     let level = 0;
 
     if (outgoingEdges.length === 0) {
-      // 말단 노드는 level 0
+      // 말단 노드는 무조건 level 0 (다른 노드와 절대 섞이지 않음)
       level = 0;
     } else {
       // 후행 노드들의 레벨 계산
       const successorLevels = outgoingEdges.map(e => calculateLevel(e.target, depth + 1));
       const maxSuccessorLevel = Math.max(...successorLevels, 0);
 
+      // 말단 노드(level 0)를 가진 경우, 최소 level 1부터 시작
       // 중요 노드이거나 여러 후행을 가진 경우만 레벨 증가
       if (isImportantNode(nodeId) || outgoingEdges.length > 1) {
         level = maxSuccessorLevel + 1;
       } else {
-        // 일직선 체인의 경우 같은 레벨 유지
-        level = maxSuccessorLevel;
+        // 일직선 체인의 경우 같은 레벨 유지, 단 최소 1
+        level = Math.max(maxSuccessorLevel, 1);
       }
     }
 
@@ -161,6 +162,45 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], isFilteredMode: boole
       calculateLevel(node.id, 0);
     }
   });
+
+  // 레벨별 노드 개수 확인 및 재조정
+  const levelCounts = new Map<number, number>();
+  nodes.forEach(node => {
+    const level = levels.get(node.id) || 0;
+    levelCounts.set(level, (levelCounts.get(level) || 0) + 1);
+  });
+
+  // 평균 노드 개수 계산 (level 0 제외)
+  const nonZeroLevels = Array.from(levelCounts.entries()).filter(([level]) => level > 0);
+  const avgNodesPerLevel = nonZeroLevels.length > 0
+    ? nonZeroLevels.reduce((sum, [, count]) => sum + count, 0) / nonZeroLevels.length
+    : 0;
+
+  // 노드가 너무 적은 레벨 찾기 (평균의 30% 미만)
+  const sparseLevels = new Set<number>();
+  levelCounts.forEach((count, level) => {
+    if (level > 0 && count < avgNodesPerLevel * 0.3 && count < 3) {
+      sparseLevels.add(level);
+    }
+  });
+
+  // 희소 레벨의 노드들을 인접 레벨로 병합
+  if (sparseLevels.size > 0) {
+    nodes.forEach(node => {
+      const currentLevel = levels.get(node.id) || 0;
+      if (sparseLevels.has(currentLevel) && currentLevel > 0) {
+        // 같은 체인의 다른 노드들과 합치기
+        const outgoingEdges = edges.filter(e => e.source === node.id);
+        if (outgoingEdges.length === 1) {
+          const successorLevel = levels.get(outgoingEdges[0].target) || 0;
+          // 후행 노드의 레벨과 같게 조정 (단, 0은 제외)
+          if (successorLevel > 0) {
+            levels.set(node.id, successorLevel);
+          }
+        }
+      }
+    });
+  }
 
   // 레벨별로 노드 그룹화
   const levelGroups = new Map<number, Node[]>();

@@ -121,6 +121,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     const outgoingEdges = edges.filter(e => e.source === nodeId);
 
     if (outgoingEdges.length === 0) {
+      // 말단 노드는 무조건 level 0
       levels.set(nodeId, 0);
       return 0;
     }
@@ -133,8 +134,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     if (isImportantNode(nodeId) || outgoingEdges.length > 1) {
       level = maxSuccessorLevel + 1;
     } else {
-      // 일직선 체인의 경우 같은 레벨 유지
-      level = maxSuccessorLevel;
+      // 일직선 체인의 경우 같은 레벨 유지, 단 최소 1
+      level = Math.max(maxSuccessorLevel, 1);
     }
 
     levels.set(nodeId, level);
@@ -142,6 +143,43 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   };
 
   nodes.forEach(node => calculateLevel(node.id));
+
+  // 레벨별 노드 개수 확인 및 재조정
+  const levelCounts = new Map<number, number>();
+  nodes.forEach(node => {
+    const level = levels.get(node.id) || 0;
+    levelCounts.set(level, (levelCounts.get(level) || 0) + 1);
+  });
+
+  // 평균 노드 개수 계산 (level 0 제외)
+  const nonZeroLevels = Array.from(levelCounts.entries()).filter(([level]) => level > 0);
+  const avgNodesPerLevel = nonZeroLevels.length > 0
+    ? nonZeroLevels.reduce((sum, [, count]) => sum + count, 0) / nonZeroLevels.length
+    : 0;
+
+  // 노드가 너무 적은 레벨 찾기 (평균의 30% 미만)
+  const sparseLevels = new Set<number>();
+  levelCounts.forEach((count, level) => {
+    if (level > 0 && count < avgNodesPerLevel * 0.3 && count < 3) {
+      sparseLevels.add(level);
+    }
+  });
+
+  // 희소 레벨의 노드들을 인접 레벨로 병합
+  if (sparseLevels.size > 0) {
+    nodes.forEach(node => {
+      const currentLevel = levels.get(node.id) || 0;
+      if (sparseLevels.has(currentLevel) && currentLevel > 0) {
+        const outgoingEdges = edges.filter(e => e.source === node.id);
+        if (outgoingEdges.length === 1) {
+          const successorLevel = levels.get(outgoingEdges[0].target) || 0;
+          if (successorLevel > 0) {
+            levels.set(node.id, successorLevel);
+          }
+        }
+      }
+    });
+  }
 
   const levelGroups = new Map<number, Node[]>();
   nodes.forEach(node => {
