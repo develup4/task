@@ -137,17 +137,23 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                         error.type === 'missing_predecessor' ? '#fed7aa' :
                         error.type === 'missing_successor' ? '#e9d5ff' :
                         error.type === 'self_loop_error' ? '#fef3c7' :
+                        error.type === 'empty_predecessor_but_referenced' ? '#fde68a' :
+                        error.type === 'empty_successor_but_referenced' ? '#fde68a' :
                         '#fecaca',
                       color:
                         error.type === 'missing_predecessor' ? '#9a3412' :
                         error.type === 'missing_successor' ? '#6b21a8' :
                         error.type === 'self_loop_error' ? '#92400e' :
+                        error.type === 'empty_predecessor_but_referenced' ? '#78350f' :
+                        error.type === 'empty_successor_but_referenced' ? '#78350f' :
                         '#991b1b',
                       fontSize: '12px',
                       border: `1px solid ${
                         error.type === 'missing_predecessor' ? '#fb923c' :
                         error.type === 'missing_successor' ? '#c084fc' :
                         error.type === 'self_loop_error' ? '#fbbf24' :
+                        error.type === 'empty_predecessor_but_referenced' ? '#fbbf24' :
+                        error.type === 'empty_successor_but_referenced' ? '#fbbf24' :
                         '#f87171'
                       }`,
                       fontWeight: 500,
@@ -156,6 +162,8 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                     {error.type === 'missing_predecessor' ? '누락된 선행' :
                      error.type === 'missing_successor' ? '누락된 후행' :
                      error.type === 'self_loop_error' ? 'Self-Loop 오류' :
+                     error.type === 'empty_predecessor_but_referenced' ? '선행 입력 누락' :
+                     error.type === 'empty_successor_but_referenced' ? '후행 입력 누락' :
                      '양방향 오류'}
                   </span>
                 </td>
@@ -165,6 +173,8 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                 <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 600, color: '#dc2626' }}>
                   {error.type === 'bidirectional_error' ? error.relatedTask :
                    error.type === 'self_loop_error' ? '-' :
+                   error.type === 'empty_predecessor_but_referenced' ? error.relatedTask :
+                   error.type === 'empty_successor_but_referenced' ? error.relatedTask :
                    error.missingTask}
                 </td>
                 <td style={{ padding: '12px', color: '#666' }}>
