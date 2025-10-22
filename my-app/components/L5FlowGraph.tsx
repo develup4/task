@@ -364,9 +364,12 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
     }
   }, [viewMode, selectedL5, nodes, setCenter]);
 
-  // L6에서 L5-all로 복귀 시 이전에 선택된 노드로 뷰포트 이동
+  // L5-filtered 또는 L6에서 L5-all로 복귀 시 이전에 선택된 노드로 뷰포트 이동
   useEffect(() => {
-    if (prevViewMode === 'l6-detail' && viewMode === 'l5-all' && prevSelectedL5 && nodes.length > 0) {
+    if ((prevViewMode === 'l6-detail' || prevViewMode === 'l5-filtered') &&
+        viewMode === 'l5-all' &&
+        prevSelectedL5 &&
+        nodes.length > 0) {
       const selectedNode = (nodes as Node[]).find(n => n.id === prevSelectedL5);
       if (selectedNode) {
         setTimeout(() => {
