@@ -86,7 +86,7 @@ export interface L6Task {
 }
 
 export interface ValidationError {
-  type: 'missing_predecessor' | 'missing_successor' | 'bidirectional_error' | 'self_loop_error' | 'missing_l5_reference' | 'mismatch_predecessor_successor';
+  type: 'missing_predecessor' | 'missing_successor' | 'bidirectional_error' | 'self_loop_error' | 'missing_l5_reference' | 'mismatch_predecessor_successor' | 'empty_predecessor_but_referenced' | 'empty_successor_but_referenced';
   sourceTask: string;
   sourceLevel: 'L5' | 'L6';
   missingTask?: string;
