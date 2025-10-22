@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { L5Task, L6Task } from '@/types/task';
 import { formatDecimal } from '@/utils/format';
 
@@ -10,8 +12,55 @@ interface NodeTooltipProps {
 }
 
 export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
-  return (
-    <div className="absolute left-full ml-4 top-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" style={{ zIndex: 10000 }}>
+  const [isHovered, setIsHovered] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (parentRef.current) {
+        const rect = parentRef.current.getBoundingClientRect();
+        setPosition({
+          x: rect.right + 16, // 16px margin
+          y: rect.top,
+        });
+      }
+    };
+
+    const parentElement = parentRef.current?.closest('.group');
+    if (parentElement) {
+      parentElement.addEventListener('mouseenter', () => {
+        setIsHovered(true);
+        updatePosition();
+      });
+      parentElement.addEventListener('mouseleave', () => {
+        setIsHovered(false);
+      });
+
+      // Update position on scroll or resize
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+
+      return () => {
+        parentElement.removeEventListener('mouseenter', updatePosition);
+        parentElement.removeEventListener('mouseleave', () => setIsHovered(false));
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, []);
+
+  const tooltipContent = (
+    <div
+      className="fixed pointer-events-none transition-all duration-300 ease-out"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        zIndex: 999999,
+        opacity: isHovered ? 1 : 0,
+        transform: isHovered ? 'translateX(0)' : 'translateX(-10px)',
+      }}
+    >
       <div className="bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700 p-5 min-w-[420px] max-w-[600px]" style={{ boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)' }}>
         {/* Header */}
         <div className="mb-4 pb-4 border-b-2 border-slate-700">
@@ -220,5 +269,12 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
         )}
       </div>
     </div>
+  );
+
+  return (
+    <>
+      <div ref={parentRef} style={{ position: 'absolute', pointerEvents: 'none' }} />
+      {typeof window !== 'undefined' && createPortal(tooltipContent, document.body)}
+    </>
   );
 }
