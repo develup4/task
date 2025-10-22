@@ -580,12 +580,17 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
       // Only set isSearched in l5-all mode
       const isSearched = viewMode === 'l5-all' && searchedNodeId === node.id;
 
+      // l5-filtered 모드에서는 가장 왼쪽 노드(isStartNode)의 특수 표시를 제거
+      // - isStartNode를 false로 설정하여 오렌지 테두리와 누적 MM 표시 제거
+      // - isHighlighted는 유지하여 일반 하이라이트 노드처럼 2px border 적용
+      const shouldShowAsStartNode = viewMode === 'l5-filtered' ? false : isStartNode;
+
       return {
         ...node,
         data: {
           ...node.data,
           isHighlighted,
-          isStartNode,
+          isStartNode: shouldShowAsStartNode,
           cumulativeMM,
           isSearched,
           // hasError와 onErrorClick은 명시적으로 유지
