@@ -55,7 +55,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-white">
+      <header className="bg-white border-b border-gray-200">
         <div className="max-w-[95%] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -69,6 +69,67 @@ export default function Home() {
             <FileUploader />
           </div>
         </div>
+        {/* Tabs - 탭이 border 위에 위치 */}
+        {processedData && (
+          <div className="max-w-[95%] mx-auto">
+            <div className="bg-white px-6">
+              <div className="flex justify-between items-center">
+                <div role="tablist" className="tabs tabs-bordered">
+                  {(Object.keys(tabInfo) as Tab[]).map((tab) => (
+                    <button
+                      key={tab}
+                      role="tab"
+                      onClick={() => setActiveTab(tab)}
+                      className={`tab gap-2 ${activeTab === tab ? 'tab-active' : ''}`}
+                    >
+                      <span>{tabInfo[tab].icon}</span>
+                      <span>{tabInfo[tab].name}</span>
+                      {tab === 'error-list' && processedData?.errors && processedData.errors.length > 0 && (
+                        <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                          {processedData.errors.length}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search box and filters - only show in graph tab and l5-all mode */}
+                {activeTab === 'graph' && viewMode === 'l5-all' && (
+                  <div className="flex gap-2 items-center">
+                    <TeamFilter />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setCurrentSearchIndex(0);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setSearchTrigger(prev => prev + 1);
+                        }
+                      }}
+                      className="input input-ghost input-sm px-3 py-1.5 border-none bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white text-sm"
+                    />
+                    {searchResultCount > 0 && (
+                      <span className="text-sm text-gray-600 font-medium">
+                        {currentSearchIndex}/{searchResultCount}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setSearchTrigger(prev => prev + 1)}
+                      disabled={!searchQuery.trim()}
+                      className="px-3 py-1.5 bg-sky-500 text-white rounded-md hover:bg-sky-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Content */}
@@ -86,64 +147,6 @@ export default function Home() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden max-w-[95%] mx-auto w-full">
-          {/* Tabs */}
-          <div className="bg-white px-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <div role="tablist" className="tabs tabs-bordered">
-                {(Object.keys(tabInfo) as Tab[]).map((tab) => (
-                  <button
-                    key={tab}
-                    role="tab"
-                    onClick={() => setActiveTab(tab)}
-                    className={`tab gap-2 ${activeTab === tab ? 'tab-active' : ''}`}
-                  >
-                    <span>{tabInfo[tab].icon}</span>
-                    <span>{tabInfo[tab].name}</span>
-                    {tab === 'error-list' && processedData?.errors && processedData.errors.length > 0 && (
-                      <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                        {processedData.errors.length}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* Search box and filters - only show in graph tab and l5-all mode */}
-              {activeTab === 'graph' && viewMode === 'l5-all' && (
-                <div className="flex gap-2 items-center">
-                  <TeamFilter />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setCurrentSearchIndex(0);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setSearchTrigger(prev => prev + 1);
-                      }
-                    }}
-                    className="input input-ghost input-sm px-3 py-1.5 border-none bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white text-sm"
-                  />
-                  {searchResultCount > 0 && (
-                    <span className="text-sm text-gray-600 font-medium">
-                      {currentSearchIndex}/{searchResultCount}
-                    </span>
-                  )}
-                  <button
-                    onClick={() => setSearchTrigger(prev => prev + 1)}
-                    disabled={!searchQuery.trim()}
-                    className="px-3 py-1.5 bg-sky-500 text-white rounded-md hover:bg-sky-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Current L5 display for L6 view */}
           {viewMode === 'l6-detail' && activeTab === 'graph' && selectedL5 && (
             <div className="bg-blue-50 px-6 py-3 border-b border-blue-200">
