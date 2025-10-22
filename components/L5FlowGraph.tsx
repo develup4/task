@@ -93,20 +93,35 @@ const edgeTypes = {
   default: CustomEdge,
 } as any;
 
-// 간단한 계층적 레이아웃 (최종 노드가 왼쪽)
+// 컴팩트한 계층적 레이아웃 (최종 노드가 왼쪽)
 const getLayoutedElements = (nodes: Node[], edges: Edge[], isFilteredMode: boolean = false): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const levels = new Map<string, number>();
   const visiting = new Set<string>();
   const visited = new Set<string>();
 
-  // 각 노드의 레벨 계산 (후행 노드 기준)
+  // 각 노드의 입/출력 차수 계산
+  const inDegree = new Map<string, number>();
+  const outDegree = new Map<string, number>();
+  nodes.forEach(node => {
+    inDegree.set(node.id, edges.filter(e => e.target === node.id).length);
+    outDegree.set(node.id, edges.filter(e => e.source === node.id).length);
+  });
+
+  // 중요 노드 판별: 여러 입력/출력을 가진 노드 (분기점/합류점)
+  const isImportantNode = (nodeId: string): boolean => {
+    const inDeg = inDegree.get(nodeId) || 0;
+    const outDeg = outDegree.get(nodeId) || 0;
+    // 2개 이상의 입력 또는 출력을 가지거나, 말단 노드
+    return inDeg >= 2 || outDeg >= 2 || outDeg === 0;
+  };
+
+  // 각 노드의 레벨 계산 (컴팩트 모드)
   const calculateLevel = (nodeId: string, depth: number = 0): number => {
     if (levels.has(nodeId)) return levels.get(nodeId)!;
 
-    // 순환 참조 감지 - 현재 경로에서 다시 방문하는 경우
+    // 순환 참조 감지
     if (visiting.has(nodeId)) {
-      // 순환 참조가 있는 노드는 깊이를 기반으로 임시 레벨 할당
       return depth;
     }
 
@@ -114,18 +129,24 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], isFilteredMode: boole
 
     visiting.add(nodeId);
 
-    // 나가는 엣지 (후행 작업)을 기준으로 레벨 계산
     const outgoingEdges = edges.filter(e => e.source === nodeId);
-
     let level = 0;
 
-    // 후행 작업이 없으면 level 0 (최후단)
     if (outgoingEdges.length === 0) {
+      // 말단 노드는 level 0
       level = 0;
     } else {
-      // 후행 노드들의 최대 레벨 + 1
+      // 후행 노드들의 레벨 계산
       const successorLevels = outgoingEdges.map(e => calculateLevel(e.target, depth + 1));
-      level = Math.max(...successorLevels, 0) + 1;
+      const maxSuccessorLevel = Math.max(...successorLevels, 0);
+
+      // 중요 노드이거나 여러 후행을 가진 경우만 레벨 증가
+      if (isImportantNode(nodeId) || outgoingEdges.length > 1) {
+        level = maxSuccessorLevel + 1;
+      } else {
+        // 일직선 체인의 경우 같은 레벨 유지
+        level = maxSuccessorLevel;
+      }
     }
 
     visiting.delete(nodeId);

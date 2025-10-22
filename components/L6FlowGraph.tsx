@@ -92,10 +92,25 @@ const edgeTypes = {
   default: CustomEdge,
 } as any;
 
-// 간단한 계층적 레이아웃
+// 컴팩트한 계층적 레이아웃
 const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
   const levels = new Map<string, number>();
   const visited = new Set<string>();
+
+  // 각 노드의 입/출력 차수 계산
+  const inDegree = new Map<string, number>();
+  const outDegree = new Map<string, number>();
+  nodes.forEach(node => {
+    inDegree.set(node.id, edges.filter(e => e.target === node.id).length);
+    outDegree.set(node.id, edges.filter(e => e.source === node.id).length);
+  });
+
+  // 중요 노드 판별: 여러 입력/출력을 가진 노드 (분기점/합류점)
+  const isImportantNode = (nodeId: string): boolean => {
+    const inDeg = inDegree.get(nodeId) || 0;
+    const outDeg = outDegree.get(nodeId) || 0;
+    return inDeg >= 2 || outDeg >= 2 || outDeg === 0;
+  };
 
   const calculateLevel = (nodeId: string): number => {
     if (levels.has(nodeId)) return levels.get(nodeId)!;
@@ -103,19 +118,25 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
     visited.add(nodeId);
 
-    // 나가는 엣지 (후행 작업)을 기준으로 레벨 계산
     const outgoingEdges = edges.filter(e => e.source === nodeId);
 
-    // 후행 작업이 없으면 level 0 (최후단)
     if (outgoingEdges.length === 0) {
       levels.set(nodeId, 0);
       return 0;
     }
 
-    const maxSuccessorLevel = Math.max(
-      ...outgoingEdges.map(e => calculateLevel(e.target))
-    );
-    const level = maxSuccessorLevel + 1;
+    const successorLevels = outgoingEdges.map(e => calculateLevel(e.target));
+    const maxSuccessorLevel = Math.max(...successorLevels);
+
+    // 중요 노드이거나 여러 후행을 가진 경우만 레벨 증가
+    let level;
+    if (isImportantNode(nodeId) || outgoingEdges.length > 1) {
+      level = maxSuccessorLevel + 1;
+    } else {
+      // 일직선 체인의 경우 같은 레벨 유지
+      level = maxSuccessorLevel;
+    }
+
     levels.set(nodeId, level);
     return level;
   };
