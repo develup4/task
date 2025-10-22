@@ -375,7 +375,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           });
         });
 
-        // L5 선행/후행 입력 누락 검증
+        // L5 선행/후행 입력 불일치 검증 (동기화 전에 먼저 검증)
         l5Tasks.forEach(task => {
           // 선행이 비어있는데 다른 프로세스의 후행으로 참조되는 경우
           if (task.predecessors.length === 0) {
@@ -465,7 +465,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           });
         });
 
-        // L6 선행/후행 입력 누락 검증
+        // L6 선행/후행 입력 불일치 검증 (동기화 전에 먼저 검증)
         l6Tasks.forEach(task => {
           // 선행이 비어있는데 다른 액티비티의 후행으로 참조되는 경우
           if (task.predecessors.length === 0) {
@@ -498,6 +498,45 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               }
             });
           }
+        });
+
+        // L5 양방향 관계 동기화 (한쪽만 입력되어도 edge 생성)
+        // 검증 후에 동기화하여 그래프가 완전하게 그려지도록 함
+        l5Tasks.forEach(task => {
+          // A의 후행에 B가 있으면, B의 선행에 A를 추가
+          task.successors.forEach(succId => {
+            const succTask = l5Tasks.get(succId);
+            if (succTask && !succTask.predecessors.includes(task.id)) {
+              succTask.predecessors.push(task.id);
+            }
+          });
+
+          // A의 선행에 B가 있으면, B의 후행에 A를 추가
+          task.predecessors.forEach(predId => {
+            const predTask = l5Tasks.get(predId);
+            if (predTask && !predTask.successors.includes(task.id)) {
+              predTask.successors.push(task.id);
+            }
+          });
+        });
+
+        // L6 양방향 관계 동기화 (한쪽만 입력되어도 edge 생성)
+        l6Tasks.forEach(task => {
+          // A의 후행에 B가 있으면, B의 선행에 A를 추가
+          task.successors.forEach(succId => {
+            const succTask = l6Tasks.get(succId);
+            if (succTask && !succTask.predecessors.includes(task.id)) {
+              succTask.predecessors.push(task.id);
+            }
+          });
+
+          // A의 선행에 B가 있으면, B의 후행에 A를 추가
+          task.predecessors.forEach(predId => {
+            const predTask = l6Tasks.get(predId);
+            if (predTask && !predTask.successors.includes(task.id)) {
+              predTask.successors.push(task.id);
+            }
+          });
         });
 
         resolve({
