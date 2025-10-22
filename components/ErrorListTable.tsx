@@ -68,128 +68,130 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
   const errors = processedData.errors;
 
   return (
-    <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
-      <table
-        style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontSize: '14px',
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-            <th style={{ padding: '12px', textAlign: 'left' }}>순위</th>
-            <th style={{ padding: '12px', textAlign: 'left' }}>레벨</th>
-            <th style={{ padding: '12px', textAlign: 'left' }}>오류 유형</th>
-            <th style={{ padding: '12px', textAlign: 'left' }}>소스 프로세스</th>
-            <th style={{ padding: '12px', textAlign: 'left' }}>관련 프로세스</th>
-            <th style={{ padding: '12px', textAlign: 'left' }}>설명</th>
-          </tr>
-        </thead>
-        <tbody>
-          {errors.map((error, index) => {
-            const isL5 = error.sourceLevel === 'L5';
-            const task = isL5 ? processedData.l5Tasks.get(error.sourceTask) : null;
-            const colors = task ? getColorForCategory(task.l4Category) : { bg: '#f5f5f5', text: '#666', border: '#ddd' };
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        <table
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '14px',
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+              <th style={{ padding: '12px', textAlign: 'left' }}>순위</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>레벨</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>오류 유형</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>소스 프로세스</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>관련 프로세스</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>설명</th>
+            </tr>
+          </thead>
+          <tbody>
+            {errors.map((error, index) => {
+              const isL5 = error.sourceLevel === 'L5';
+              const task = isL5 ? processedData.l5Tasks.get(error.sourceTask) : null;
+              const colors = task ? getColorForCategory(task.l4Category) : { bg: '#f5f5f5', text: '#666', border: '#ddd' };
 
-            return (
-              <tr
-                key={index}
-                id={`error-row-${error.sourceTask}-${index}`}
-                onClick={() => handleRowClick(error.sourceTask, error.sourceLevel)}
-                style={{
-                  cursor: isL5 ? 'pointer' : 'default',
-                  borderBottom: '1px solid #eee',
-                  transition: 'background-color 0.2s',
-                  scrollMarginTop: '20px', // 스크롤 시 상단 여백
-                }}
-                onMouseEnter={(e) => {
-                  if (isL5) {
-                    e.currentTarget.style.backgroundColor = colors.bg;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <td style={{ padding: '12px' }}>{index + 1}</td>
-                <td style={{ padding: '12px' }}>
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: error.sourceLevel === 'L5' ? '#dbeafe' : '#d1fae5',
-                      color: error.sourceLevel === 'L5' ? '#1e40af' : '#065f46',
-                      fontSize: '12px',
-                      border: `1px solid ${error.sourceLevel === 'L5' ? '#93c5fd' : '#6ee7b7'}`,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {error.sourceLevel}
-                  </span>
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      backgroundColor:
-                        error.type === 'missing_predecessor' ? '#fed7aa' :
-                        error.type === 'missing_successor' ? '#e9d5ff' :
-                        error.type === 'self_loop_error' ? '#fef3c7' :
-                        error.type === 'empty_predecessor_but_referenced' ? '#fde68a' :
-                        error.type === 'empty_successor_but_referenced' ? '#fde68a' :
-                        '#fecaca',
-                      color:
-                        error.type === 'missing_predecessor' ? '#9a3412' :
-                        error.type === 'missing_successor' ? '#6b21a8' :
-                        error.type === 'self_loop_error' ? '#92400e' :
-                        error.type === 'empty_predecessor_but_referenced' ? '#78350f' :
-                        error.type === 'empty_successor_but_referenced' ? '#78350f' :
-                        '#991b1b',
-                      fontSize: '12px',
-                      border: `1px solid ${
-                        error.type === 'missing_predecessor' ? '#fb923c' :
-                        error.type === 'missing_successor' ? '#c084fc' :
-                        error.type === 'self_loop_error' ? '#fbbf24' :
-                        error.type === 'empty_predecessor_but_referenced' ? '#fbbf24' :
-                        error.type === 'empty_successor_but_referenced' ? '#fbbf24' :
-                        '#f87171'
-                      }`,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {error.type === 'missing_predecessor' ? '누락된 선행' :
-                     error.type === 'missing_successor' ? '누락된 후행' :
-                     error.type === 'self_loop_error' ? 'Self-Loop 오류' :
-                     error.type === 'empty_predecessor_but_referenced' ? '선행 입력 누락' :
-                     error.type === 'empty_successor_but_referenced' ? '후행 입력 누락' :
-                     '양방향 오류'}
-                  </span>
-                </td>
-                <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 500 }}>
-                  {error.sourceTask}
-                </td>
-                <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 600, color: '#dc2626' }}>
-                  {error.type === 'bidirectional_error' ? error.relatedTask :
-                   error.type === 'self_loop_error' ? '-' :
-                   error.type === 'empty_predecessor_but_referenced' ? error.relatedTask :
-                   error.type === 'empty_successor_but_referenced' ? error.relatedTask :
-                   error.missingTask}
-                </td>
-                <td style={{ padding: '12px', color: '#666' }}>
-                  {error.description}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              return (
+                <tr
+                  key={index}
+                  id={`error-row-${error.sourceTask}-${index}`}
+                  onClick={() => handleRowClick(error.sourceTask, error.sourceLevel)}
+                  style={{
+                    cursor: isL5 ? 'pointer' : 'default',
+                    borderBottom: '1px solid #eee',
+                    transition: 'background-color 0.2s',
+                    scrollMarginTop: '20px', // 스크롤 시 상단 여백
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isL5) {
+                      e.currentTarget.style.backgroundColor = colors.bg;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <td style={{ padding: '12px' }}>{index + 1}</td>
+                  <td style={{ padding: '12px' }}>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: error.sourceLevel === 'L5' ? '#dbeafe' : '#d1fae5',
+                        color: error.sourceLevel === 'L5' ? '#1e40af' : '#065f46',
+                        fontSize: '12px',
+                        border: `1px solid ${error.sourceLevel === 'L5' ? '#93c5fd' : '#6ee7b7'}`,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {error.sourceLevel}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        backgroundColor:
+                          error.type === 'missing_predecessor' ? '#fed7aa' :
+                          error.type === 'missing_successor' ? '#e9d5ff' :
+                          error.type === 'self_loop_error' ? '#fef3c7' :
+                          error.type === 'empty_predecessor_but_referenced' ? '#fde68a' :
+                          error.type === 'empty_successor_but_referenced' ? '#fde68a' :
+                          '#fecaca',
+                        color:
+                          error.type === 'missing_predecessor' ? '#9a3412' :
+                          error.type === 'missing_successor' ? '#6b21a8' :
+                          error.type === 'self_loop_error' ? '#92400e' :
+                          error.type === 'empty_predecessor_but_referenced' ? '#78350f' :
+                          error.type === 'empty_successor_but_referenced' ? '#78350f' :
+                          '#991b1b',
+                        fontSize: '12px',
+                        border: `1px solid ${
+                          error.type === 'missing_predecessor' ? '#fb923c' :
+                          error.type === 'missing_successor' ? '#c084fc' :
+                          error.type === 'self_loop_error' ? '#fbbf24' :
+                          error.type === 'empty_predecessor_but_referenced' ? '#fbbf24' :
+                          error.type === 'empty_successor_but_referenced' ? '#fbbf24' :
+                          '#f87171'
+                        }`,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {error.type === 'missing_predecessor' ? '누락된 선행' :
+                       error.type === 'missing_successor' ? '누락된 후행' :
+                       error.type === 'self_loop_error' ? 'Self-Loop 오류' :
+                       error.type === 'empty_predecessor_but_referenced' ? '선행 입력 누락' :
+                       error.type === 'empty_successor_but_referenced' ? '후행 입력 누락' :
+                       '양방향 오류'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 500 }}>
+                    {error.sourceTask}
+                  </td>
+                  <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 600, color: '#dc2626' }}>
+                    {error.type === 'bidirectional_error' ? error.relatedTask :
+                     error.type === 'self_loop_error' ? '-' :
+                     error.type === 'empty_predecessor_but_referenced' ? error.relatedTask :
+                     error.type === 'empty_successor_but_referenced' ? error.relatedTask :
+                     error.missingTask}
+                  </td>
+                  <td style={{ padding: '12px', color: '#666' }}>
+                    {error.description}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <div style={{
         padding: '16px',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffffff',
         borderTop: '1px solid #ddd',
         fontSize: '14px',
         color: '#666'
