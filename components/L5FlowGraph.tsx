@@ -799,6 +799,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
           zoomable
         />
       </ReactFlow>
+      </div>
     </div>
   );
 }
