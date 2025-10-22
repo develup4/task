@@ -352,6 +352,29 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           });
         });
 
+        // Unspecified 노드의 선행/후행 관계 업데이트
+        l5Tasks.forEach(task => {
+          // 이 task의 선행들 중에 Unspecified 노드가 있으면, 그 Unspecified 노드의 successors에 이 task 추가
+          task.predecessors.forEach(predId => {
+            const predTask = l5Tasks.get(predId);
+            if (predTask && predTask.l4Category === 'Unspecified') {
+              if (!predTask.successors.includes(task.id)) {
+                predTask.successors.push(task.id);
+              }
+            }
+          });
+
+          // 이 task의 후행들 중에 Unspecified 노드가 있으면, 그 Unspecified 노드의 predecessors에 이 task 추가
+          task.successors.forEach(succId => {
+            const succTask = l5Tasks.get(succId);
+            if (succTask && succTask.l4Category === 'Unspecified') {
+              if (!succTask.predecessors.includes(task.id)) {
+                succTask.predecessors.push(task.id);
+              }
+            }
+          });
+        });
+
         // L5 선행/후행 입력 누락 검증
         l5Tasks.forEach(task => {
           // 선행이 비어있는데 다른 프로세스의 후행으로 참조되는 경우
