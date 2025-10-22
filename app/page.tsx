@@ -7,11 +7,10 @@ import L5FlowGraph from '@/components/L5FlowGraph';
 import L6FlowGraph from '@/components/L6FlowGraph';
 import MMSummaryTable from '@/components/MMSummaryTable';
 import ErrorListTable from '@/components/ErrorListTable';
-import StartNodeMMTable from '@/components/StartNodeMMTable';
 import TeamFilter from '@/components/TeamFilter';
 import LeftmostNodeMMTable from '@/components/LeftmostNodeMMTable';
 
-type Tab = 'graph' | 'l5-table' | 'start-node-table' | 'final-table' | 'error-list';
+type Tab = 'graph' | 'l5-table' | 'error-list';
 
 export default function Home() {
   const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task } = useAppStore();
@@ -31,8 +30,6 @@ export default function Home() {
   const tabInfo: Record<Tab, { name: string; icon: string }> = {
     'graph': { name: 'Work Flow', icon: '⚡' },
     'l5-table': { name: 'MM Summary', icon: '📊' },
-    'start-node-table': { name: 'Start Node Summary', icon: '🎯' },
-    'final-table': { name: 'Final Node Summary', icon: '🏁' },
     'error-list': { name: 'Error Report', icon: '⚠️' }
   };
 
@@ -66,20 +63,17 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-[95%] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Workflow Logo */}
-              <svg className="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              {/* Tailwind Logo */}
+              <img src="/tailwind-logo.svg" alt="Tailwind CSS" className="h-8" />
               {/* Breadcrumb */}
-              <div className="text-sm text-gray-600">
+              <div className="bg-[#1A222D] text-white px-4 py-2 rounded-lg text-sm font-medium">
                 {getBreadcrumb()}
               </div>
             </div>
             <FileUploader />
           </div>
-          <h1 className="text-xl font-semibold text-gray-800">Workflow Viewer</h1>
         </div>
       </header>
 
@@ -99,18 +93,15 @@ export default function Home() {
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden max-w-[95%] mx-auto w-full">
           {/* Tabs */}
-          <div className="bg-white px-6 relative">
-            <div className="flex justify-between items-end">
-              <div className="flex gap-6 -mb-px">
+          <div className="bg-white px-6">
+            <div className="flex justify-between items-center">
+              <div role="tablist" className="tabs tabs-bordered">
                 {(Object.keys(tabInfo) as Tab[]).map((tab) => (
                   <button
                     key={tab}
+                    role="tab"
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${
-                      activeTab === tab
-                        ? 'border-sky-500 text-sky-600 font-bold'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                    className={`tab gap-2 ${activeTab === tab ? 'tab-active' : ''}`}
                   >
                     <span>{tabInfo[tab].icon}</span>
                     <span>{tabInfo[tab].name}</span>
@@ -125,7 +116,7 @@ export default function Home() {
 
               {/* Search box and filters - only show in graph tab and l5-all mode */}
               {activeTab === 'graph' && viewMode === 'l5-all' && (
-                <div className="flex gap-2 items-center pb-3">
+                <div className="flex gap-2 items-center">
                   <TeamFilter />
                   <input
                     type="text"
@@ -157,7 +148,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200"></div>
           </div>
 
           {/* Navigation breadcrumb for L6 view */}
@@ -213,33 +203,6 @@ export default function Home() {
                     </div>
                     <MMSummaryTable type="l5" onNavigateToGraph={() => setActiveTab('graph')} />
                   </div>
-                </div>
-              </div>
-            )}
-            {activeTab === 'start-node-table' && (
-              <div className="w-full h-full p-6">
-                <div className="bg-white rounded-lg shadow h-full">
-                  <div className="p-4 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                      시작 노드 누적 MM 요약 (내림차순)
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                      각 L5 작업의 가장 왼쪽 노드(시작 노드)에서 계산된 누적 MM입니다.
-                    </p>
-                  </div>
-                  <StartNodeMMTable onNavigateToGraph={() => setActiveTab('graph')} />
-                </div>
-              </div>
-            )}
-            {activeTab === 'final-table' && (
-              <div className="w-full h-full p-6">
-                <div className="bg-white rounded-lg shadow h-full">
-                  <div className="p-4 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                      최종 노드 누적 MM 요약 (내림차순)
-                    </h2>
-                  </div>
-                  <MMSummaryTable type="final" onNavigateToGraph={() => setActiveTab('graph')} />
                 </div>
               </div>
             )}
