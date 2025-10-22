@@ -192,6 +192,28 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     if (!hasChanges) break;
   }
 
+  // 레벨 번호 정규화 (빈 레벨 제거하고 연속적으로 만들기)
+  const usedLevels = new Set<number>();
+  nodes.forEach(node => {
+    usedLevels.add(levels.get(node.id) || 0);
+  });
+
+  // 사용된 레벨을 오름차순 정렬
+  const sortedLevels = Array.from(usedLevels).sort((a, b) => a - b);
+
+  // 레벨 매핑 생성 (기존 레벨 → 새 레벨)
+  const levelMapping = new Map<number, number>();
+  sortedLevels.forEach((oldLevel, index) => {
+    levelMapping.set(oldLevel, index);
+  });
+
+  // 모든 노드의 레벨을 새 번호로 업데이트
+  nodes.forEach(node => {
+    const oldLevel = levels.get(node.id) || 0;
+    const newLevel = levelMapping.get(oldLevel) || 0;
+    levels.set(node.id, newLevel);
+  });
+
   const levelGroups = new Map<number, Node[]>();
   nodes.forEach(node => {
     const level = levels.get(node.id) || 0;
