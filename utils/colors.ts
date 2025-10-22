@@ -6,7 +6,7 @@ const colorPalette = [
   { bg: '#FFF3E0', border: '#FF9800', text: '#E65100' }, // Orange
   { bg: '#FCE4EC', border: '#E91E63', text: '#880E4F' }, // Pink
   { bg: '#E0F7FA', border: '#00BCD4', text: '#006064' }, // Cyan
-  { bg: '#FFF9C4', border: '#FFEB3B', text: '#F57F17' }, // Yellow
+  { bg: '#FFF3E0', border: '#FFA726', text: '#E65100' }, // Amber (more visible)
   { bg: '#EFEBE9', border: '#795548', text: '#3E2723' }, // Brown
 ];
 

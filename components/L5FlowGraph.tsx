@@ -674,7 +674,19 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.stopPropagation();
     setSelectedEdge(edge.id === selectedEdge ? null : edge.id);
-  }, [selectedEdge]);
+
+    // 엣지 선택 시 뷰포트를 엣지 중앙으로 이동
+    if (edge.id !== selectedEdge) {
+      const sourceNode = nodes.find(n => n.id === edge.source);
+      const targetNode = nodes.find(n => n.id === edge.target);
+
+      if (sourceNode && targetNode) {
+        const centerX = (sourceNode.position.x + targetNode.position.x) / 2;
+        const centerY = (sourceNode.position.y + targetNode.position.y) / 2;
+        setCenter(centerX, centerY, { zoom: 1, duration: 500 });
+      }
+    }
+  }, [selectedEdge, nodes, setCenter]);
 
   // 백그라운드 클릭: 전체 뷰로 복귀 또는 선택 해제
   const onPaneClick = useCallback(() => {

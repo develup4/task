@@ -12,6 +12,27 @@ const splitByPipe = (text: string | undefined): string[] => {
   return text.split('|').map(s => s.trim()).filter(s => s);
 };
 
+// 대소문자 무시하고 task ID 찾기 (case mismatch 감지)
+const findTaskIdCaseInsensitive = (
+  targetId: string,
+  tasks: Map<string, L5Task | L6Task>
+): { foundId: string | null; hasCaseMismatch: boolean } => {
+  // 정확한 매칭 시도
+  if (tasks.has(targetId)) {
+    return { foundId: targetId, hasCaseMismatch: false };
+  }
+
+  // 대소문자 무시 매칭
+  const lowerTarget = targetId.toLowerCase();
+  for (const [taskId] of tasks) {
+    if (taskId.toLowerCase() === lowerTarget) {
+      return { foundId: taskId, hasCaseMismatch: true };
+    }
+  }
+
+  return { foundId: null, hasCaseMismatch: false };
+};
+
 // 양방향 연결 감지
 const detectCycles = (tasks: Map<string, L5Task | L6Task>): void => {
   tasks.forEach(task => {
@@ -178,6 +199,71 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           }
         });
 
+        // L5 선행/후행 대소문자 정규화 및 case mismatch 검출
+        const caseMismatchErrors: ValidationError[] = [];
+
+        l5Tasks.forEach(task => {
+          // Predecessors 정규화
+          const normalizedPredecessors: string[] = [];
+          task.predecessors.forEach(predId => {
+            const { foundId, hasCaseMismatch } = findTaskIdCaseInsensitive(predId, l5Tasks);
+            if (foundId) {
+              normalizedPredecessors.push(foundId);
+              if (hasCaseMismatch) {
+                caseMismatchErrors.push({
+                  type: 'case_mismatch',
+                  sourceTask: task.id,
+                  sourceLevel: 'L5',
+                  relatedTask: foundId,
+                  description: `L5 프로세스 "${task.name}"의 선행 프로세스 입력 "${predId}"의 대소문자가 실제 프로세스 ID "${foundId}"와 다릅니다.`
+                });
+              }
+            }
+          });
+          task.predecessors = normalizedPredecessors;
+
+          // Successors 정규화
+          const normalizedSuccessors: string[] = [];
+          task.successors.forEach(succId => {
+            const { foundId, hasCaseMismatch } = findTaskIdCaseInsensitive(succId, l5Tasks);
+            if (foundId) {
+              normalizedSuccessors.push(foundId);
+              if (hasCaseMismatch) {
+                caseMismatchErrors.push({
+                  type: 'case_mismatch',
+                  sourceTask: task.id,
+                  sourceLevel: 'L5',
+                  relatedTask: foundId,
+                  description: `L5 프로세스 "${task.name}"의 후행 프로세스 입력 "${succId}"의 대소문자가 실제 프로세스 ID "${foundId}"와 다릅니다.`
+                });
+              }
+            }
+          });
+          task.successors = normalizedSuccessors;
+        });
+
+        // L6 선행/후행 대소문자 정규화 및 case mismatch 검출
+        l6Tasks.forEach(task => {
+          // Successors 정규화 (L6는 successors만 엑셀에 입력됨)
+          const normalizedSuccessors: string[] = [];
+          task.successors.forEach(succId => {
+            const { foundId, hasCaseMismatch } = findTaskIdCaseInsensitive(succId, l6Tasks);
+            if (foundId) {
+              normalizedSuccessors.push(foundId);
+              if (hasCaseMismatch) {
+                caseMismatchErrors.push({
+                  type: 'case_mismatch',
+                  sourceTask: task.id,
+                  sourceLevel: 'L6',
+                  relatedTask: foundId,
+                  description: `L6 액티비티 "${task.name}"의 후행 액티비티 입력 "${succId}"의 대소문자가 실제 액티비티 ID "${foundId}"와 다릅니다.`
+                });
+              }
+            }
+          });
+          task.successors = normalizedSuccessors;
+        });
+
         // L6의 predecessors 계산 (successors의 역방향)
         l6Tasks.forEach(task => {
           task.successors.forEach(succId => {
@@ -205,7 +291,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
         calculateCumulativeMM(l5Tasks);
 
         // 누락된 프로세스 감지 및 추가
-        const errors: ValidationError[] = [];
+        const errors: ValidationError[] = [...caseMismatchErrors];
 
         // 양방향 오류 수집 (L5)
         l5Tasks.forEach(task => {

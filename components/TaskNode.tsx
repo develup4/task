@@ -29,9 +29,7 @@ export interface TaskNodeData {
 const TaskNode = memo(({ data }: NodeProps<any>) => {
   const colors = getColorForCategory(data.category);
 
-  const borderColor = data.hasCycle
-    ? '#F44336' // Red for cycle error
-    : data.isSearched
+  const borderColor = data.isSearched
     ? '#FFC107' // Yellow/Amber for searched node
     : data.isSelected
     ? '#000000' // Black for selected
@@ -86,40 +84,8 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
           style={{ background: colors.border, width: '8px', height: '8px' }}
         />
 
-        <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', wordBreak: 'break-word', position: 'relative', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ flex: 1 }}>{data.label}</span>
-          {(data.hasError || data.hasCycle) && (
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                data.onErrorClick?.();
-              }}
-              style={{
-                cursor: 'pointer',
-                color: '#F44336',
-                fontSize: '18px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.2)';
-                e.currentTarget.style.transform = 'scale(1.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-              title="에러 보기"
-            >
-              ⚠️
-            </span>
-          )}
+        <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', wordBreak: 'break-word' }}>
+          {data.isL6 ? `[L6] ${data.label}` : data.label}
         </div>
 
         <div style={{ fontSize: '11px', color: colors.text, opacity: 0.8, lineHeight: '1.4' }}>

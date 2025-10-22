@@ -592,7 +592,19 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.stopPropagation();
     setSelectedEdge(edge.id === selectedEdge ? null : edge.id);
-  }, [selectedEdge]);
+
+    // 엣지 선택 시 뷰포트를 엣지 중앙으로 이동
+    if (edge.id !== selectedEdge) {
+      const sourceNode = nodes.find(n => n.id === edge.source);
+      const targetNode = nodes.find(n => n.id === edge.target);
+
+      if (sourceNode && targetNode) {
+        const centerX = (sourceNode.position.x + targetNode.position.x) / 2;
+        const centerY = (sourceNode.position.y + targetNode.position.y) / 2;
+        setCenter(centerX, centerY, { zoom: 1, duration: 500 });
+      }
+    }
+  }, [selectedEdge, nodes, setCenter]);
 
   // 패널 클릭 시 L5-filtered 모드로 복귀
   const onPaneClick = useCallback(() => {
