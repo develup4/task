@@ -142,6 +142,8 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                           error.type === 'self_loop_error' ? '#fef3c7' :
                           error.type === 'empty_predecessor_but_referenced' ? '#fde68a' :
                           error.type === 'empty_successor_but_referenced' ? '#fde68a' :
+                          error.type === 'case_mismatch' ? '#dbeafe' :
+                          error.type === 'mismatch_predecessor_successor' ? '#fce7f3' :
                           '#fecaca',
                         color:
                           error.type === 'missing_predecessor' ? '#9a3412' :
@@ -149,6 +151,8 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                           error.type === 'self_loop_error' ? '#92400e' :
                           error.type === 'empty_predecessor_but_referenced' ? '#78350f' :
                           error.type === 'empty_successor_but_referenced' ? '#78350f' :
+                          error.type === 'case_mismatch' ? '#1e40af' :
+                          error.type === 'mismatch_predecessor_successor' ? '#9f1239' :
                           '#991b1b',
                         fontSize: '12px',
                         border: `1px solid ${
@@ -157,6 +161,8 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                           error.type === 'self_loop_error' ? '#fbbf24' :
                           error.type === 'empty_predecessor_but_referenced' ? '#fbbf24' :
                           error.type === 'empty_successor_but_referenced' ? '#fbbf24' :
+                          error.type === 'case_mismatch' ? '#93c5fd' :
+                          error.type === 'mismatch_predecessor_successor' ? '#f9a8d4' :
                           '#f87171'
                         }`,
                         fontWeight: 500,
@@ -167,7 +173,10 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                        error.type === 'self_loop_error' ? 'Self-Loop 오류' :
                        error.type === 'empty_predecessor_but_referenced' ? '선행 입력 누락' :
                        error.type === 'empty_successor_but_referenced' ? '후행 입력 누락' :
-                       '양방향 오류'}
+                       error.type === 'case_mismatch' ? '대소문자 오류' :
+                       error.type === 'mismatch_predecessor_successor' ? '선행/후행 불일치' :
+                       error.type === 'bidirectional_error' ? '양방향 오류' :
+                       '알 수 없는 오류'}
                     </span>
                   </td>
                   <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 500 }}>
@@ -178,6 +187,8 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                      error.type === 'self_loop_error' ? '-' :
                      error.type === 'empty_predecessor_but_referenced' ? error.relatedTask :
                      error.type === 'empty_successor_but_referenced' ? error.relatedTask :
+                     error.type === 'case_mismatch' ? error.relatedTask :
+                     error.type === 'mismatch_predecessor_successor' ? error.relatedTask :
                      error.missingTask}
                   </td>
                   <td style={{ padding: '12px', color: '#666' }}>
