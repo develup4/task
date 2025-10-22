@@ -117,13 +117,19 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [searchedNodeId, setSearchedNodeId] = useState<string | null>(null);
   const [returnTarget, setReturnTarget] = useState<string | null>(null);
-  const { setCenter } = useReactFlow();
+  const [shouldFitView, setShouldFitView] = useState(true);
+  const { setCenter, fitView } = useReactFlow();
 
   // 노드와 엣지 생성
   useEffect(() => {
     if (!processedData) return;
 
     const tasks = getFilteredL5Tasks();
+
+    // 초기 로드 시에만 fitView 활성화
+    if (viewMode === 'l5-all' && !returnTarget) {
+      setShouldFitView(true);
+    }
 
     const initialNodes = tasks.map((task) => ({
       id: task.id,
@@ -373,6 +379,9 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
   // L5-all로 복귀 시 이전에 선택된 노드로 뷰포트 이동
   useEffect(() => {
     if (viewMode === 'l5-all' && returnTarget && nodes.length > 0) {
+      // fitView 비활성화
+      setShouldFitView(false);
+
       const targetNode = (nodes as Node[]).find(n => n.id === returnTarget);
       if (targetNode) {
         setTimeout(() => {
@@ -384,6 +393,9 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
           // 복귀 완료 후 타겟 초기화
           setReturnTarget(null);
         }, 100);
+      } else {
+        // 타겟 노드를 찾지 못한 경우에도 초기화
+        setReturnTarget(null);
       }
     }
   }, [viewMode, returnTarget, nodes, setCenter]);
@@ -497,7 +509,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
-        fitView
+        fitView={shouldFitView}
         minZoom={0.1}
         maxZoom={2}
       >
