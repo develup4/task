@@ -250,6 +250,17 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
       setShouldFitView(true);
     }
 
+    // 에러가 있는 노드들 찾기
+    const nodeErrors = new Map<string, number[]>();
+    processedData.errors.forEach((error, index) => {
+      if (error.sourceLevel === 'L5') {
+        if (!nodeErrors.has(error.sourceTask)) {
+          nodeErrors.set(error.sourceTask, []);
+        }
+        nodeErrors.get(error.sourceTask)!.push(index);
+      }
+    });
+
     const initialNodes = tasks.map((task) => ({
       id: task.id,
       type: 'task',
@@ -268,6 +279,17 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
         fullData: task,
         isL5: true,
         isL6: false,
+        hasError: nodeErrors.has(task.id),
+        onErrorClick: () => {
+          // 첫 번째 에러로 스크롤
+          const errorIndex = nodeErrors.get(task.id)?.[0];
+          if (errorIndex !== undefined) {
+            const errorRow = document.getElementById(`error-row-${task.id}-${errorIndex}`);
+            if (errorRow) {
+              errorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        },
       },
     }));
 

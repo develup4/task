@@ -390,6 +390,18 @@ function L6FlowGraphInner() {
     });
 
     const allEdges = [...l6Edges, ...l5ToL6Edges];
+
+    // 에러가 있는 노드들 찾기
+    const nodeErrors = new Map<string, number[]>();
+    processedData.errors.forEach((error, index) => {
+      if (error.sourceLevel === 'L6') {
+        if (!nodeErrors.has(error.sourceTask)) {
+          nodeErrors.set(error.sourceTask, []);
+        }
+        nodeErrors.get(error.sourceTask)!.push(index);
+      }
+    });
+
     const l6Nodes = l6Tasks.map((task) => {
       // 선택된 엣지와 연결된 노드인지 확인
       let isHighlighted = false;
@@ -416,6 +428,17 @@ function L6FlowGraphInner() {
           fullData: task,
           isL5: false,
           isL6: true,
+          hasError: nodeErrors.has(task.id),
+          onErrorClick: () => {
+            // 첫 번째 에러로 스크롤
+            const errorIndex = nodeErrors.get(task.id)?.[0];
+            if (errorIndex !== undefined) {
+              const errorRow = document.getElementById(`error-row-${task.id}-${errorIndex}`);
+              if (errorRow) {
+                errorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }
+          },
         },
         style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
       };
