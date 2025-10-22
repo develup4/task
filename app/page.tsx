@@ -64,27 +64,29 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            {/* Workflow Logo */}
-            <svg className="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            {/* Breadcrumb */}
-            <div className="text-sm text-gray-600">
-              {getBreadcrumb()}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-[95%] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              {/* Workflow Logo */}
+              <svg className="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {/* Breadcrumb */}
+              <div className="text-sm text-gray-600">
+                {getBreadcrumb()}
+              </div>
             </div>
+            <FileUploader />
           </div>
-          <FileUploader />
+          <h1 className="text-xl font-semibold text-gray-800">Workflow Viewer</h1>
         </div>
-        <h1 className="text-xl font-semibold text-gray-800">Workflow Viewer</h1>
       </header>
 
       {/* Content */}
       {!processedData ? (
         <div className="flex-1 flex items-center justify-center bg-gray-50">
-          <div className="text-center">
+          <div className="max-w-[95%] mx-auto text-center">
             <div className="text-6xl mb-4">📊</div>
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
               엑셀 파일을 업로드하세요
@@ -95,7 +97,7 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden max-w-[95%] mx-auto w-full">
           {/* Tabs */}
           <div className="bg-white px-6 relative">
             <div className="flex justify-between items-end">
