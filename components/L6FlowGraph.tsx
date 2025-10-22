@@ -144,41 +144,52 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
   nodes.forEach(node => calculateLevel(node.id));
 
-  // 레벨별 노드 개수 확인 및 재조정
-  const levelCounts = new Map<number, number>();
-  nodes.forEach(node => {
-    const level = levels.get(node.id) || 0;
-    levelCounts.set(level, (levelCounts.get(level) || 0) + 1);
-  });
+  // 레벨별 노드 개수 확인 및 재조정 (반복 수행)
+  for (let iteration = 0; iteration < 3; iteration++) {
+    const levelCounts = new Map<number, number>();
+    nodes.forEach(node => {
+      const level = levels.get(node.id) || 0;
+      levelCounts.set(level, (levelCounts.get(level) || 0) + 1);
+    });
 
-  // 평균 노드 개수 계산 (level 0 제외)
-  const nonZeroLevels = Array.from(levelCounts.entries()).filter(([level]) => level > 0);
-  const avgNodesPerLevel = nonZeroLevels.length > 0
-    ? nonZeroLevels.reduce((sum, [, count]) => sum + count, 0) / nonZeroLevels.length
-    : 0;
+    // 노드가 적은 레벨 찾기 (5개 이하)
+    const sparseLevels = new Set<number>();
+    levelCounts.forEach((count, level) => {
+      if (level > 0 && count <= 5) {
+        sparseLevels.add(level);
+      }
+    });
 
-  // 노드가 너무 적은 레벨 찾기 (평균의 30% 미만)
-  const sparseLevels = new Set<number>();
-  levelCounts.forEach((count, level) => {
-    if (level > 0 && count < avgNodesPerLevel * 0.3 && count < 3) {
-      sparseLevels.add(level);
-    }
-  });
+    if (sparseLevels.size === 0) break;
 
-  // 희소 레벨의 노드들을 인접 레벨로 병합
-  if (sparseLevels.size > 0) {
+    // 희소 레벨의 노드들을 인접 레벨로 병합
+    let hasChanges = false;
     nodes.forEach(node => {
       const currentLevel = levels.get(node.id) || 0;
       if (sparseLevels.has(currentLevel) && currentLevel > 0) {
         const outgoingEdges = edges.filter(e => e.source === node.id);
+        const incomingEdges = edges.filter(e => e.target === node.id);
+
+        // 단일 후행을 가진 경우: 후행과 병합
         if (outgoingEdges.length === 1) {
           const successorLevel = levels.get(outgoingEdges[0].target) || 0;
           if (successorLevel > 0) {
             levels.set(node.id, successorLevel);
+            hasChanges = true;
+          }
+        }
+        // 단일 선행을 가진 경우: 선행과 병합
+        else if (incomingEdges.length === 1) {
+          const predecessorLevel = levels.get(incomingEdges[0].source) || 0;
+          if (predecessorLevel > currentLevel) {
+            levels.set(node.id, predecessorLevel);
+            hasChanges = true;
           }
         }
       }
     });
+
+    if (!hasChanges) break;
   }
 
   const levelGroups = new Map<number, Node[]>();
