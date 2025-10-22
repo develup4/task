@@ -214,9 +214,10 @@ interface L5FlowGraphInnerProps {
   searchQuery: string;
   searchTrigger: number;
   onSearchResultsChange?: (count: number, index: number) => void;
+  onNavigateToErrorReport?: () => void;
 }
 
-function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }: L5FlowGraphInnerProps) {
+function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, onNavigateToErrorReport }: L5FlowGraphInnerProps) {
   const {
     processedData,
     viewMode,
@@ -261,12 +262,8 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
       }
     });
 
-    console.log('L5 Node Errors:', nodeErrors);
-    console.log('Total L5 errors:', processedData.errors.filter(e => e.sourceLevel === 'L5').length);
-
     const initialNodes = tasks.map((task) => {
       const hasError = nodeErrors.has(task.id);
-      console.log(`Task ${task.id}: hasError=${hasError}, hasCycle=${task.hasCycle}`);
 
       return {
         id: task.id,
@@ -288,14 +285,18 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
           isL6: false,
           hasError,
           onErrorClick: () => {
-            // 첫 번째 에러로 스크롤
-            const errorIndex = nodeErrors.get(task.id)?.[0];
-            if (errorIndex !== undefined) {
-              const errorRow = document.getElementById(`error-row-${task.id}-${errorIndex}`);
-              if (errorRow) {
-                errorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // 에러 리포트 탭으로 이동
+            onNavigateToErrorReport?.();
+            // 약간의 딜레이 후 에러 행으로 스크롤
+            setTimeout(() => {
+              const errorIndex = nodeErrors.get(task.id)?.[0];
+              if (errorIndex !== undefined) {
+                const errorRow = document.getElementById(`error-row-${task.id}-${errorIndex}`);
+                if (errorRow) {
+                  errorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
               }
-            }
+            }, 100);
           },
         },
       };
@@ -416,9 +417,6 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
       initialEdges,
       viewMode === 'l5-filtered'
     );
-
-    console.log(nodes);
-    console.log(edges);
 
     // 가장 왼쪽 노드들 찾기 (레벨 0 노드들 = 최후단 작업)
     const startNodeIds = new Set<string>();
@@ -700,12 +698,13 @@ interface L5FlowGraphProps {
   searchQuery?: string;
   searchTrigger?: number;
   onSearchResultsChange?: (count: number, index: number) => void;
+  onNavigateToErrorReport?: () => void;
 }
 
-export default function L5FlowGraph({ searchQuery = '', searchTrigger = 0, onSearchResultsChange }: L5FlowGraphProps) {
+export default function L5FlowGraph({ searchQuery = '', searchTrigger = 0, onSearchResultsChange, onNavigateToErrorReport }: L5FlowGraphProps) {
   return (
     <ReactFlowProvider>
-      <L5FlowGraphInner searchQuery={searchQuery} searchTrigger={searchTrigger} onSearchResultsChange={onSearchResultsChange} />
+      <L5FlowGraphInner searchQuery={searchQuery} searchTrigger={searchTrigger} onSearchResultsChange={onSearchResultsChange} onNavigateToErrorReport={onNavigateToErrorReport} />
     </ReactFlowProvider>
   );
 }

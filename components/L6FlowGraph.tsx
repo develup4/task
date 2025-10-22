@@ -154,7 +154,11 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   return { nodes: layoutedNodes, edges, levels };
 };
 
-function L6FlowGraphInner() {
+interface L6FlowGraphInnerProps {
+  onNavigateToErrorReport?: () => void;
+}
+
+function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
   const {
     processedData,
     selectedL5,
@@ -402,12 +406,8 @@ function L6FlowGraphInner() {
       }
     });
 
-    console.log('L6 Node Errors:', nodeErrors);
-    console.log('Total L6 errors:', processedData.errors.filter(e => e.sourceLevel === 'L6').length);
-
     const l6Nodes = l6Tasks.map((task) => {
       const hasError = nodeErrors.has(task.id);
-      console.log(`L6 Task ${task.id}: hasError=${hasError}, hasCycle=${task.hasCycle}`);
       // 선택된 엣지와 연결된 노드인지 확인
       let isHighlighted = false;
       if (selectedEdge) {
@@ -435,14 +435,18 @@ function L6FlowGraphInner() {
           isL6: true,
           hasError,
           onErrorClick: () => {
-            // 첫 번째 에러로 스크롤
-            const errorIndex = nodeErrors.get(task.id)?.[0];
-            if (errorIndex !== undefined) {
-              const errorRow = document.getElementById(`error-row-${task.id}-${errorIndex}`);
-              if (errorRow) {
-                errorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // 에러 리포트 탭으로 이동
+            onNavigateToErrorReport?.();
+            // 약간의 딜레이 후 에러 행으로 스크롤
+            setTimeout(() => {
+              const errorIndex = nodeErrors.get(task.id)?.[0];
+              if (errorIndex !== undefined) {
+                const errorRow = document.getElementById(`error-row-${task.id}-${errorIndex}`);
+                if (errorRow) {
+                  errorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
               }
-            }
+            }, 100);
           },
         },
         style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
@@ -543,10 +547,14 @@ function L6FlowGraphInner() {
   );
 }
 
-export default function L6FlowGraph() {
+interface L6FlowGraphProps {
+  onNavigateToErrorReport?: () => void;
+}
+
+export default function L6FlowGraph({ onNavigateToErrorReport }: L6FlowGraphProps) {
   return (
     <ReactFlowProvider>
-      <L6FlowGraphInner />
+      <L6FlowGraphInner onNavigateToErrorReport={onNavigateToErrorReport} />
     </ReactFlowProvider>
   );
 }

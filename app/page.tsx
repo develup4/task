@@ -175,7 +175,7 @@ export default function Home() {
             {activeTab === 'graph' && (
               <div className="w-full h-full">
                 {viewMode === 'l6-detail' ? (
-                  <L6FlowGraph />
+                  <L6FlowGraph onNavigateToErrorReport={() => setActiveTab('error-list')} />
                 ) : (
                   <L5FlowGraph
                     searchQuery={searchQuery}
@@ -184,6 +184,7 @@ export default function Home() {
                       setSearchResultCount(count);
                       setCurrentSearchIndex(index);
                     }}
+                    onNavigateToErrorReport={() => setActiveTab('error-list')}
                   />
                 )}
               </div>
