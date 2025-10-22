@@ -352,35 +352,39 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           });
         });
 
-        // L5 선행/후행 관계 불일치 검증
+        // L5 선행/후행 입력 누락 검증
         l5Tasks.forEach(task => {
-          // A의 후행이 B라면, B의 선행에 A가 있어야 함
-          task.successors.forEach(succId => {
-            const successor = l5Tasks.get(succId);
-            if (successor && !successor.predecessors.includes(task.id)) {
-              errors.push({
-                type: 'mismatch_predecessor_successor',
-                sourceTask: task.id,
-                sourceLevel: 'L5',
-                relatedTask: succId,
-                description: `L5 프로세스 "${task.name}"의 후행 프로세스가 "${successor.name}"인데, "${successor.name}"의 선행 프로세스에 "${task.name}"가 없습니다.`
-              });
-            }
-          });
+          // 선행이 비어있는데 다른 프로세스의 후행으로 참조되는 경우
+          if (task.predecessors.length === 0) {
+            // 다른 프로세스들 중에서 이 task를 후행으로 가지는 것이 있는지 확인
+            l5Tasks.forEach(otherTask => {
+              if (otherTask.id !== task.id && otherTask.successors.includes(task.id)) {
+                errors.push({
+                  type: 'empty_predecessor_but_referenced',
+                  sourceTask: task.id,
+                  sourceLevel: 'L5',
+                  relatedTask: otherTask.id,
+                  description: `L5 프로세스 "${task.name}"의 선행 프로세스가 비어있지만, "${otherTask.name}"의 후행 프로세스로 참조되고 있습니다.`
+                });
+              }
+            });
+          }
 
-          // A의 선행이 B라면, B의 후행에 A가 있어야 함
-          task.predecessors.forEach(predId => {
-            const predecessor = l5Tasks.get(predId);
-            if (predecessor && !predecessor.successors.includes(task.id)) {
-              errors.push({
-                type: 'mismatch_predecessor_successor',
-                sourceTask: task.id,
-                sourceLevel: 'L5',
-                relatedTask: predId,
-                description: `L5 프로세스 "${task.name}"의 선행 프로세스가 "${predecessor.name}"인데, "${predecessor.name}"의 후행 프로세스에 "${task.name}"가 없습니다.`
-              });
-            }
-          });
+          // 후행이 비어있는데 다른 프로세스의 선행으로 참조되는 경우
+          if (task.successors.length === 0) {
+            // 다른 프로세스들 중에서 이 task를 선행으로 가지는 것이 있는지 확인
+            l5Tasks.forEach(otherTask => {
+              if (otherTask.id !== task.id && otherTask.predecessors.includes(task.id)) {
+                errors.push({
+                  type: 'empty_successor_but_referenced',
+                  sourceTask: task.id,
+                  sourceLevel: 'L5',
+                  relatedTask: otherTask.id,
+                  description: `L5 프로세스 "${task.name}"의 후행 프로세스가 비어있지만, "${otherTask.name}"의 선행 프로세스로 참조되고 있습니다.`
+                });
+              }
+            });
+          }
         });
 
         // L6 프로세스의 선행/후행 검증
@@ -438,35 +442,39 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           });
         });
 
-        // L6 선행/후행 관계 불일치 검증
+        // L6 선행/후행 입력 누락 검증
         l6Tasks.forEach(task => {
-          // A의 후행이 B라면, B의 선행에 A가 있어야 함
-          task.successors.forEach(succId => {
-            const successor = l6Tasks.get(succId);
-            if (successor && !successor.predecessors.includes(task.id)) {
-              errors.push({
-                type: 'mismatch_predecessor_successor',
-                sourceTask: task.id,
-                sourceLevel: 'L6',
-                relatedTask: succId,
-                description: `L6 액티비티 "${task.name}"의 후행 액티비티가 "${successor.name}"인데, "${successor.name}"의 선행 액티비티에 "${task.name}"가 없습니다.`
-              });
-            }
-          });
+          // 선행이 비어있는데 다른 액티비티의 후행으로 참조되는 경우
+          if (task.predecessors.length === 0) {
+            // 다른 액티비티들 중에서 이 task를 후행으로 가지는 것이 있는지 확인
+            l6Tasks.forEach(otherTask => {
+              if (otherTask.id !== task.id && otherTask.successors.includes(task.id)) {
+                errors.push({
+                  type: 'empty_predecessor_but_referenced',
+                  sourceTask: task.id,
+                  sourceLevel: 'L6',
+                  relatedTask: otherTask.id,
+                  description: `L6 액티비티 "${task.name}"의 선행 액티비티가 비어있지만, "${otherTask.name}"의 후행 액티비티로 참조되고 있습니다.`
+                });
+              }
+            });
+          }
 
-          // A의 선행이 B라면, B의 후행에 A가 있어야 함
-          task.predecessors.forEach(predId => {
-            const predecessor = l6Tasks.get(predId);
-            if (predecessor && !predecessor.successors.includes(task.id)) {
-              errors.push({
-                type: 'mismatch_predecessor_successor',
-                sourceTask: task.id,
-                sourceLevel: 'L6',
-                relatedTask: predId,
-                description: `L6 액티비티 "${task.name}"의 선행 액티비티가 "${predecessor.name}"인데, "${predecessor.name}"의 후행 액티비티에 "${task.name}"가 없습니다.`
-              });
-            }
-          });
+          // 후행이 비어있는데 다른 액티비티의 선행으로 참조되는 경우
+          if (task.successors.length === 0) {
+            // 다른 액티비티들 중에서 이 task를 선행으로 가지는 것이 있는지 확인
+            l6Tasks.forEach(otherTask => {
+              if (otherTask.id !== task.id && otherTask.predecessors.includes(task.id)) {
+                errors.push({
+                  type: 'empty_successor_but_referenced',
+                  sourceTask: task.id,
+                  sourceLevel: 'L6',
+                  relatedTask: otherTask.id,
+                  description: `L6 액티비티 "${task.name}"의 후행 액티비티가 비어있지만, "${otherTask.name}"의 선행 액티비티로 참조되고 있습니다.`
+                });
+              }
+            });
+          }
         });
 
         resolve({
