@@ -60,10 +60,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   // 액션
   setProcessedData: (data) => {
     // 데이터가 설정될 때 모든 L4 카테고리와 작성팀을 기본적으로 표시
-    const categories = new Set<string>();
+    const categories = data.l4Categories; // excelParser에서 이미 수집된 카테고리 사용 (Unspecified 포함)
     const teams = new Set<string>();
     data.l5Tasks.forEach(task => {
-      categories.add(task.l4Category);
       if (task.작성팀) teams.add(task.작성팀);
     });
     set({ processedData: data, visibleL4Categories: categories, visibleTeams: teams });
@@ -90,9 +89,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   showAllL4Categories: () => set((state) => {
     if (!state.processedData) return state;
-    const allCategories = new Set<string>();
-    state.processedData.l5Tasks.forEach(task => allCategories.add(task.l4Category));
-    return { visibleL4Categories: allCategories };
+    return { visibleL4Categories: state.processedData.l4Categories };
   }),
 
   hideAllL4Categories: () => set({ visibleL4Categories: new Set() }),
@@ -100,9 +97,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   getL4Categories: () => {
     const { processedData } = get();
     if (!processedData) return [];
-    const categories = new Set<string>();
-    processedData.l5Tasks.forEach(task => categories.add(task.l4Category));
-    return Array.from(categories).sort();
+    return Array.from(processedData.l4Categories).sort();
   },
 
   // 작성팀 필터 액션

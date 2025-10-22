@@ -599,8 +599,8 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
 
     // 엣지 선택 시 뷰포트를 엣지 중앙으로 이동
     if (edge.id !== selectedEdge) {
-      const sourceNode = nodes.find(n => n.id === edge.source);
-      const targetNode = nodes.find(n => n.id === edge.target);
+      const sourceNode = (nodes as Node[]).find(n => n.id === edge.source);
+      const targetNode = (nodes as Node[]).find(n => n.id === edge.target);
 
       if (sourceNode && targetNode) {
         const centerX = (sourceNode.position.x + targetNode.position.x) / 2;

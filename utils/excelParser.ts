@@ -218,6 +218,9 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
                   description: `L5 프로세스 "${task.name}"의 선행 프로세스 입력 "${predId}"의 대소문자가 실제 프로세스 ID "${foundId}"와 다릅니다.`
                 });
               }
+            } else {
+              // 매칭되지 않은 ID는 그대로 유지 (누락된 프로세스로 처리됨)
+              normalizedPredecessors.push(predId);
             }
           });
           task.predecessors = normalizedPredecessors;
@@ -237,6 +240,9 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
                   description: `L5 프로세스 "${task.name}"의 후행 프로세스 입력 "${succId}"의 대소문자가 실제 프로세스 ID "${foundId}"와 다릅니다.`
                 });
               }
+            } else {
+              // 매칭되지 않은 ID는 그대로 유지 (누락된 프로세스로 처리됨)
+              normalizedSuccessors.push(succId);
             }
           });
           task.successors = normalizedSuccessors;
@@ -259,6 +265,9 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
                   description: `L6 액티비티 "${task.name}"의 후행 액티비티 입력 "${succId}"의 대소문자가 실제 액티비티 ID "${foundId}"와 다릅니다.`
                 });
               }
+            } else {
+              // 매칭되지 않은 ID는 그대로 유지 (누락된 액티비티로 처리됨)
+              normalizedSuccessors.push(succId);
             }
           });
           task.successors = normalizedSuccessors;
