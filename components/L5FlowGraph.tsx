@@ -261,19 +261,19 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
               animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
-                width: 20,
-                height: 20,
-                color: '#F44336',
+                width: 16,
+                height: 16,
+                color: 'rgba(244, 67, 54, 0.5)',
               },
               style: {
-                stroke: '#F44336',
-                strokeWidth: isSelected ? 4 : 3,
-                strokeDasharray: '5,5',
+                stroke: 'rgba(244, 67, 54, 0.5)',
+                strokeWidth: isSelected ? 3 : 1.5,
+                strokeDasharray: '8,4',
                 opacity: isHidden ? 0.1 : 1,
               },
               data: { offset: 15 }, // 위쪽으로 offset
               label: '⚠ 양방향',
-              labelStyle: { fill: '#F44336', fontWeight: 'bold' },
+              labelStyle: { fill: '#F44336', fontWeight: 'bold', fontSize: '11px' },
               labelBgStyle: { fill: '#FFEBEE' },
             });
 
@@ -286,14 +286,14 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
               animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
-                width: 20,
-                height: 20,
-                color: '#F44336',
+                width: 16,
+                height: 16,
+                color: 'rgba(244, 67, 54, 0.5)',
               },
               style: {
-                stroke: '#F44336',
-                strokeWidth: isSelected ? 4 : 3,
-                strokeDasharray: '5,5',
+                stroke: 'rgba(244, 67, 54, 0.5)',
+                strokeWidth: isSelected ? 3 : 1.5,
+                strokeDasharray: '8,4',
                 opacity: isHidden ? 0.1 : 1,
               },
               data: { offset: -15 }, // 아래쪽으로 offset
@@ -315,14 +315,14 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange }:
               animated: highlightedTasks.has(task.id) || highlightedTasks.has(successorId),
               markerEnd: {
                 type: 'arrowclosed',
-                width: 20,
-                height: 20,
+                width: 16,
+                height: 16,
                 color: colors.border,
               },
               style: {
                 stroke: colors.border,
-                strokeWidth: isSelected ? 4 : 2,
-                opacity: isHidden ? 0.1 : 1,
+                strokeWidth: isSelected ? 3 : 1.5,
+                opacity: isHidden ? 0.1 : 0.6,
               },
             });
 

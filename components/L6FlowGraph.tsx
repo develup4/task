@@ -346,19 +346,19 @@ function L6FlowGraphInner() {
         type: 'default',
         markerEnd: {
           type: 'arrowclosed',
-          width: 20,
-          height: 20,
-          color: edge.isBidirectional ? '#F44336' : colors.border,
+          width: 16,
+          height: 16,
+          color: edge.isBidirectional ? 'rgba(244, 67, 54, 0.5)' : colors.border,
         },
         style: {
-          stroke: edge.isBidirectional ? '#F44336' : colors.border,
-          strokeWidth: isSelected ? 4 : (edge.isBidirectional ? 3 : 2),
-          strokeDasharray: edge.isBidirectional ? '5,5' : undefined,
-          opacity: isHidden ? 0.1 : 1,
+          stroke: edge.isBidirectional ? 'rgba(244, 67, 54, 0.5)' : colors.border,
+          strokeWidth: isSelected ? 3 : (edge.isBidirectional ? 1.5 : 1.5),
+          strokeDasharray: edge.isBidirectional ? '8,4' : undefined,
+          opacity: isHidden ? 0.1 : (edge.isBidirectional ? 1 : 0.6),
         },
         data: { offset },
         label: edge.isBidirectional && isFirstOfBidirectional ? '⚠ 양방향' : undefined,
-        labelStyle: edge.isBidirectional ? { fill: '#F44336', fontWeight: 'bold' } : undefined,
+        labelStyle: edge.isBidirectional ? { fill: '#F44336', fontWeight: 'bold', fontSize: '11px' } : undefined,
         labelBgStyle: edge.isBidirectional ? { fill: '#FFEBEE' } : undefined,
       };
     });
@@ -375,15 +375,15 @@ function L6FlowGraphInner() {
         type: 'default',
         markerEnd: {
           type: 'arrowclosed',
-          width: 15,
-          height: 15,
-          color: '#9E9E9E',
+          width: 12,
+          height: 12,
+          color: 'rgba(158, 158, 158, 0.5)',
         },
         style: {
-          stroke: '#9E9E9E',
-          strokeWidth: isSelected ? 3 : 1,
-          strokeDasharray: '5,5',
-          opacity: isHidden ? 0.05 : 1,
+          stroke: 'rgba(158, 158, 158, 0.5)',
+          strokeWidth: isSelected ? 2 : 1,
+          strokeDasharray: '8,4',
+          opacity: isHidden ? 0.05 : 0.6,
         },
       };
     });
