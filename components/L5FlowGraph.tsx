@@ -97,35 +97,49 @@ const edgeTypes = {
 const getLayoutedElements = (nodes: Node[], edges: Edge[], isFilteredMode: boolean = false): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const levels = new Map<string, number>();
+  const visiting = new Set<string>();
   const visited = new Set<string>();
 
   // 각 노드의 레벨 계산 (후행 노드 기준)
-  const calculateLevel = (nodeId: string): number => {
+  const calculateLevel = (nodeId: string, depth: number = 0): number => {
     if (levels.has(nodeId)) return levels.get(nodeId)!;
-    if (visited.has(nodeId)) return 0; // 순환 참조 방지
 
-    visited.add(nodeId);
+    // 순환 참조 감지 - 현재 경로에서 다시 방문하는 경우
+    if (visiting.has(nodeId)) {
+      // 순환 참조가 있는 노드는 깊이를 기반으로 임시 레벨 할당
+      return depth;
+    }
+
+    if (visited.has(nodeId)) return levels.get(nodeId) || 0;
+
+    visiting.add(nodeId);
 
     // 나가는 엣지 (후행 작업)을 기준으로 레벨 계산
     const outgoingEdges = edges.filter(e => e.source === nodeId);
 
+    let level = 0;
+
     // 후행 작업이 없으면 level 0 (최후단)
     if (outgoingEdges.length === 0) {
-      levels.set(nodeId, 0);
-      return 0;
+      level = 0;
+    } else {
+      // 후행 노드들의 최대 레벨 + 1
+      const successorLevels = outgoingEdges.map(e => calculateLevel(e.target, depth + 1));
+      level = Math.max(...successorLevels, 0) + 1;
     }
 
-    // 후행 노드들의 최대 레벨 + 1
-    const maxSuccessorLevel = Math.max(
-      ...outgoingEdges.map(e => calculateLevel(e.target))
-    );
-    const level = maxSuccessorLevel + 1;
+    visiting.delete(nodeId);
+    visited.add(nodeId);
     levels.set(nodeId, level);
     return level;
   };
 
   // 모든 노드의 레벨 계산
-  nodes.forEach(node => calculateLevel(node.id));
+  nodes.forEach(node => {
+    if (!visited.has(node.id)) {
+      calculateLevel(node.id, 0);
+    }
+  });
 
   // 레벨별로 노드 그룹화
   const levelGroups = new Map<number, Node[]>();
