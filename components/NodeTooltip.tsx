@@ -1,6 +1,7 @@
 'use client';
 
 import { L5Task, L6Task } from '@/types/task';
+import { formatDecimal } from '@/utils/format';
 
 interface NodeTooltipProps {
   data: Partial<L5Task> | Partial<L6Task>;
@@ -10,7 +11,7 @@ interface NodeTooltipProps {
 
 export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
   return (
-    <div className="absolute left-full ml-4 top-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" style={{ zIndex: 9999 }}>
+    <div className="absolute left-full ml-4 top-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" style={{ zIndex: 10000 }}>
       <div className="bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700 p-5 min-w-[420px] max-w-[600px]" style={{ boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)' }}>
         {/* Header */}
         <div className="mb-4 pb-4 border-b-2 border-slate-700">
@@ -34,21 +35,21 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div className="bg-gradient-to-br from-blue-600/30 to-blue-700/20 border border-blue-500/30 p-2.5 rounded-lg">
               <div className="text-xs text-blue-300 mb-1">필요인력</div>
-              <div className="font-bold text-white text-base">{data.필요인력}명</div>
+              <div className="font-bold text-white text-base">{formatDecimal(data.필요인력)}명</div>
             </div>
             <div className="bg-gradient-to-br from-green-600/30 to-green-700/20 border border-green-500/30 p-2.5 rounded-lg">
               <div className="text-xs text-green-300 mb-1">필요기간</div>
-              <div className="font-bold text-white text-base">{data.필요기간}주</div>
+              <div className="font-bold text-white text-base">{formatDecimal(data.필요기간)}주</div>
             </div>
             <div className="bg-gradient-to-br from-purple-600/30 to-purple-700/20 border border-purple-500/30 p-2.5 rounded-lg">
               <div className="text-xs text-purple-300 mb-1">MM</div>
-              <div className="font-bold text-white text-base">{data.MM?.toFixed(1)}</div>
+              <div className="font-bold text-white text-base">{formatDecimal(data.MM)}</div>
             </div>
           </div>
           {'cumulativeMM' in data && data.cumulativeMM !== undefined && (
             <div className="mt-2 bg-gradient-to-br from-orange-600/30 to-orange-700/20 border border-orange-500/30 p-2.5 rounded-lg">
               <div className="text-xs text-orange-300 mb-1">누적 MM</div>
-              <div className="font-bold text-white text-base">{data.cumulativeMM.toFixed(1)}</div>
+              <div className="font-bold text-white text-base">{formatDecimal(data.cumulativeMM)}</div>
             </div>
           )}
         </div>

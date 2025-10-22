@@ -3,6 +3,7 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { getColorForCategory } from '@/utils/colors';
+import { formatDecimal } from '@/utils/format';
 import NodeTooltip from './NodeTooltip';
 import { L5Task, L6Task } from '@/types/task';
 
@@ -64,7 +65,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
     : colors.bg;
 
   return (
-    <div className="group relative">
+    <div className="group relative" style={{ zIndex: 1 }}>
       <div
         style={{
           padding: '12px 16px',
@@ -76,6 +77,8 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
           maxWidth: '250px',
           boxShadow,
           transition: 'all 0.2s ease',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         <Handle
@@ -89,8 +92,8 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
         </div>
 
         <div style={{ fontSize: '11px', color: colors.text, opacity: 0.8, lineHeight: '1.4' }}>
-          <div>P: {data.필요인력} | T: {data.필요기간}W</div>
-          <div>MM: {data.MM.toFixed(1)}</div>
+          <div>P: {formatDecimal(data.필요인력)} | T: {formatDecimal(data.필요기간)}W</div>
+          <div>MM: {formatDecimal(data.MM)}</div>
           {data.isStartNode && data.cumulativeMM !== undefined && (
             <div style={{
               fontWeight: 700,
@@ -101,7 +104,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
               color: '#FF6B35',
               fontSize: '12px'
             }}>
-              누적: {data.cumulativeMM.toFixed(1)}MM
+              누적: {formatDecimal(data.cumulativeMM)}MM
             </div>
           )}
         </div>
