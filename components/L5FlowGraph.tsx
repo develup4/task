@@ -262,14 +262,8 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
       }
     });
 
-    console.log('=== L5 Node Errors ===');
-    console.log('Node errors map:', nodeErrors);
-    console.log('Tasks count:', tasks.length);
-
     const initialNodes = tasks.map((task) => {
       const hasError = nodeErrors.has(task.id);
-      if (hasError) {
-        console.log(`Node ${task.id} has error: hasError=${hasError}, hasCycle=${task.hasCycle}`);
 
       return {
         id: task.id,

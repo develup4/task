@@ -609,12 +609,6 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           }
         });
 
-        console.log('=== Total Errors Found ===');
-        console.log('Total errors:', errors.length);
-        console.log('L5 errors:', errors.filter(e => e.sourceLevel === 'L5').length);
-        console.log('L6 errors:', errors.filter(e => e.sourceLevel === 'L6').length);
-        console.log('Error details:', errors);
-
         resolve({
           l5Tasks,
           l6Tasks,
