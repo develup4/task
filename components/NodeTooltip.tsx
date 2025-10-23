@@ -235,11 +235,15 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
               <div className="mb-3">
                 <span className="font-semibold text-xs text-gray-600">선행:</span>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {data.predecessors.map((pred, idx) => (
-                    <span key={idx} className="inline-block px-2.5 py-1 bg-gray-100 text-xs text-gray-700 rounded-md border border-gray-300 hover:bg-gray-200 transition-colors">
-                      {pred}
-                    </span>
-                  ))}
+                  {data.predecessors.map((pred, idx) => {
+                    // L6인 경우 "L5ID::L6ID"에서 L6ID만 추출
+                    const displayText = isL6 && pred.includes('::') ? pred.split('::')[1] : pred;
+                    return (
+                      <span key={idx} className="inline-block px-2.5 py-1 bg-gray-100 text-xs text-gray-700 rounded-md border border-gray-300 hover:bg-gray-200 transition-colors">
+                        {displayText}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -247,11 +251,15 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
               <div>
                 <span className="font-semibold text-xs text-gray-600">후행:</span>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {data.successors.map((succ, idx) => (
-                    <span key={idx} className="inline-block px-2.5 py-1 bg-gray-100 text-xs text-gray-700 rounded-md border border-gray-300 hover:bg-gray-200 transition-colors">
-                      {succ}
-                    </span>
-                  ))}
+                  {data.successors.map((succ, idx) => {
+                    // L6인 경우 "L5ID::L6ID"에서 L6ID만 추출
+                    const displayText = isL6 && succ.includes('::') ? succ.split('::')[1] : succ;
+                    return (
+                      <span key={idx} className="inline-block px-2.5 py-1 bg-gray-100 text-xs text-gray-700 rounded-md border border-gray-300 hover:bg-gray-200 transition-colors">
+                        {displayText}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
