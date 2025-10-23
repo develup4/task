@@ -9,8 +9,9 @@ import MMSummaryTable from '@/components/MMSummaryTable';
 import ErrorListTable from '@/components/ErrorListTable';
 import TeamFilter from '@/components/TeamFilter';
 import LeftmostNodeMMTable from '@/components/LeftmostNodeMMTable';
+import HelpGuide from '@/components/HelpGuide';
 
-type Tab = 'graph' | 'l5-table' | 'error-list';
+type Tab = 'graph' | 'l5-table' | 'error-list' | 'help';
 
 export default function Home() {
   const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task } = useAppStore();
@@ -24,7 +25,8 @@ export default function Home() {
   const tabInfo: Record<Tab, { name: string; icon: string }> = {
     'graph': { name: 'Work Flow', icon: '⚡' },
     'l5-table': { name: 'MM Summary', icon: '📊' },
-    'error-list': { name: 'Error Report', icon: '⚠️' }
+    'error-list': { name: 'Error Report', icon: '⚠️' },
+    'help': { name: 'Help', icon: '📖' }
   };
 
   // Breadcrumb 생성 함수
@@ -216,6 +218,11 @@ export default function Home() {
                     <ErrorListTable onNavigateToGraph={() => setActiveTab('graph')} />
                   </div>
                 </div>
+              </div>
+            )}
+            {activeTab === 'help' && (
+              <div className="w-full h-full">
+                <HelpGuide />
               </div>
             )}
           </div>
