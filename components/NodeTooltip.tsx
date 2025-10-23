@@ -15,15 +15,44 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const parentRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const updatePosition = () => {
-      if (parentRef.current) {
+      if (parentRef.current && tooltipRef.current) {
         const rect = parentRef.current.getBoundingClientRect();
-        setPosition({
-          x: rect.right + 16, // 16px margin
-          y: rect.top,
-        });
+        const tooltipRect = tooltipRef.current.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        const margin = 16;
+        const tooltipWidth = 420; // min-w-[420px]
+        const tooltipHeight = tooltipRect.height || 600; // 예상 높이
+
+        let x = rect.right + margin;
+        let y = rect.top;
+
+        // 오른쪽에 공간이 부족하면 왼쪽에 표시
+        if (x + tooltipWidth > viewportWidth) {
+          x = rect.left - tooltipWidth - margin;
+        }
+
+        // 왼쪽도 부족하면 화면 오른쪽 끝에 맞춤
+        if (x < 0) {
+          x = viewportWidth - tooltipWidth - margin;
+        }
+
+        // 아래쪽에 공간이 부족하면 위로 조정
+        if (y + tooltipHeight > viewportHeight) {
+          y = viewportHeight - tooltipHeight - margin;
+        }
+
+        // 위쪽도 부족하면 화면 위쪽에 맞춤
+        if (y < 0) {
+          y = margin;
+        }
+
+        setPosition({ x, y });
       }
     };
 
@@ -52,6 +81,7 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
 
   const tooltipContent = (
     <div
+      ref={tooltipRef}
       className="fixed pointer-events-none"
       style={{
         left: `${position.x}px`,
