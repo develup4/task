@@ -95,8 +95,10 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
 
-        // 헤더를 기준으로 JSON 변환
-        const rawData: any[] = XLSX.utils.sheet_to_json(worksheet);
+        // 첫 번째 행 무시, 두 번째 행을 헤더로, 세 번째 행부터 데이터로 읽기
+        const rawData: any[] = XLSX.utils.sheet_to_json(worksheet, {
+          range: 1  // 0-based index: 1은 두 번째 행부터 시작 (두 번째 행이 헤더가 됨)
+        });
 
         const l5Tasks = new Map<string, L5Task>();
         const l6Tasks = new Map<string, L6Task>();
