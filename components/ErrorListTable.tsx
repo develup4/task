@@ -144,6 +144,7 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                           error.type === 'empty_successor_but_referenced' ? '#fde68a' :
                           error.type === 'case_mismatch' ? '#dbeafe' :
                           error.type === 'mismatch_predecessor_successor' ? '#fce7f3' :
+                          error.type === 'missing_l5_reference' ? '#fecdd3' :
                           '#fecaca',
                         color:
                           error.type === 'missing_predecessor' ? '#9a3412' :
@@ -153,6 +154,7 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                           error.type === 'empty_successor_but_referenced' ? '#78350f' :
                           error.type === 'case_mismatch' ? '#1e40af' :
                           error.type === 'mismatch_predecessor_successor' ? '#9f1239' :
+                          error.type === 'missing_l5_reference' ? '#be123c' :
                           '#991b1b',
                         fontSize: '12px',
                         border: `1px solid ${
@@ -163,6 +165,7 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                           error.type === 'empty_successor_but_referenced' ? '#fbbf24' :
                           error.type === 'case_mismatch' ? '#93c5fd' :
                           error.type === 'mismatch_predecessor_successor' ? '#f9a8d4' :
+                          error.type === 'missing_l5_reference' ? '#fda4af' :
                           '#f87171'
                         }`,
                         fontWeight: 500,
@@ -175,6 +178,7 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                        error.type === 'empty_successor_but_referenced' ? '후행 입력 누락' :
                        error.type === 'case_mismatch' ? '대소문자 오류' :
                        error.type === 'mismatch_predecessor_successor' ? '선행/후행 불일치' :
+                       error.type === 'missing_l5_reference' ? '누락된 L5 참조' :
                        error.type === 'bidirectional_error' ? '양방향 오류' :
                        '알 수 없는 오류'}
                     </span>
@@ -189,6 +193,7 @@ export default function ErrorListTable({ onNavigateToGraph }: ErrorListTableProp
                      error.type === 'empty_successor_but_referenced' ? error.relatedTask :
                      error.type === 'case_mismatch' ? error.relatedTask :
                      error.type === 'mismatch_predecessor_successor' ? error.relatedTask :
+                     error.type === 'missing_l5_reference' ? error.missingTask :
                      error.missingTask}
                   </td>
                   <td style={{ padding: '12px', color: '#666' }}>
