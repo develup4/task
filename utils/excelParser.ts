@@ -662,8 +662,8 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           );
 
           if (l6TasksForL5.length > 0) {
-            const criticalPath = calculateCriticalPath(l6TasksForL5);
-            l5Task.필요기간 = criticalPath.totalDuration;
+            const criticalPathResult = calculateCriticalPath(l6TasksForL5);
+            l5Task.필요기간 = criticalPathResult.totalDuration;
 
             // MM도 재계산 (필요인력 × 필요기간)
             l5Task.MM = l5Task.필요인력 * l5Task.필요기간;

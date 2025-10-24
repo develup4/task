@@ -20,7 +20,7 @@ import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
 import TaskNode, { TaskNodeData } from './TaskNode';
 import { getColorForCategory } from '@/utils/colors';
-import { calculateCriticalPath } from '@/utils/criticalPath';
+import { calculateCriticalPath, groupCriticalPaths } from '@/utils/criticalPath';
 
 // 커스텀 엣지 컴포넌트 - offset을 적용한 Bezier 곡선
 function CustomEdge({
@@ -264,6 +264,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [criticalPathIds, setCriticalPathIds] = useState<Set<string>>(new Set());
+  const [pathCount, setPathCount] = useState<Map<string, number>>(new Map());
   const { fitView, setCenter } = useReactFlow();
 
   // 크리티컬 패스 계산
@@ -271,9 +272,10 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
     if (!processedData || !selectedL5) return;
 
     const l6Tasks = getL6TasksForL5(selectedL5);
-    const criticalPath = calculateCriticalPath(l6Tasks);
+    const criticalPathResult = calculateCriticalPath(l6Tasks);
 
-    setCriticalPathIds(new Set(criticalPath.path));
+    setCriticalPathIds(criticalPathResult.allPathNodes);
+    setPathCount(groupCriticalPaths(criticalPathResult));
   }, [processedData, selectedL5, getL6TasksForL5]);
 
   // 노드와 엣지 생성
@@ -528,6 +530,35 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
 
       // 크리티컬 패스에 속하는지 확인
       const isInCriticalPath = showCriticalPath && criticalPathIds.has(task.id);
+      const pathCountForNode = pathCount.get(task.id) || 0;
+
+      // 크리티컬 패스 개수에 따라 색상 결정
+      let criticalPathStyle = {};
+      if (isInCriticalPath && pathCountForNode > 0) {
+        // 여러 패스에 속할수록 진한 색상
+        if (pathCountForNode === 1) {
+          // 단일 패스: 연한 amber
+          criticalPathStyle = {
+            backgroundColor: '#fef3c7',
+            border: '2px solid #fbbf24',
+            boxShadow: '0 0 0 3px rgba(251, 191, 36, 0.2)',
+          };
+        } else if (pathCountForNode === 2) {
+          // 2개 패스: 중간 amber
+          criticalPathStyle = {
+            backgroundColor: '#fde68a',
+            border: '2px solid #f59e0b',
+            boxShadow: '0 0 0 3px rgba(245, 158, 11, 0.3)',
+          };
+        } else {
+          // 3개 이상 패스: 진한 orange/red
+          criticalPathStyle = {
+            backgroundColor: '#fed7aa',
+            border: '3px solid #ea580c',
+            boxShadow: '0 0 0 4px rgba(234, 88, 12, 0.4)',
+          };
+        }
+      }
 
       return {
         id: task.id,
@@ -564,10 +595,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
         style: selectedEdge && !isHighlighted
           ? { opacity: 0.3 }
           : isInCriticalPath
-          ? {
-              boxShadow: '0 0 0 4px #fbbf24',
-              border: '3px solid #f59e0b',
-            }
+          ? criticalPathStyle
           : undefined,
       };
     });
@@ -604,7 +632,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
 
     setNodes(layoutedNodes as any);
     setEdges(layoutedEdges as any);
-  }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge, showCriticalPath, criticalPathIds, onNavigateToErrorReport]);
+  }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge, showCriticalPath, criticalPathIds, pathCount, onNavigateToErrorReport]);
 
   // L6 진입 시 전체 그래프가 보이도록 fitView
   useEffect(() => {
