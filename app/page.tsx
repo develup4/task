@@ -28,8 +28,8 @@ export default function Home() {
   useEffect(() => {
     if (viewMode === 'l6-detail' && selectedL5) {
       const l6Tasks = getL6TasksForL5(selectedL5);
-      const criticalPathResult = calculateCriticalPath(l6Tasks);
-      setCriticalPathDuration(criticalPathResult.totalDuration);
+      const criticalPath = calculateCriticalPath(l6Tasks);
+      setCriticalPathDuration(criticalPath.totalDuration);
     }
   }, [viewMode, selectedL5, getL6TasksForL5]);
 
