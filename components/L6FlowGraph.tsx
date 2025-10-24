@@ -119,79 +119,25 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
     visited.add(nodeId);
 
-    const outgoingEdges = edges.filter(e => e.source === nodeId);
+    const incomingEdges = edges.filter(e => e.target === nodeId);
 
-    if (outgoingEdges.length === 0) {
-      // 말단 노드는 무조건 level 0
+    if (incomingEdges.length === 0) {
+      // 시작 노드는 level 0 (왼쪽)
       levels.set(nodeId, 0);
       return 0;
     }
 
-    const successorLevels = outgoingEdges.map(e => calculateLevel(e.target));
-    const maxSuccessorLevel = Math.max(...successorLevels);
+    const predecessorLevels = incomingEdges.map(e => calculateLevel(e.source));
+    const maxPredecessorLevel = Math.max(...predecessorLevels);
 
-    // 중요 노드이거나 여러 후행을 가진 경우만 레벨 증가
-    let level;
-    if (isImportantNode(nodeId) || outgoingEdges.length > 1) {
-      level = maxSuccessorLevel + 1;
-    } else {
-      // 일직선 체인의 경우 같은 레벨 유지, 단 최소 1
-      level = Math.max(maxSuccessorLevel, 1);
-    }
+    // L6는 가로로 길게 펼쳐서 흐름이 보이도록 - 모든 노드가 새로운 레벨
+    const level = maxPredecessorLevel + 1;
 
     levels.set(nodeId, level);
     return level;
   };
 
   nodes.forEach(node => calculateLevel(node.id));
-
-  // 레벨별 노드 개수 확인 및 재조정 (반복 수행)
-  for (let iteration = 0; iteration < 3; iteration++) {
-    const levelCounts = new Map<number, number>();
-    nodes.forEach(node => {
-      const level = levels.get(node.id) || 0;
-      levelCounts.set(level, (levelCounts.get(level) || 0) + 1);
-    });
-
-    // 노드가 적은 레벨 찾기 (5개 이하)
-    const sparseLevels = new Set<number>();
-    levelCounts.forEach((count, level) => {
-      if (level > 0 && count <= 5) {
-        sparseLevels.add(level);
-      }
-    });
-
-    if (sparseLevels.size === 0) break;
-
-    // 희소 레벨의 노드들을 인접 레벨로 병합
-    let hasChanges = false;
-    nodes.forEach(node => {
-      const currentLevel = levels.get(node.id) || 0;
-      if (sparseLevels.has(currentLevel) && currentLevel > 0) {
-        const outgoingEdges = edges.filter(e => e.source === node.id);
-        const incomingEdges = edges.filter(e => e.target === node.id);
-
-        // 단일 후행을 가진 경우: 후행과 병합
-        if (outgoingEdges.length === 1) {
-          const successorLevel = levels.get(outgoingEdges[0].target) || 0;
-          if (successorLevel > 0) {
-            levels.set(node.id, successorLevel);
-            hasChanges = true;
-          }
-        }
-        // 단일 선행을 가진 경우: 선행과 병합
-        else if (incomingEdges.length === 1) {
-          const predecessorLevel = levels.get(incomingEdges[0].source) || 0;
-          if (predecessorLevel > currentLevel) {
-            levels.set(node.id, predecessorLevel);
-            hasChanges = true;
-          }
-        }
-      }
-    });
-
-    if (!hasChanges) break;
-  }
 
   // 레벨 번호 정규화 (빈 레벨 제거하고 연속적으로 만들기)
   const usedLevels = new Set<number>();
@@ -439,6 +385,11 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
       const isSelected = selectedEdge === edge.id || selectedEdge === reverseEdgeId;
       const isHidden = selectedEdge !== null && !isSelected;
 
+      // 크리티컬 패스에 속하는 엣지인지 확인
+      const isInCriticalPath = showCriticalPath &&
+        criticalPathIds.has(edge.source) &&
+        criticalPathIds.has(edge.target);
+
       // 양방향인 경우 첫 번째 엣지에만 라벨 표시
       const isFirstOfBidirectional = edge.isBidirectional &&
         l6EdgesBase.findIndex(e =>
@@ -449,6 +400,14 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
       // 양방향 엣지의 경우 offset 적용
       const offset = edge.isBidirectional ? (edge.source < edge.target ? 15 : -15) : 0;
 
+      // 크리티컬 패스 색상
+      const criticalPathColor = '#f59e0b';
+      const strokeColor = isInCriticalPath
+        ? criticalPathColor
+        : edge.isBidirectional
+        ? 'rgba(244, 67, 54, 0.5)'
+        : colors.border;
+
       return {
         id: edge.id,
         source: edge.source,
@@ -456,15 +415,15 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
         type: 'default',
         markerEnd: {
           type: 'arrowclosed',
-          width: 16,
-          height: 16,
-          color: edge.isBidirectional ? 'rgba(244, 67, 54, 0.5)' : colors.border,
+          width: isInCriticalPath ? 18 : 16,
+          height: isInCriticalPath ? 18 : 16,
+          color: strokeColor,
         },
         style: {
-          stroke: edge.isBidirectional ? 'rgba(244, 67, 54, 0.5)' : colors.border,
-          strokeWidth: isSelected ? 3 : 1.5,
-          strokeDasharray: '8,4',
-          opacity: isHidden ? 0.1 : (edge.isBidirectional ? 1 : 0.6),
+          stroke: strokeColor,
+          strokeWidth: isInCriticalPath ? 3.5 : (isSelected ? 3 : 1.5),
+          strokeDasharray: isInCriticalPath ? undefined : '8,4',
+          opacity: isHidden ? 0.1 : (isInCriticalPath ? 1 : (edge.isBidirectional ? 1 : 0.6)),
           cursor: 'pointer',
         },
         interactionWidth: 20,
@@ -565,8 +524,9 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
           ? { opacity: 0.3 }
           : isInCriticalPath
           ? {
-              boxShadow: '0 0 0 4px #fbbf24',
               border: '3px solid #f59e0b',
+              borderRadius: '8px',
+              boxShadow: '0 0 0 3px rgba(245, 158, 11, 0.3)',
             }
           : undefined,
       };
