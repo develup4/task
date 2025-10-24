@@ -320,6 +320,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
     setSelectedL5,
     setViewMode,
     getFilteredL5Tasks,
+    setFilteredMM,
   } = useAppStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -331,6 +332,30 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
   const [returnZoom, setReturnZoom] = useState<number | null>(null);
   const [shouldFitView, setShouldFitView] = useState(true);
   const { setCenter, fitView, getZoom } = useReactFlow();
+
+  // 선택한 노드까지의 모든 선행 노드를 찾는 함수
+  const getAllPredecessors = useCallback((targetId: string, tasksMap: Map<string, any>): Set<string> => {
+    const predecessors = new Set<string>();
+    const visited = new Set<string>();
+
+    const traverse = (taskId: string) => {
+      if (visited.has(taskId)) return;
+      visited.add(taskId);
+
+      const task = tasksMap.get(taskId);
+      if (!task) return;
+
+      task.predecessors.forEach((predId: string) => {
+        predecessors.add(predId);
+        traverse(predId);
+      });
+    };
+
+    traverse(targetId);
+    predecessors.add(targetId); // 자기 자신도 포함
+
+    return predecessors;
+  }, []);
 
   // 노드와 엣지 생성
   useEffect(() => {
@@ -511,9 +536,34 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
       });
     });
 
+    // L5-filtered 모드에서는 선행 노드만 필터링
+    let filteredNodes = initialNodes;
+    let filteredEdges = initialEdges;
+    let totalFilteredMM = 0;
+
+    if (viewMode === 'l5-filtered' && selectedL5) {
+      const predecessorIds = getAllPredecessors(selectedL5, processedData.l5Tasks);
+
+      // 선행 노드만 필터링
+      filteredNodes = initialNodes.filter(node => predecessorIds.has(node.id));
+      filteredEdges = initialEdges.filter(edge =>
+        predecessorIds.has(edge.source) && predecessorIds.has(edge.target)
+      );
+
+      // 필터링된 노드들의 MM 합계 계산
+      totalFilteredMM = filteredNodes.reduce((sum, node) => {
+        const mm = Number(node.data.MM) || 0;
+        return sum + mm;
+      }, 0);
+      setFilteredMM(totalFilteredMM);
+    } else {
+      // L5-filtered 모드가 아닐 때는 0으로 리셋
+      setFilteredMM(0);
+    }
+
     const { nodes: layoutedNodes, edges: layoutedEdges, levels } = getLayoutedElements(
-      initialNodes,
-      initialEdges,
+      filteredNodes,
+      filteredEdges,
       viewMode === 'l5-filtered'
     );
 
@@ -606,7 +656,7 @@ function L5FlowGraphInner({ searchQuery, searchTrigger, onSearchResultsChange, o
 
     setNodes(finalNodes as any);
     setEdges(layoutedEdges as any);
-  }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, visibleTeams, getFilteredL5Tasks, setNodes, setEdges, selectedEdge, searchedNodeId]);
+  }, [processedData, viewMode, selectedL5, highlightedTasks, visibleL4Categories, visibleTeams, getFilteredL5Tasks, setNodes, setEdges, selectedEdge, searchedNodeId, getAllPredecessors]);
 
   // L5-filtered 모드 진입 시 선택된 노드를 화면 중앙으로 이동
   useEffect(() => {
