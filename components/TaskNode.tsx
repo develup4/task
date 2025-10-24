@@ -6,6 +6,7 @@ import { getColorForCategory } from '@/utils/colors';
 import { formatDecimal } from '@/utils/format';
 import NodeTooltip from './NodeTooltip';
 import { L5Task, L6Task } from '@/types/task';
+import { useAppStore } from '@/lib/store';
 
 export interface TaskNodeData {
   label: string;
@@ -28,6 +29,7 @@ export interface TaskNodeData {
 }
 
 const TaskNode = memo(({ data }: NodeProps<any>) => {
+  const showTooltips = useAppStore((state) => state.showTooltips);
   const colors = getColorForCategory(data.category);
 
   const borderColor = data.isSearched
@@ -116,8 +118,8 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
         />
       </div>
 
-      {/* Tooltip - only show if fullData exists and it's L5 or L6 */}
-      {data.fullData && (data.isL5 || data.isL6) && (
+      {/* Tooltip - only show if fullData exists and it's L5 or L6 and tooltips are enabled */}
+      {showTooltips && data.fullData && (data.isL5 || data.isL6) && (
         <NodeTooltip data={data.fullData} isL5={data.isL5} isL6={data.isL6} />
       )}
     </div>

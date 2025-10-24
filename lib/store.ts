@@ -24,6 +24,9 @@ interface AppState {
   // L5 filtered 모드의 MM 합계
   filteredMM: number;
 
+  // 툴팁 표시 여부
+  showTooltips: boolean;
+
   // 액션
   setProcessedData: (data: ProcessedData) => void;
   setViewMode: (mode: ViewMode) => void;
@@ -31,6 +34,7 @@ interface AppState {
   setSearchQuery: (query: string) => void;
   setHighlightedTasks: (tasks: Set<string>) => void;
   setFilteredMM: (mm: number) => void;
+  toggleTooltips: () => void;
 
   // L4 카테고리 필터 액션
   toggleL4Category: (category: string) => void;
@@ -61,6 +65,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   visibleL4Categories: new Set(),
   visibleTeams: new Set(),
   filteredMM: 0,
+  showTooltips: true,
 
   // 액션
   setProcessedData: (data) => {
@@ -82,6 +87,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   setHighlightedTasks: (tasks) => set({ highlightedTasks: tasks }),
 
   setFilteredMM: (mm) => set({ filteredMM: mm }),
+
+  toggleTooltips: () => set((state) => ({ showTooltips: !state.showTooltips })),
 
   // L4 카테고리 필터 액션
   toggleL4Category: (category) => set((state) => {

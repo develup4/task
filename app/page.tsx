@@ -15,7 +15,7 @@ import { calculateCriticalPath } from '@/utils/criticalPath';
 type Tab = 'graph' | 'l5-table' | 'error-list' | 'help';
 
 export default function Home() {
-  const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task, filteredMM, getL6TasksForL5 } = useAppStore();
+  const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task, filteredMM, getL6TasksForL5, showTooltips, toggleTooltips } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>('graph');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -110,6 +110,17 @@ export default function Home() {
                 {/* Search box and filters - only show in graph tab and l5-all mode */}
                 {activeTab === 'graph' && viewMode === 'l5-all' && (
                   <div className="flex gap-2 items-center">
+                    <button
+                      onClick={toggleTooltips}
+                      className={`px-3 py-1.5 rounded-md font-medium text-sm transition-colors ${
+                        showTooltips
+                          ? 'bg-blue-500 text-white hover:bg-blue-600'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      }`}
+                      title={showTooltips ? '툴팁 숨기기' : '툴팁 보이기'}
+                    >
+                      {showTooltips ? '💬' : '🚫'}
+                    </button>
                     <TeamFilter />
                     <input
                       type="text"
