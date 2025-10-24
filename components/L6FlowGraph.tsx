@@ -119,19 +119,19 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
     visited.add(nodeId);
 
-    const incomingEdges = edges.filter(e => e.target === nodeId);
+    const outgoingEdges = edges.filter(e => e.source === nodeId);
 
-    if (incomingEdges.length === 0) {
-      // 시작 노드는 level 0 (왼쪽)
+    if (outgoingEdges.length === 0) {
+      // 끝 노드는 level 0 (왼쪽, 최종 도착지)
       levels.set(nodeId, 0);
       return 0;
     }
 
-    const predecessorLevels = incomingEdges.map(e => calculateLevel(e.source));
-    const maxPredecessorLevel = Math.max(...predecessorLevels);
+    const successorLevels = outgoingEdges.map(e => calculateLevel(e.target));
+    const maxSuccessorLevel = Math.max(...successorLevels);
 
     // L6는 가로로 길게 펼쳐서 흐름이 보이도록 - 모든 노드가 새로운 레벨
-    const level = maxPredecessorLevel + 1;
+    const level = maxSuccessorLevel + 1;
 
     levels.set(nodeId, level);
     return level;
