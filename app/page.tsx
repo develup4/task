@@ -14,7 +14,7 @@ import HelpGuide from '@/components/HelpGuide';
 type Tab = 'graph' | 'l5-table' | 'error-list' | 'help';
 
 export default function Home() {
-  const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task } = useAppStore();
+  const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task, filteredMM } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>('graph');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -155,6 +155,16 @@ export default function Home() {
               <div className="text-gray-700 font-medium flex items-center gap-2">
                 <span className="text-blue-600">현재 L5:</span>
                 <span>{getL5Task(selectedL5)?.name || selectedL5}</span>
+              </div>
+            </div>
+          )}
+
+          {/* MM sum display for L5 filtered mode */}
+          {viewMode === 'l5-filtered' && activeTab === 'graph' && selectedL5 && (
+            <div className="bg-purple-50 px-6 py-3 border-b border-purple-200">
+              <div className="text-gray-700 font-medium flex items-center gap-2">
+                <span className="text-purple-600">선택된 노드 및 모든 선행 노드 총 MM:</span>
+                <span className="font-bold">{filteredMM.toFixed(2)}</span>
               </div>
             </div>
           )}

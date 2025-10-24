@@ -21,13 +21,17 @@ interface AppState {
   // 작성팀 필터
   visibleTeams: Set<string>;
 
+  // L5 filtered 모드의 MM 합계
+  filteredMM: number;
+
   // 액션
   setProcessedData: (data: ProcessedData) => void;
   setViewMode: (mode: ViewMode) => void;
   setSelectedL5: (taskId: string | null) => void;
   setSearchQuery: (query: string) => void;
   setHighlightedTasks: (tasks: Set<string>) => void;
-  
+  setFilteredMM: (mm: number) => void;
+
   // L4 카테고리 필터 액션
   toggleL4Category: (category: string) => void;
   showAllL4Categories: () => void;
@@ -56,6 +60,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   highlightedTasks: new Set(),
   visibleL4Categories: new Set(),
   visibleTeams: new Set(),
+  filteredMM: 0,
 
   // 액션
   setProcessedData: (data) => {
@@ -75,7 +80,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
 
   setHighlightedTasks: (tasks) => set({ highlightedTasks: tasks }),
-  
+
+  setFilteredMM: (mm) => set({ filteredMM: mm }),
+
   // L4 카테고리 필터 액션
   toggleL4Category: (category) => set((state) => {
     const newVisible = new Set(state.visibleL4Categories);
@@ -179,24 +186,30 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
 
     if (viewMode === 'l5-filtered' && selectedL5) {
-      // L5-filtered 모드에서는 L4 카테고리 필터를 무시하고 모든 관련 노드 표시
+      // L5-filtered 모드에서는 선택된 노드와 모든 선행 노드만 표시 (후행 제외)
       const selected = processedData.l5Tasks.get(selectedL5);
       if (!selected) return allTasks;
 
-      // 선택된 노드와 직접 연결된 선행/후행 노드만 반환
-      const relatedIds = new Set<string>([selectedL5]);
+      // 선택된 노드와 모든 선행 노드를 재귀적으로 수집
+      const predecessorIds = new Set<string>([selectedL5]);
+      const visited = new Set<string>();
 
-      // 직접 선행 노드들만 추가 (재귀 없음)
-      selected.predecessors.forEach(predId => {
-        relatedIds.add(predId);
-      });
+      const collectPredecessors = (taskId: string) => {
+        if (visited.has(taskId)) return;
+        visited.add(taskId);
 
-      // 직접 후행 노드들만 추가 (재귀 없음)
-      selected.successors.forEach(succId => {
-        relatedIds.add(succId);
-      });
+        const task = processedData.l5Tasks.get(taskId);
+        if (!task) return;
 
-      return allTasks.filter(task => relatedIds.has(task.id));
+        task.predecessors.forEach(predId => {
+          predecessorIds.add(predId);
+          collectPredecessors(predId);
+        });
+      };
+
+      collectPredecessors(selectedL5);
+
+      return allTasks.filter(task => predecessorIds.has(task.id));
     }
 
     return allTasks;
