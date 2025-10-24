@@ -665,8 +665,8 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
             const criticalPath = calculateCriticalPath(l6TasksForL5);
             l5Task.필요기간 = criticalPath.totalDuration;
 
-            // MM도 재계산 (필요인력 × 필요기간)
-            l5Task.MM = l5Task.필요인력 * l5Task.필요기간;
+            // MM은 L6 노드들의 MM 총합
+            l5Task.MM = l6TasksForL5.reduce((sum, l6) => sum + l6.MM, 0);
           }
         });
 
