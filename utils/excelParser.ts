@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { TaskData, L5Task, L6Task, ProcessedData, ValidationError } from '@/types/task';
+import { calculateCriticalPath } from './criticalPath';
 
 // [Sensor], [Sensor]_ 같은 prefix 제거
 const removePrefixes = (text: string): string => {
@@ -652,6 +653,21 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               predTask.successors.push(task.id);
             }
           });
+        });
+
+        // L5 태스크들의 필요기간을 크리티컬 패스 기반으로 업데이트
+        l5Tasks.forEach(l5Task => {
+          const l6TasksForL5 = Array.from(l6Tasks.values()).filter(
+            l6 => l6.l5Parent === l5Task.id
+          );
+
+          if (l6TasksForL5.length > 0) {
+            const criticalPath = calculateCriticalPath(l6TasksForL5);
+            l5Task.필요기간 = criticalPath.totalDuration;
+
+            // MM도 재계산 (필요인력 × 필요기간)
+            l5Task.MM = l5Task.필요인력 * l5Task.필요기간;
+          }
         });
 
         resolve({

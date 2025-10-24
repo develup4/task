@@ -8,8 +8,8 @@
 export function formatDecimal(value: number | undefined): string {
   if (value === undefined || value === null) return '0';
 
-  // 소수점 3자리까지 반올림
-  const rounded = Math.round(value * 1000) / 1000;
+  // 소수점 2자리까지 반올림
+  const rounded = Math.round(value * 100) / 100;
 
   // 불필요한 trailing zeros 제거
   return rounded.toString();

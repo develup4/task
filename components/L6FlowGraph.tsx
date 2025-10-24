@@ -20,6 +20,7 @@ import '@xyflow/react/dist/style.css';
 import { useAppStore } from '@/lib/store';
 import TaskNode, { TaskNodeData } from './TaskNode';
 import { getColorForCategory } from '@/utils/colors';
+import { calculateCriticalPath } from '@/utils/criticalPath';
 
 // 커스텀 엣지 컴포넌트 - offset을 적용한 Bezier 곡선
 function CustomEdge({
@@ -248,9 +249,10 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
 interface L6FlowGraphInnerProps {
   onNavigateToErrorReport?: () => void;
+  showCriticalPath: boolean;
 }
 
-function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
+function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowGraphInnerProps) {
   const {
     processedData,
     selectedL5,
@@ -261,7 +263,18 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
+  const [criticalPathIds, setCriticalPathIds] = useState<Set<string>>(new Set());
   const { fitView, setCenter } = useReactFlow();
+
+  // 크리티컬 패스 계산
+  useEffect(() => {
+    if (!processedData || !selectedL5) return;
+
+    const l6Tasks = getL6TasksForL5(selectedL5);
+    const criticalPath = calculateCriticalPath(l6Tasks);
+
+    setCriticalPathIds(new Set(criticalPath.path));
+  }, [processedData, selectedL5, getL6TasksForL5]);
 
   // 노드와 엣지 생성
   useEffect(() => {
@@ -513,6 +526,9 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
         }
       }
 
+      // 크리티컬 패스에 속하는지 확인
+      const isInCriticalPath = showCriticalPath && criticalPathIds.has(task.id);
+
       return {
         id: task.id,
         type: 'task',
@@ -545,7 +561,14 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
             }, 100);
           },
         },
-        style: selectedEdge && !isHighlighted ? { opacity: 0.3 } : undefined,
+        style: selectedEdge && !isHighlighted
+          ? { opacity: 0.3 }
+          : isInCriticalPath
+          ? {
+              boxShadow: '0 0 0 4px #fbbf24',
+              border: '3px solid #f59e0b',
+            }
+          : undefined,
       };
     });
 
@@ -581,7 +604,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
 
     setNodes(layoutedNodes as any);
     setEdges(layoutedEdges as any);
-  }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge]);
+  }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge, showCriticalPath, criticalPathIds, onNavigateToErrorReport]);
 
   // L6 진입 시 전체 그래프가 보이도록 fitView
   useEffect(() => {
@@ -659,12 +682,16 @@ function L6FlowGraphInner({ onNavigateToErrorReport }: L6FlowGraphInnerProps) {
 
 interface L6FlowGraphProps {
   onNavigateToErrorReport?: () => void;
+  showCriticalPath: boolean;
 }
 
-export default function L6FlowGraph({ onNavigateToErrorReport }: L6FlowGraphProps) {
+export default function L6FlowGraph({ onNavigateToErrorReport, showCriticalPath }: L6FlowGraphProps) {
   return (
     <ReactFlowProvider>
-      <L6FlowGraphInner onNavigateToErrorReport={onNavigateToErrorReport} />
+      <L6FlowGraphInner
+        onNavigateToErrorReport={onNavigateToErrorReport}
+        showCriticalPath={showCriticalPath}
+      />
     </ReactFlowProvider>
   );
 }

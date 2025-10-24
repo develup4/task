@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import FileUploader from '@/components/FileUploader';
 import L5FlowGraph from '@/components/L5FlowGraph';
@@ -10,16 +10,28 @@ import ErrorListTable from '@/components/ErrorListTable';
 import TeamFilter from '@/components/TeamFilter';
 import LeftmostNodeMMTable from '@/components/LeftmostNodeMMTable';
 import HelpGuide from '@/components/HelpGuide';
+import { calculateCriticalPath } from '@/utils/criticalPath';
 
 type Tab = 'graph' | 'l5-table' | 'error-list' | 'help';
 
 export default function Home() {
-  const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task, filteredMM } = useAppStore();
+  const { processedData, viewMode, setViewMode, setSelectedL5, selectedL5, getL5Task, filteredMM, getL6TasksForL5 } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>('graph');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
   const [searchResultCount, setSearchResultCount] = useState(0);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const [showCriticalPath, setShowCriticalPath] = useState(false);
+  const [criticalPathDuration, setCriticalPathDuration] = useState(0);
+
+  // L6 모드일 때 크리티컬 패스 계산
+  useEffect(() => {
+    if (viewMode === 'l6-detail' && selectedL5) {
+      const l6Tasks = getL6TasksForL5(selectedL5);
+      const criticalPath = calculateCriticalPath(l6Tasks);
+      setCriticalPathDuration(criticalPath.totalDuration);
+    }
+  }, [viewMode, selectedL5, getL6TasksForL5]);
 
   // 탭 정보 (아이콘 포함)
   const tabInfo: Record<Tab, { name: string; icon: string }> = {
@@ -152,9 +164,29 @@ export default function Home() {
           {/* Current L5 display for L6 view */}
           {viewMode === 'l6-detail' && activeTab === 'graph' && selectedL5 && (
             <div className="bg-blue-50 px-6 py-3 border-b border-blue-200">
-              <div className="text-gray-700 font-medium flex items-center gap-2">
-                <span className="text-blue-600">현재 L5:</span>
-                <span>{getL5Task(selectedL5)?.name || selectedL5}</span>
+              <div className="text-gray-700 font-medium flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-600">현재 L5:</span>
+                    <span>{getL5Task(selectedL5)?.name || selectedL5}</span>
+                  </div>
+                  {showCriticalPath && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-600">크리티컬 패스 T:</span>
+                      <span className="font-bold">{criticalPathDuration.toFixed(2)} weeks</span>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowCriticalPath(!showCriticalPath)}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    showCriticalPath
+                      ? 'bg-amber-500 text-white hover:bg-amber-600'
+                      : 'bg-white text-amber-600 border-2 border-amber-500 hover:bg-amber-50'
+                  }`}
+                >
+                  {showCriticalPath ? '크리티컬 패스 숨기기' : '크리티컬 패스 보기'}
+                </button>
               </div>
             </div>
           )}
@@ -174,7 +206,10 @@ export default function Home() {
             {activeTab === 'graph' && (
               <div className="w-full h-full">
                 {viewMode === 'l6-detail' ? (
-                  <L6FlowGraph onNavigateToErrorReport={() => setActiveTab('error-list')} />
+                  <L6FlowGraph
+                    onNavigateToErrorReport={() => setActiveTab('error-list')}
+                    showCriticalPath={showCriticalPath}
+                  />
                 ) : (
                   <L5FlowGraph
                     searchQuery={searchQuery}
