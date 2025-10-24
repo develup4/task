@@ -286,15 +286,6 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
           });
         });
 
-        // L5 각각의 MM을 L6들의 합계로 업데이트
-        l5Tasks.forEach(l5Task => {
-          if (l5Task.l6Tasks.length > 0) {
-            l5Task.필요인력 = l5Task.l6Tasks.reduce((sum, l6) => sum + l6.필요인력, 0);
-            l5Task.필요기간 = l5Task.l6Tasks.reduce((sum, l6) => sum + l6.필요기간, 0);
-            l5Task.MM = l5Task.l6Tasks.reduce((sum, l6) => sum + l6.MM, 0);
-          }
-        });
-
         // 양방향 연결 감지
         detectCycles(l5Tasks);
         detectCycles(l6Tasks);
