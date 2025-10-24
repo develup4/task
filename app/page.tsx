@@ -10,7 +10,9 @@ import ErrorListTable from '@/components/ErrorListTable';
 import TeamFilter from '@/components/TeamFilter';
 import LeftmostNodeMMTable from '@/components/LeftmostNodeMMTable';
 import HelpGuide from '@/components/HelpGuide';
+import HeadcountTable from '@/components/HeadcountTable';
 import { calculateCriticalPath } from '@/utils/criticalPath';
+import { calculateDailyHeadcount } from '@/utils/headcountCalculator';
 
 type Tab = 'graph' | 'l5-table' | 'error-list' | 'help';
 
@@ -23,13 +25,18 @@ export default function Home() {
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [showCriticalPath, setShowCriticalPath] = useState(false);
   const [criticalPathDuration, setCriticalPathDuration] = useState(0);
+  const [showHeadcountTable, setShowHeadcountTable] = useState(false);
+  const [maxHeadcount, setMaxHeadcount] = useState(0);
 
-  // L6 모드일 때 크리티컬 패스 계산
+  // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
     if (viewMode === 'l6-detail' && selectedL5) {
       const l6Tasks = getL6TasksForL5(selectedL5);
       const criticalPath = calculateCriticalPath(l6Tasks);
       setCriticalPathDuration(criticalPath.totalDuration);
+
+      const headcountResult = calculateDailyHeadcount(l6Tasks);
+      setMaxHeadcount(headcountResult.maxHeadcount);
     }
   }, [viewMode, selectedL5, getL6TasksForL5]);
 
@@ -187,17 +194,35 @@ export default function Home() {
                       <span className="font-bold">{criticalPathDuration.toFixed(2)} weeks</span>
                     </div>
                   )}
+                  {showHeadcountTable && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-600">최대 필요인력 P:</span>
+                      <span className="font-bold">{maxHeadcount.toFixed(1)} 명</span>
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={() => setShowCriticalPath(!showCriticalPath)}
-                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                    showCriticalPath
-                      ? 'bg-amber-500 text-white hover:bg-amber-600'
-                      : 'bg-white text-amber-600 border-2 border-amber-500 hover:bg-amber-50'
-                  }`}
-                >
-                  {showCriticalPath ? '크리티컬 패스 숨기기' : '크리티컬 패스 보기'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowCriticalPath(!showCriticalPath)}
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                      showCriticalPath
+                        ? 'bg-amber-500 text-white hover:bg-amber-600'
+                        : 'bg-white text-amber-600 border-2 border-amber-500 hover:bg-amber-50'
+                    }`}
+                  >
+                    {showCriticalPath ? '크리티컬 패스 숨기기' : '크리티컬 패스 보기'}
+                  </button>
+                  <button
+                    onClick={() => setShowHeadcountTable(!showHeadcountTable)}
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                      showHeadcountTable
+                        ? 'bg-purple-500 text-white hover:bg-purple-600'
+                        : 'bg-white text-purple-600 border-2 border-purple-500 hover:bg-purple-50'
+                    }`}
+                  >
+                    {showHeadcountTable ? '필요인력 테이블 숨기기' : '필요인력 테이블 보기'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -215,12 +240,21 @@ export default function Home() {
           {/* Main Content */}
           <div className="flex-1 overflow-hidden bg-gray-50">
             {activeTab === 'graph' && (
-              <div className="w-full h-full">
+              <div className="w-full h-full flex flex-col">
                 {viewMode === 'l6-detail' ? (
-                  <L6FlowGraph
-                    onNavigateToErrorReport={() => setActiveTab('error-list')}
-                    showCriticalPath={showCriticalPath}
-                  />
+                  <>
+                    <div className={showHeadcountTable ? 'h-1/2' : 'flex-1'}>
+                      <L6FlowGraph
+                        onNavigateToErrorReport={() => setActiveTab('error-list')}
+                        showCriticalPath={showCriticalPath}
+                      />
+                    </div>
+                    {showHeadcountTable && (
+                      <div className="h-1/2 p-6 overflow-auto">
+                        <HeadcountTable />
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <L5FlowGraph
                     searchQuery={searchQuery}
