@@ -525,7 +525,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
           : isInCriticalPath
           ? {
               border: '3px solid #f59e0b',
-              borderRadius: '8px',
+              borderRadius: '12px',
               boxShadow: '0 0 0 3px rgba(245, 158, 11, 0.3)',
             }
           : undefined,
