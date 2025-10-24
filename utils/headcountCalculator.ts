@@ -1,44 +1,45 @@
 import { L6Task } from '@/types/task';
 
-export interface DailyHeadcount {
-  day: number; // 0-based day index
-  headcount: number; // Total P needed on this day
-  tasks: { id: string; name: string; P: number }[]; // Tasks active on this day
+export interface IntervalHeadcount {
+  startWeek: number; // Interval start (weeks)
+  endWeek: number; // Interval end (weeks)
+  headcount: number; // Total P needed in this interval
+  tasks: { id: string; name: string; P: number }[]; // Tasks active in this interval
 }
 
 export interface HeadcountResult {
-  maxHeadcount: number; // Maximum P needed on any single day
-  dailyHeadcounts: DailyHeadcount[]; // Headcount for each day
-  totalDays: number; // Total project duration in days
+  maxHeadcount: number; // Maximum P needed in any interval
+  intervals: IntervalHeadcount[]; // Headcount for each time interval
+  totalWeeks: number; // Total project duration in weeks
 }
 
 /**
- * L6 태스크들의 날짜별 필요인력을 계산합니다.
- * T(weeks)를 일(days)로 변환하여 계산합니다.
+ * L6 태스크들의 시간 구간별 필요인력을 계산합니다.
+ * Week 단위 실수(소수점)로 정확하게 계산합니다.
  */
 export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
   if (l6Tasks.length === 0) {
-    return { maxHeadcount: 0, dailyHeadcounts: [], totalDays: 0 };
+    return { maxHeadcount: 0, intervals: [], totalWeeks: 0 };
   }
 
   const taskMap = new Map(l6Tasks.map(t => [t.id, t]));
 
-  // 각 태스크의 시작일과 종료일 계산
+  // 각 태스크의 시작/종료 시점 계산 (week 단위)
   interface TaskSchedule {
-    startDay: number;
-    endDay: number; // exclusive (작업이 끝난 다음 날)
+    startWeek: number;
+    endWeek: number;
     P: number;
     id: string;
     name: string;
   }
 
   const schedules: TaskSchedule[] = [];
-  const taskStartDays = new Map<string, number>();
+  const taskStartWeeks = new Map<string, number>();
 
-  // DFS로 각 태스크의 시작일 계산
-  const calculateStartDay = (taskId: string, visited: Set<string> = new Set()): number => {
-    if (taskStartDays.has(taskId)) {
-      return taskStartDays.get(taskId)!;
+  // DFS로 각 태스크의 시작 week 계산
+  const calculateStartWeek = (taskId: string, visited: Set<string> = new Set()): number => {
+    if (taskStartWeeks.has(taskId)) {
+      return taskStartWeeks.get(taskId)!;
     }
 
     if (visited.has(taskId)) {
@@ -51,68 +52,86 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
 
     visited.add(taskId);
 
-    // 선행 작업이 없으면 0일에 시작
+    // 선행 작업이 없으면 0 week에 시작
     if (task.predecessors.length === 0) {
-      taskStartDays.set(taskId, 0);
+      taskStartWeeks.set(taskId, 0);
       visited.delete(taskId);
       return 0;
     }
 
     // 모든 선행 작업이 끝난 후에 시작
-    let maxEndDay = 0;
+    let maxEndWeek = 0;
     for (const predId of task.predecessors) {
       if (taskMap.has(predId)) {
-        const predStartDay = calculateStartDay(predId, new Set(visited));
+        const predStartWeek = calculateStartWeek(predId, new Set(visited));
         const predTask = taskMap.get(predId)!;
-        const predDuration = Math.ceil((predTask.필요기간 || 0) * 5); // weeks to days (5 days/week)
-        const predEndDay = predStartDay + predDuration;
-        maxEndDay = Math.max(maxEndDay, predEndDay);
+        const predDuration = predTask.필요기간 || 0;
+        const predEndWeek = predStartWeek + predDuration;
+        maxEndWeek = Math.max(maxEndWeek, predEndWeek);
       }
     }
 
-    taskStartDays.set(taskId, maxEndDay);
+    taskStartWeeks.set(taskId, maxEndWeek);
     visited.delete(taskId);
-    return maxEndDay;
+    return maxEndWeek;
   };
 
-  // 모든 태스크의 시작일 계산
+  // 모든 태스크의 시작/종료 week 계산
   l6Tasks.forEach(task => {
-    const startDay = calculateStartDay(task.id);
-    const durationInDays = Math.ceil((task.필요기간 || 0) * 5); // weeks to days
-    const endDay = startDay + durationInDays;
+    const startWeek = calculateStartWeek(task.id);
+    const duration = task.필요기간 || 0;
+    const endWeek = startWeek + duration;
 
     schedules.push({
-      startDay,
-      endDay,
+      startWeek,
+      endWeek,
       P: task.필요인력 || 0,
       id: task.id,
       name: task.name,
     });
   });
 
-  // 전체 프로젝트 기간 계산
-  const totalDays = Math.max(...schedules.map(s => s.endDay), 0);
+  // 모든 시작/종료 시점을 수집하여 정렬 (구간 나누기)
+  const timePoints = new Set<number>();
+  timePoints.add(0); // 프로젝트 시작
+  schedules.forEach(s => {
+    timePoints.add(s.startWeek);
+    timePoints.add(s.endWeek);
+  });
 
-  // 날짜별 필요인력 계산
-  const dailyHeadcounts: DailyHeadcount[] = [];
+  const sortedTimePoints = Array.from(timePoints).sort((a, b) => a - b);
+  const totalWeeks = Math.max(...sortedTimePoints, 0);
+
+  // 각 구간별 필요인력 계산
+  const intervals: IntervalHeadcount[] = [];
   let maxHeadcount = 0;
 
-  for (let day = 0; day < totalDays; day++) {
-    const activeTasks = schedules.filter(s => day >= s.startDay && day < s.endDay);
+  for (let i = 0; i < sortedTimePoints.length - 1; i++) {
+    const startWeek = sortedTimePoints[i];
+    const endWeek = sortedTimePoints[i + 1];
+
+    // 이 구간에서 활성화된 태스크들 찾기
+    const activeTasks = schedules.filter(s =>
+      s.startWeek <= startWeek && s.endWeek >= endWeek
+    );
+
     const headcount = activeTasks.reduce((sum, t) => sum + t.P, 0);
 
-    dailyHeadcounts.push({
-      day,
-      headcount,
-      tasks: activeTasks.map(t => ({ id: t.id, name: t.name, P: t.P })),
-    });
+    if (headcount > 0 || activeTasks.length > 0) {
+      intervals.push({
+        startWeek,
+        endWeek,
+        headcount,
+        tasks: activeTasks.map(t => ({ id: t.id, name: t.name, P: t.P })),
+      });
 
-    maxHeadcount = Math.max(maxHeadcount, headcount);
+      maxHeadcount = Math.max(maxHeadcount, headcount);
+    }
   }
 
   return {
     maxHeadcount,
-    dailyHeadcounts,
-    totalDays,
+    intervals,
+    totalWeeks,
   };
 }
