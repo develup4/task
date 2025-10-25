@@ -238,21 +238,40 @@ export default function Home() {
           )}
 
           {/* Main Content */}
-          <div className="flex-1 overflow-hidden bg-gray-50">
+          <div className="flex-1 overflow-hidden bg-gray-50 flex relative">
             {activeTab === 'graph' && (
-              <div className="w-full h-full flex flex-col">
+              <div className="w-full h-full flex relative">
                 {viewMode === 'l6-detail' ? (
                   <>
-                    <div className={showHeadcountTable ? 'h-1/2' : 'flex-1'}>
+                    <div className="flex-1 relative overflow-hidden">
                       <L6FlowGraph
                         onNavigateToErrorReport={() => setActiveTab('error-list')}
                         showCriticalPath={showCriticalPath}
                       />
                     </div>
-                    {showHeadcountTable && (
-                      <div className="h-1/2 p-6 overflow-auto">
+                    {/* Headcount Drawer */}
+                    <div
+                      className={`absolute right-0 top-0 bottom-0 w-96 bg-white shadow-2xl z-40 border-l border-gray-200 transition-all duration-300 ease-in-out overflow-y-auto ${
+                        showHeadcountTable ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <div className="p-6">
+                        <button
+                          onClick={() => setShowHeadcountTable(false)}
+                          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          aria-label="Close headcount drawer"
+                        >
+                          ✕
+                        </button>
                         <HeadcountTable />
                       </div>
+                    </div>
+                    {/* Overlay when drawer is open */}
+                    {showHeadcountTable && (
+                      <div
+                        className="absolute inset-0 bg-black/10 z-30 right-96"
+                        onClick={() => setShowHeadcountTable(false)}
+                      />
                     )}
                   </>
                 ) : (
