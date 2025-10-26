@@ -30,6 +30,27 @@ export default function HeadcountTable() {
   const chartHeight = 300;
   const barHeight = 20;
 
+  // 구간별 색상 배열
+  const colors = [
+    "bg-blue-400",
+    "bg-cyan-400",
+    "bg-green-400",
+    "bg-lime-400",
+    "bg-yellow-400",
+    "bg-orange-400",
+    "bg-red-400",
+    "bg-pink-400",
+    "bg-purple-400",
+    "bg-indigo-400",
+    "bg-violet-400",
+    "bg-teal-400",
+  ];
+
+  // 구간 색상 할당 함수
+  const getIntervalColor = (idx: number) => {
+    return colors[idx % colors.length];
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-6">
       <div>
@@ -76,16 +97,13 @@ export default function HeadcountTable() {
               const widthPercent =
                 ((interval.endWeek - interval.startWeek) / totalWeeks) * 100;
               const heightPercent = (interval.headcount / maxHeadcount) * 100;
-              const isMaxInterval =
-                interval.headcount === maxHeadcount && maxHeadcount > 0;
+              const intervalColor = getIntervalColor(idx);
 
               return (
                 <div key={idx}>
                   {/* 구간 막대 */}
                   <div
-                    className={`absolute ${
-                      isMaxInterval ? "bg-purple-500" : "bg-blue-400"
-                    } opacity-80 hover:opacity-100 transition-opacity cursor-pointer`}
+                    className={`absolute ${intervalColor} opacity-80 hover:opacity-100 transition-opacity cursor-pointer`}
                     style={{
                       left: `${leftPercent}%`,
                       bottom: 0,
@@ -135,13 +153,28 @@ export default function HeadcountTable() {
             </thead>
             <tbody>
               {intervals.map((interval, idx) => {
-                const isMaxInterval =
-                  interval.headcount === maxHeadcount && maxHeadcount > 0;
+                const intervalColor = getIntervalColor(idx);
+                // 배경색을 lightness가 높은 버전으로 변환 (400 -> 50)
+                const bgColorMap: Record<string, string> = {
+                  "bg-blue-400": "bg-blue-50",
+                  "bg-cyan-400": "bg-cyan-50",
+                  "bg-green-400": "bg-green-50",
+                  "bg-lime-400": "bg-lime-50",
+                  "bg-yellow-400": "bg-yellow-50",
+                  "bg-orange-400": "bg-orange-50",
+                  "bg-red-400": "bg-red-50",
+                  "bg-pink-400": "bg-pink-50",
+                  "bg-purple-400": "bg-purple-50",
+                  "bg-indigo-400": "bg-indigo-50",
+                  "bg-violet-400": "bg-violet-50",
+                  "bg-teal-400": "bg-teal-50",
+                };
+                const bgColor = bgColorMap[intervalColor] || "bg-blue-50";
 
                 return (
                   <tr
                     key={idx}
-                    className={`hover:bg-gray-50 ${isMaxInterval ? "bg-purple-50" : ""}`}
+                    className={`hover:bg-gray-50 ${bgColor}`}
                   >
                     <td className="text-center font-mono text-sm">
                       {interval.startWeek.toFixed(2)} ~{" "}
@@ -150,11 +183,9 @@ export default function HeadcountTable() {
                     <td className="text-center">
                       <span
                         className={`font-bold ${
-                          isMaxInterval
-                            ? "text-purple-600 text-lg"
-                            : interval.headcount > 0
-                              ? "text-gray-800"
-                              : "text-gray-400"
+                          interval.headcount > 0
+                            ? "text-gray-800"
+                            : "text-gray-400"
                         }`}
                       >
                         {interval.headcount.toFixed(1)}
