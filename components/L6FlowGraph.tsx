@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 import {
   ReactFlow,
   Node,
@@ -15,12 +15,12 @@ import {
   ReactFlowProvider,
   EdgeProps,
   getBezierPath,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import { useAppStore } from '@/lib/store';
-import TaskNode, { TaskNodeData } from './TaskNode';
-import { getColorForCategory } from '@/utils/colors';
-import { calculateCriticalPath } from '@/utils/criticalPath';
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { useAppStore } from "@/lib/store";
+import TaskNode, { TaskNodeData } from "./TaskNode";
+import { getColorForCategory } from "@/utils/colors";
+import { calculateCriticalPath } from "@/utils/criticalPath";
 
 // 커스텀 엣지 컴포넌트 - offset을 적용한 Bezier 곡선
 function CustomEdge({
@@ -38,7 +38,7 @@ function CustomEdge({
   labelStyle,
   labelBgStyle,
 }: EdgeProps) {
-  const offset = (typeof data?.offset === 'number' ? data.offset : 0);
+  const offset = typeof data?.offset === "number" ? data.offset : 0;
 
   // offset을 y 좌표에 적용
   const [edgePath, labelX, labelY] = getBezierPath({
@@ -67,7 +67,7 @@ function CustomEdge({
             y={-10}
             width={60}
             height={20}
-            fill={labelBgStyle?.fill || 'white'}
+            fill={labelBgStyle?.fill || "white"}
             rx={3}
           />
           <text
@@ -94,16 +94,19 @@ const edgeTypes = {
 } as any;
 
 // 컴팩트한 계층적 레이아웃
-const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edges: Edge[], levels: Map<string, number> } => {
+const getLayoutedElements = (
+  nodes: Node[],
+  edges: Edge[],
+): { nodes: Node[]; edges: Edge[]; levels: Map<string, number> } => {
   const levels = new Map<string, number>();
   const visited = new Set<string>();
 
   // 각 노드의 입/출력 차수 계산
   const inDegree = new Map<string, number>();
   const outDegree = new Map<string, number>();
-  nodes.forEach(node => {
-    inDegree.set(node.id, edges.filter(e => e.target === node.id).length);
-    outDegree.set(node.id, edges.filter(e => e.source === node.id).length);
+  nodes.forEach((node) => {
+    inDegree.set(node.id, edges.filter((e) => e.target === node.id).length);
+    outDegree.set(node.id, edges.filter((e) => e.source === node.id).length);
   });
 
   // 중요 노드 판별: 여러 입력/출력을 가진 노드 (분기점/합류점)
@@ -119,7 +122,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
 
     visited.add(nodeId);
 
-    const outgoingEdges = edges.filter(e => e.source === nodeId);
+    const outgoingEdges = edges.filter((e) => e.source === nodeId);
 
     if (outgoingEdges.length === 0) {
       // 끝 노드는 level 0 (왼쪽, 최종 도착지)
@@ -127,7 +130,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
       return 0;
     }
 
-    const successorLevels = outgoingEdges.map(e => calculateLevel(e.target));
+    const successorLevels = outgoingEdges.map((e) => calculateLevel(e.target));
     const maxSuccessorLevel = Math.max(...successorLevels);
 
     // L6는 가로로 길게 펼쳐서 흐름이 보이도록 - 모든 노드가 새로운 레벨
@@ -137,11 +140,11 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
     return level;
   };
 
-  nodes.forEach(node => calculateLevel(node.id));
+  nodes.forEach((node) => calculateLevel(node.id));
 
   // 레벨 번호 정규화 (빈 레벨 제거하고 연속적으로 만들기)
   const usedLevels = new Set<number>();
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     usedLevels.add(levels.get(node.id) || 0);
   });
 
@@ -155,14 +158,14 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   });
 
   // 모든 노드의 레벨을 새 번호로 업데이트
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     const oldLevel = levels.get(node.id) || 0;
     const newLevel = levelMapping.get(oldLevel) || 0;
     levels.set(node.id, newLevel);
   });
 
   const levelGroups = new Map<number, Node[]>();
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     const level = levels.get(node.id) || 0;
     if (!levelGroups.has(level)) {
       levelGroups.set(level, []);
@@ -175,7 +178,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]): { nodes: Node[], edg
   const horizontalSpacing = 180;
   const verticalSpacing = 100;
 
-  const layoutedNodes = nodes.map(node => {
+  const layoutedNodes = nodes.map((node) => {
     const level = levels.get(node.id) || 0;
     const nodesInLevel = levelGroups.get(level) || [];
     const indexInLevel = nodesInLevel.indexOf(node);
@@ -198,18 +201,19 @@ interface L6FlowGraphInnerProps {
   showCriticalPath: boolean;
 }
 
-function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowGraphInnerProps) {
-  const {
-    processedData,
-    selectedL5,
-    getL6TasksForL5,
-    setViewMode,
-  } = useAppStore();
+function L6FlowGraphInner({
+  onNavigateToErrorReport,
+  showCriticalPath,
+}: L6FlowGraphInnerProps) {
+  const { processedData, selectedL5, getL6TasksForL5, setViewMode } =
+    useAppStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
-  const [criticalPathIds, setCriticalPathIds] = useState<Set<string>>(new Set());
+  const [criticalPathIds, setCriticalPathIds] = useState<Set<string>>(
+    new Set(),
+  );
   const { fitView, setCenter } = useReactFlow();
 
   // 크리티컬 패스 계산
@@ -247,15 +251,19 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
           const edgeId = `${task.id}-${successorId}`;
           const reverseEdgeId = `${successorId}-${task.id}`;
 
-          const successor = l6Tasks.find(t => t.id === successorId);
+          const successor = l6Tasks.find((t) => t.id === successorId);
 
           // 양방향 연결 체크 (cycle error)
-          const isBidirectional = successor && successor.successors.includes(task.id);
+          const isBidirectional =
+            successor && successor.successors.includes(task.id);
 
           // 양방향인 경우 양쪽 엣지 모두 추가
           if (isBidirectional) {
             // 이미 처리한 엣지는 건너뛰기
-            if (processedL6Edges.has(edgeId) || processedL6Edges.has(reverseEdgeId)) {
+            if (
+              processedL6Edges.has(edgeId) ||
+              processedL6Edges.has(reverseEdgeId)
+            ) {
               return;
             }
 
@@ -302,46 +310,25 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
     // 선행/후행 L5 노드들 (회색으로 표시)
     const relatedL5Ids = new Set<string>();
     l6Tasks.forEach((task) => {
-      task['선행 L5']?.forEach((l5Id) => relatedL5Ids.add(l5Id));
-      task['후행 L5']?.forEach((l5Id) => relatedL5Ids.add(l5Id));
+      task["선행 L5"]?.forEach((l5Id) => relatedL5Ids.add(l5Id));
+      task["후행 L5"]?.forEach((l5Id) => relatedL5Ids.add(l5Id));
     });
 
-    const relatedL5Nodes = Array.from(relatedL5Ids)
-      .map((l5Id) => {
-        const task = processedData.l5Tasks.get(l5Id);
+    const relatedL5Nodes = Array.from(relatedL5Ids).map((l5Id) => {
+      const task = processedData.l5Tasks.get(l5Id);
 
-        // L5 Task가 없으면 Unspecified로 생성
-        if (!task) {
-          return {
-            id: `l5-${l5Id}`,
-            type: 'task',
-            position: { x: 0, y: 0 },
-            data: {
-              label: `[L5] ${l5Id}`,
-              category: 'Unspecified',
-              필요인력: 0,
-              필요기간: 0,
-              MM: 0,
-              hasCycle: false,
-              isHighlighted: false,
-              isSelected: false,
-            },
-            style: {
-              opacity: 0.6,
-            },
-          };
-        }
-
+      // L5 Task가 없으면 Unspecified로 생성
+      if (!task) {
         return {
           id: `l5-${l5Id}`,
-          type: 'task',
+          type: "task",
           position: { x: 0, y: 0 },
           data: {
-            label: `[L5] ${task.name}`,
-            category: task.l4Category,
-            필요인력: task.필요인력,
-            필요기간: task.필요기간,
-            MM: task.MM,
+            label: `[L5] ${l5Id}`,
+            category: "Unspecified",
+            필요인력: 0,
+            필요기간: 0,
+            MM: 0,
             hasCycle: false,
             isHighlighted: false,
             isSelected: false,
@@ -350,7 +337,27 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
             opacity: 0.6,
           },
         };
-      });
+      }
+
+      return {
+        id: `l5-${l5Id}`,
+        type: "task",
+        position: { x: 0, y: 0 },
+        data: {
+          label: `[L5] ${task.name}`,
+          category: task.l4Category,
+          필요인력: task.필요인력,
+          필요기간: task.필요기간,
+          MM: task.MM,
+          hasCycle: false,
+          isHighlighted: false,
+          isSelected: false,
+        },
+        style: {
+          opacity: 0.6,
+        },
+      };
+    });
 
     // L5와 L6 간의 엣지 (기본 정보만)
     const l5ToL6EdgesBase: Array<{
@@ -360,7 +367,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
     }> = [];
     l6Tasks.forEach((l6Task) => {
       // 선행 L5
-      l6Task['선행 L5']?.forEach((l5Id) => {
+      l6Task["선행 L5"]?.forEach((l5Id) => {
         l5ToL6EdgesBase.push({
           id: `l5-${l5Id}-${l6Task.id}`,
           source: `l5-${l5Id}`,
@@ -369,7 +376,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
       });
 
       // 후행 L5
-      l6Task['후행 L5']?.forEach((l5Id) => {
+      l6Task["후행 L5"]?.forEach((l5Id) => {
         l5ToL6EdgesBase.push({
           id: `${l6Task.id}-l5-${l5Id}`,
           source: l6Task.id,
@@ -382,55 +389,74 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
     const l6Edges: Edge[] = l6EdgesBase.map((edge, index) => {
       const colors = getColorForCategory(edge.category);
       const reverseEdgeId = `${edge.target}-${edge.source}`;
-      const isSelected = selectedEdge === edge.id || selectedEdge === reverseEdgeId;
+      const isSelected =
+        selectedEdge === edge.id || selectedEdge === reverseEdgeId;
       const isHidden = selectedEdge !== null && !isSelected;
 
       // 크리티컬 패스에 속하는 엣지인지 확인
-      const isInCriticalPath = showCriticalPath &&
+      const isInCriticalPath =
+        showCriticalPath &&
         criticalPathIds.has(edge.source) &&
         criticalPathIds.has(edge.target);
 
       // 양방향인 경우 첫 번째 엣지에만 라벨 표시
-      const isFirstOfBidirectional = edge.isBidirectional &&
-        l6EdgesBase.findIndex(e =>
-          (e.source === edge.source && e.target === edge.target) ||
-          (e.source === edge.target && e.target === edge.source)
+      const isFirstOfBidirectional =
+        edge.isBidirectional &&
+        l6EdgesBase.findIndex(
+          (e) =>
+            (e.source === edge.source && e.target === edge.target) ||
+            (e.source === edge.target && e.target === edge.source),
         ) === index;
 
       // 양방향 엣지의 경우 offset 적용
-      const offset = edge.isBidirectional ? (edge.source < edge.target ? 15 : -15) : 0;
+      const offset = edge.isBidirectional
+        ? edge.source < edge.target
+          ? 15
+          : -15
+        : 0;
 
       // 크리티컬 패스 색상
-      const criticalPathColor = '#f59e0b';
+      const criticalPathColor = "#f59e0b";
       const strokeColor = isInCriticalPath
         ? criticalPathColor
         : edge.isBidirectional
-        ? 'rgba(244, 67, 54, 0.5)'
-        : colors.border;
+          ? "rgba(244, 67, 54, 0.5)"
+          : colors.border;
 
       return {
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        type: 'default',
+        type: "default",
         markerEnd: {
-          type: 'arrowclosed',
+          type: "arrowclosed",
           width: isInCriticalPath ? 18 : 16,
           height: isInCriticalPath ? 18 : 16,
           color: strokeColor,
         },
         style: {
           stroke: strokeColor,
-          strokeWidth: isInCriticalPath ? 3.5 : (isSelected ? 3 : 1.5),
-          strokeDasharray: isInCriticalPath ? undefined : '8,4',
-          opacity: isHidden ? 0.1 : (isInCriticalPath ? 1 : (edge.isBidirectional ? 1 : 0.6)),
-          cursor: 'pointer',
+          strokeWidth: isInCriticalPath ? 3.5 : isSelected ? 3 : 1.5,
+          strokeDasharray: isInCriticalPath ? undefined : "8,4",
+          opacity: isHidden
+            ? 0.1
+            : isInCriticalPath
+              ? 1
+              : edge.isBidirectional
+                ? 1
+                : 0.6,
+          cursor: "pointer",
         },
         interactionWidth: 20,
         data: { offset },
-        label: edge.isBidirectional && isFirstOfBidirectional ? '⚠ 양방향' : undefined,
-        labelStyle: edge.isBidirectional ? { fill: '#F44336', fontWeight: 'bold', fontSize: '11px' } : undefined,
-        labelBgStyle: edge.isBidirectional ? { fill: '#FFEBEE' } : undefined,
+        label:
+          edge.isBidirectional && isFirstOfBidirectional
+            ? "⚠ 양방향"
+            : undefined,
+        labelStyle: edge.isBidirectional
+          ? { fill: "#F44336", fontWeight: "bold", fontSize: "11px" }
+          : undefined,
+        labelBgStyle: edge.isBidirectional ? { fill: "#FFEBEE" } : undefined,
       };
     });
 
@@ -443,19 +469,19 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        type: 'default',
+        type: "default",
         markerEnd: {
-          type: 'arrowclosed',
+          type: "arrowclosed",
           width: 12,
           height: 12,
-          color: 'rgba(158, 158, 158, 0.5)',
+          color: "rgba(158, 158, 158, 0.5)",
         },
         style: {
-          stroke: 'rgba(158, 158, 158, 0.5)',
+          stroke: "rgba(158, 158, 158, 0.5)",
           strokeWidth: isSelected ? 2 : 1,
-          strokeDasharray: '8,4',
+          strokeDasharray: "8,4",
           opacity: isHidden ? 0.05 : 0.6,
-          cursor: 'pointer',
+          cursor: "pointer",
         },
         interactionWidth: 20,
       };
@@ -466,7 +492,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
     // 에러가 있는 노드들 찾기
     const nodeErrors = new Map<string, number[]>();
     processedData.errors.forEach((error, index) => {
-      if (error.sourceLevel === 'L6') {
+      if (error.sourceLevel === "L6") {
         if (!nodeErrors.has(error.sourceTask)) {
           nodeErrors.set(error.sourceTask, []);
         }
@@ -479,7 +505,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
       // 선택된 엣지와 연결된 노드인지 확인
       let isHighlighted = false;
       if (selectedEdge) {
-        const edge = allEdges.find(e => e.id === selectedEdge);
+        const edge = allEdges.find((e) => e.id === selectedEdge);
         if (edge && (edge.source === task.id || edge.target === task.id)) {
           isHighlighted = true;
         }
@@ -490,7 +516,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
 
       return {
         id: task.id,
-        type: 'task',
+        type: "task",
         position: { x: 0, y: 0 },
         data: {
           label: task.name,
@@ -512,23 +538,29 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
             setTimeout(() => {
               const errorIndex = nodeErrors.get(task.id)?.[0];
               if (errorIndex !== undefined) {
-                const errorRow = document.getElementById(`error-row-${task.id}-${errorIndex}`);
+                const errorRow = document.getElementById(
+                  `error-row-${task.id}-${errorIndex}`,
+                );
                 if (errorRow) {
-                  errorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  errorRow.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
                 }
               }
             }, 100);
           },
         },
-        style: selectedEdge && !isHighlighted
-          ? { opacity: 0.3 }
-          : isInCriticalPath
-          ? {
-              border: '3px solid #f59e0b',
-              borderRadius: '12px',
-              boxShadow: '0 0 0 3px rgba(245, 158, 11, 0.3)',
-            }
-          : undefined,
+        style:
+          selectedEdge && !isHighlighted
+            ? { opacity: 0.3 }
+            : isInCriticalPath
+              ? {
+                  border: "3px solid #f59e0b",
+                  borderRadius: "12px",
+                  boxShadow: "0 0 0 3px rgba(245, 158, 11, 0.3)",
+                }
+              : undefined,
       };
     });
 
@@ -536,7 +568,7 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
     const updatedRelatedL5Nodes = relatedL5Nodes.map((node) => {
       let isHighlighted = false;
       if (selectedEdge) {
-        const edge = allEdges.find(e => e.id === selectedEdge);
+        const edge = allEdges.find((e) => e.id === selectedEdge);
         if (edge && (edge.source === node.id || edge.target === node.id)) {
           isHighlighted = true;
         }
@@ -557,14 +589,25 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
 
     const allNodes = [...l6Nodes, ...updatedRelatedL5Nodes];
 
-    const { nodes: layoutedNodes, edges: layoutedEdges, levels } = getLayoutedElements(
-      allNodes,
-      allEdges
-    );
+    const {
+      nodes: layoutedNodes,
+      edges: layoutedEdges,
+      levels,
+    } = getLayoutedElements(allNodes, allEdges);
 
     setNodes(layoutedNodes as any);
     setEdges(layoutedEdges as any);
-  }, [processedData, selectedL5, getL6TasksForL5, setNodes, setEdges, selectedEdge, showCriticalPath, criticalPathIds, onNavigateToErrorReport]);
+  }, [
+    processedData,
+    selectedL5,
+    getL6TasksForL5,
+    setNodes,
+    setEdges,
+    selectedEdge,
+    showCriticalPath,
+    criticalPathIds,
+    onNavigateToErrorReport,
+  ]);
 
   // L6 진입 시 전체 그래프가 보이도록 fitView
   useEffect(() => {
@@ -576,22 +619,25 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
   }, [nodes.length, fitView]);
 
   // 엣지 클릭 핸들러
-  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
-    event.stopPropagation();
-    setSelectedEdge(edge.id === selectedEdge ? null : edge.id);
+  const onEdgeClick = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      event.stopPropagation();
+      setSelectedEdge(edge.id === selectedEdge ? null : edge.id);
 
-    // 엣지 선택 시 뷰포트를 엣지 중앙으로 이동
-    if (edge.id !== selectedEdge) {
-      const sourceNode = (nodes as Node[]).find(n => n.id === edge.source);
-      const targetNode = (nodes as Node[]).find(n => n.id === edge.target);
+      // 엣지 선택 시 뷰포트를 엣지 중앙으로 이동
+      if (edge.id !== selectedEdge) {
+        const sourceNode = (nodes as Node[]).find((n) => n.id === edge.source);
+        const targetNode = (nodes as Node[]).find((n) => n.id === edge.target);
 
-      if (sourceNode && targetNode) {
-        const centerX = (sourceNode.position.x + targetNode.position.x) / 2;
-        const centerY = (sourceNode.position.y + targetNode.position.y) / 2;
-        setCenter(centerX, centerY, { zoom: 1, duration: 500 });
+        if (sourceNode && targetNode) {
+          const centerX = (sourceNode.position.x + targetNode.position.x) / 2;
+          const centerY = (sourceNode.position.y + targetNode.position.y) / 2;
+          setCenter(centerX, centerY, { zoom: 1, duration: 500 });
+        }
       }
-    }
-  }, [selectedEdge, nodes, setCenter]);
+    },
+    [selectedEdge, nodes, setCenter],
+  );
 
   // 패널 클릭 시 L5-filtered 모드로 복귀
   const onPaneClick = useCallback(() => {
@@ -600,12 +646,12 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
       setSelectedEdge(null);
     } else {
       // 엣지가 선택되어 있지 않으면 L5-filtered로 복귀
-      setViewMode('l5-filtered');
+      setViewMode("l5-filtered");
     }
   }, [selectedEdge, setViewMode]);
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: "100%", height: "100%" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -629,8 +675,8 @@ function L6FlowGraphInner({ onNavigateToErrorReport, showCriticalPath }: L6FlowG
           }}
           maskColor="rgba(14, 165, 233, 0.1)"
           style={{
-            backgroundColor: '#f8fafc',
-            border: '2px solid #e0f2fe',
+            backgroundColor: "#f8fafc",
+            border: "2px solid #e0f2fe",
           }}
           pannable
           zoomable
@@ -645,7 +691,10 @@ interface L6FlowGraphProps {
   showCriticalPath: boolean;
 }
 
-export default function L6FlowGraph({ onNavigateToErrorReport, showCriticalPath }: L6FlowGraphProps) {
+export default function L6FlowGraph({
+  onNavigateToErrorReport,
+  showCriticalPath,
+}: L6FlowGraphProps) {
   return (
     <ReactFlowProvider>
       <L6FlowGraphInner

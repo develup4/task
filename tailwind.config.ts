@@ -9,7 +9,7 @@ const config: Config & { daisyui?: any } = {
   theme: {
     extend: {},
   },
-  plugins: []
+  plugins: [],
 };
 
 export default config;

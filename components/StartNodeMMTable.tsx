@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useAppStore } from '@/lib/store';
-import { useMemo } from 'react';
+import { useAppStore } from "@/lib/store";
+import { useMemo } from "react";
 
 interface StartNodeData {
   l5Id: string;
@@ -14,7 +14,9 @@ interface StartNodeMMTableProps {
   onNavigateToGraph?: () => void;
 }
 
-export default function StartNodeMMTable({ onNavigateToGraph }: StartNodeMMTableProps) {
+export default function StartNodeMMTable({
+  onNavigateToGraph,
+}: StartNodeMMTableProps) {
   const { processedData, setSelectedL5, setViewMode } = useAppStore();
 
   const startNodeData = useMemo<StartNodeData[]>(() => {
@@ -25,7 +27,7 @@ export default function StartNodeMMTable({ onNavigateToGraph }: StartNodeMMTable
     // 모든 L5 태스크를 순회
     processedData.l5Tasks.forEach((l5Task, l5Id) => {
       const l6Tasks = Array.from(processedData.l6Tasks.values()).filter(
-        (task) => task.l5Parent === l5Id
+        (task) => task.l5Parent === l5Id,
       );
 
       if (l6Tasks.length === 0) return;
@@ -41,7 +43,9 @@ export default function StartNodeMMTable({ onNavigateToGraph }: StartNodeMMTable
       });
 
       // 시작 노드 찾기 (incoming edge가 없는 노드)
-      const startNodes = l6Tasks.filter((task) => !hasIncomingEdge.has(task.id));
+      const startNodes = l6Tasks.filter(
+        (task) => !hasIncomingEdge.has(task.id),
+      );
 
       if (startNodes.length > 0) {
         // 전체 L6 태스크의 MM 합계
@@ -62,7 +66,7 @@ export default function StartNodeMMTable({ onNavigateToGraph }: StartNodeMMTable
 
   const handleRowClick = (l5Id: string) => {
     setSelectedL5(l5Id);
-    setViewMode('l6-detail');
+    setViewMode("l6-detail");
     onNavigateToGraph?.();
   };
 
@@ -113,7 +117,7 @@ export default function StartNodeMMTable({ onNavigateToGraph }: StartNodeMMTable
             <th className="bg-base-200 text-orange-600">
               {startNodeData
                 .reduce((sum, data) => sum + data.cumulativeMM, 0)
-                .toFixed(1)}{' '}
+                .toFixed(1)}{" "}
               MM
             </th>
           </tr>

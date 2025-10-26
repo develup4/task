@@ -6,7 +6,7 @@
  * @returns 소수점 3자리까지 반올림된 문자열 (불필요한 0은 제거)
  */
 export function formatDecimal(value: number | undefined): string {
-  if (value === undefined || value === null) return '0';
+  if (value === undefined || value === null) return "0";
 
   // 소수점 2자리까지 반올림
   const rounded = Math.round(value * 100) / 100;

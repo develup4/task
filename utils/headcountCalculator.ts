@@ -1,4 +1,4 @@
-import { L6Task } from '@/types/task';
+import { L6Task } from "@/types/task";
 
 export interface IntervalHeadcount {
   startWeek: number; // Interval start (weeks)
@@ -22,7 +22,7 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
     return { maxHeadcount: 0, intervals: [], totalWeeks: 0 };
   }
 
-  const taskMap = new Map(l6Tasks.map(t => [t.id, t]));
+  const taskMap = new Map(l6Tasks.map((t) => [t.id, t]));
 
   // 각 태스크의 시작/종료 시점 계산 (week 단위)
   interface TaskSchedule {
@@ -37,7 +37,10 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
   const taskStartWeeks = new Map<string, number>();
 
   // DFS로 각 태스크의 시작 week 계산
-  const calculateStartWeek = (taskId: string, visited: Set<string> = new Set()): number => {
+  const calculateStartWeek = (
+    taskId: string,
+    visited: Set<string> = new Set(),
+  ): number => {
     if (taskStartWeeks.has(taskId)) {
       return taskStartWeeks.get(taskId)!;
     }
@@ -77,7 +80,7 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
   };
 
   // 모든 태스크의 시작/종료 week 계산
-  l6Tasks.forEach(task => {
+  l6Tasks.forEach((task) => {
     const startWeek = calculateStartWeek(task.id);
     const duration = task.필요기간 || 0;
     const endWeek = startWeek + duration;
@@ -94,7 +97,7 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
   // 모든 시작/종료 시점을 수집하여 정렬 (구간 나누기)
   const timePoints = new Set<number>();
   timePoints.add(0); // 프로젝트 시작
-  schedules.forEach(s => {
+  schedules.forEach((s) => {
     timePoints.add(s.startWeek);
     timePoints.add(s.endWeek);
   });
@@ -111,8 +114,8 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
     const endWeek = sortedTimePoints[i + 1];
 
     // 이 구간에서 활성화된 태스크들 찾기
-    const activeTasks = schedules.filter(s =>
-      s.startWeek <= startWeek && s.endWeek >= endWeek
+    const activeTasks = schedules.filter(
+      (s) => s.startWeek <= startWeek && s.endWeek >= endWeek,
     );
 
     const headcount = activeTasks.reduce((sum, t) => sum + t.P, 0);
@@ -122,7 +125,7 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
         startWeek,
         endWeek,
         headcount,
-        tasks: activeTasks.map(t => ({ id: t.id, name: t.name, P: t.P })),
+        tasks: activeTasks.map((t) => ({ id: t.id, name: t.name, P: t.P })),
       });
 
       maxHeadcount = Math.max(maxHeadcount, headcount);

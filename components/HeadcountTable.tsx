@@ -1,8 +1,11 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { useAppStore } from '@/lib/store';
-import { calculateDailyHeadcount, IntervalHeadcount } from '@/utils/headcountCalculator';
+import { useMemo } from "react";
+import { useAppStore } from "@/lib/store";
+import {
+  calculateDailyHeadcount,
+  IntervalHeadcount,
+} from "@/utils/headcountCalculator";
 
 export default function HeadcountTable() {
   const { getL6TasksForL5, selectedL5 } = useAppStore();
@@ -30,15 +33,22 @@ export default function HeadcountTable() {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-800">시간대별 필요인력</h3>
+        <h3 className="text-lg font-semibold text-gray-800">
+          시간대별 필요인력
+        </h3>
         <p className="text-sm text-gray-500 mt-1">
-          총 기간: {totalWeeks.toFixed(2)}주 | 최대 필요인력: <span className="font-bold text-purple-600">{maxHeadcount.toFixed(1)}명</span>
+          총 기간: {totalWeeks.toFixed(2)}주 | 최대 필요인력:{" "}
+          <span className="font-bold text-purple-600">
+            {maxHeadcount.toFixed(1)}명
+          </span>
         </p>
       </div>
 
       {/* 필요인력 차트 */}
       <div className="border rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-gray-700 mb-3">필요인력 변화 그래프</h4>
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">
+          필요인력 변화 그래프
+        </h4>
         <div className="relative" style={{ height: `${chartHeight}px` }}>
           {/* Y축 (필요인력) */}
           <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-gray-500">
@@ -63,15 +73,17 @@ export default function HeadcountTable() {
             {/* 필요인력 막대 그래프 */}
             {intervals.map((interval, idx) => {
               const leftPercent = (interval.startWeek / totalWeeks) * 100;
-              const widthPercent = ((interval.endWeek - interval.startWeek) / totalWeeks) * 100;
+              const widthPercent =
+                ((interval.endWeek - interval.startWeek) / totalWeeks) * 100;
               const heightPercent = (interval.headcount / maxHeadcount) * 100;
-              const isMaxInterval = interval.headcount === maxHeadcount && maxHeadcount > 0;
+              const isMaxInterval =
+                interval.headcount === maxHeadcount && maxHeadcount > 0;
 
               return (
                 <div
                   key={idx}
                   className={`absolute ${
-                    isMaxInterval ? 'bg-purple-500' : 'bg-blue-400'
+                    isMaxInterval ? "bg-purple-500" : "bg-blue-400"
                   } opacity-80 hover:opacity-100 transition-opacity cursor-pointer`}
                   style={{
                     left: `${leftPercent}%`,
@@ -98,7 +110,9 @@ export default function HeadcountTable() {
 
       {/* 구간별 상세 테이블 */}
       <div className="border rounded-lg overflow-hidden">
-        <h4 className="text-sm font-semibold text-gray-700 p-3 bg-gray-50 border-b">구간별 상세 정보</h4>
+        <h4 className="text-sm font-semibold text-gray-700 p-3 bg-gray-50 border-b">
+          구간별 상세 정보
+        </h4>
         <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
           <table className="table table-sm">
             <thead className="bg-gray-100 sticky top-0">
@@ -110,24 +124,26 @@ export default function HeadcountTable() {
             </thead>
             <tbody>
               {intervals.map((interval, idx) => {
-                const isMaxInterval = interval.headcount === maxHeadcount && maxHeadcount > 0;
+                const isMaxInterval =
+                  interval.headcount === maxHeadcount && maxHeadcount > 0;
 
                 return (
                   <tr
                     key={idx}
-                    className={`hover:bg-gray-50 ${isMaxInterval ? 'bg-purple-50' : ''}`}
+                    className={`hover:bg-gray-50 ${isMaxInterval ? "bg-purple-50" : ""}`}
                   >
                     <td className="text-center font-mono text-sm">
-                      {interval.startWeek.toFixed(2)} ~ {interval.endWeek.toFixed(2)}
+                      {interval.startWeek.toFixed(2)} ~{" "}
+                      {interval.endWeek.toFixed(2)}
                     </td>
                     <td className="text-center">
                       <span
                         className={`font-bold ${
                           isMaxInterval
-                            ? 'text-purple-600 text-lg'
+                            ? "text-purple-600 text-lg"
                             : interval.headcount > 0
-                            ? 'text-gray-800'
-                            : 'text-gray-400'
+                              ? "text-gray-800"
+                              : "text-gray-400"
                         }`}
                       >
                         {interval.headcount.toFixed(1)}

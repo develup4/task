@@ -1,4 +1,4 @@
-import { L6Task } from '@/types/task';
+import { L6Task } from "@/types/task";
 
 export interface CriticalPathResult {
   path: string[]; // L6 task IDs in critical path
@@ -14,16 +14,19 @@ export function calculateCriticalPath(l6Tasks: L6Task[]): CriticalPathResult {
     return { path: [], totalDuration: 0 };
   }
 
-  const taskMap = new Map(l6Tasks.map(t => [t.id, t]));
+  const taskMap = new Map(l6Tasks.map((t) => [t.id, t]));
 
   // 각 노드까지의 최대 경로 길이와 경로를 저장
   const maxPath = new Map<string, { duration: number; path: string[] }>();
 
   // 시작 노드들 찾기 (선행이 없는 노드들)
-  const startNodes = l6Tasks.filter(t => t.predecessors.length === 0);
+  const startNodes = l6Tasks.filter((t) => t.predecessors.length === 0);
 
   // DFS로 각 경로의 최대 길이 계산
-  const dfs = (taskId: string, visited: Set<string>): { duration: number; path: string[] } => {
+  const dfs = (
+    taskId: string,
+    visited: Set<string>,
+  ): { duration: number; path: string[] } => {
     // 이미 계산된 경우 반환
     if (maxPath.has(taskId) && !visited.has(taskId)) {
       return maxPath.get(taskId)!;
@@ -61,9 +64,11 @@ export function calculateCriticalPath(l6Tasks: L6Task[]): CriticalPathResult {
         const successorResult = dfs(successorId, new Set(visited));
 
         // duration이 더 크거나, duration이 같으면 경로가 더 긴 것 선택
-        if (successorResult.duration > maxSuccessorResult.duration ||
-            (successorResult.duration === maxSuccessorResult.duration &&
-             successorResult.path.length > maxSuccessorResult.path.length)) {
+        if (
+          successorResult.duration > maxSuccessorResult.duration ||
+          (successorResult.duration === maxSuccessorResult.duration &&
+            successorResult.path.length > maxSuccessorResult.path.length)
+        ) {
           maxSuccessorResult = successorResult;
         }
       }
@@ -72,7 +77,7 @@ export function calculateCriticalPath(l6Tasks: L6Task[]): CriticalPathResult {
     // 현재 노드 + 최대 후행 경로
     const result = {
       duration: currentDuration + maxSuccessorResult.duration,
-      path: [taskId, ...maxSuccessorResult.path]
+      path: [taskId, ...maxSuccessorResult.path],
     };
 
     maxPath.set(taskId, result);
@@ -88,9 +93,11 @@ export function calculateCriticalPath(l6Tasks: L6Task[]): CriticalPathResult {
     // 시작 노드가 없으면 (모든 노드가 선행을 가짐 - 순환 구조) 모든 노드를 시도
     for (const task of l6Tasks) {
       const result = dfs(task.id, new Set());
-      if (result.duration > criticalPath.totalDuration ||
-          (result.duration === criticalPath.totalDuration &&
-           result.path.length > criticalPath.path.length)) {
+      if (
+        result.duration > criticalPath.totalDuration ||
+        (result.duration === criticalPath.totalDuration &&
+          result.path.length > criticalPath.path.length)
+      ) {
         criticalPath = { path: result.path, totalDuration: result.duration };
       }
     }
@@ -98,9 +105,11 @@ export function calculateCriticalPath(l6Tasks: L6Task[]): CriticalPathResult {
     // 정상적인 경우: 시작 노드들에서 시작
     for (const startNode of startNodes) {
       const result = dfs(startNode.id, new Set());
-      if (result.duration > criticalPath.totalDuration ||
-          (result.duration === criticalPath.totalDuration &&
-           result.path.length > criticalPath.path.length)) {
+      if (
+        result.duration > criticalPath.totalDuration ||
+        (result.duration === criticalPath.totalDuration &&
+          result.path.length > criticalPath.path.length)
+      ) {
         criticalPath = { path: result.path, totalDuration: result.duration };
       }
     }
