@@ -110,14 +110,18 @@ export default function HeadcountTable() {
                       width: `${widthPercent}%`,
                       height: `${heightPercent}%`,
                     }}
-                    title={`${interval.startWeek.toFixed(2)}w ~ ${interval.endWeek.toFixed(2)}w: ${interval.headcount.toFixed(1)}명`}
+                    title={`${interval.startWeek.toFixed(
+                      2
+                    )}w ~ ${interval.endWeek.toFixed(
+                      2
+                    )}w: ${interval.headcount.toFixed(1)}명`}
                   />
                   {/* 구간 끝 border (마지막 구간 제외) */}
                   {idx < intervals.length - 1 && (
                     <div
                       className="absolute top-0 bottom-0 border-l border-gray-300"
                       style={{
-                        left: `${((interval.endWeek / totalWeeks) * 100)}%`,
+                        left: `${(interval.endWeek / totalWeeks) * 100}%`,
                       }}
                     />
                   )}
@@ -174,7 +178,7 @@ export default function HeadcountTable() {
                 return (
                   <tr
                     key={idx}
-                    className={`hover:bg-gray-50 ${bgColor}`}
+                    className={`${bgColor} [&:not(:last-child)]:border-b border-purple-100`}
                   >
                     <td className="text-center font-mono text-sm w-28">
                       {interval.startWeek.toFixed(2)} ~{" "}
