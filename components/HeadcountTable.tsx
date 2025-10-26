@@ -30,20 +30,20 @@ export default function HeadcountTable() {
   const chartHeight = 300;
   const barHeight = 20;
 
-  // 구간별 색상 배열
+  // 구간별 색상 배열 (보라색 계열)
   const colors = [
-    "bg-blue-400",
-    "bg-cyan-400",
-    "bg-green-400",
-    "bg-lime-400",
-    "bg-yellow-400",
-    "bg-orange-400",
-    "bg-red-400",
-    "bg-pink-400",
+    "bg-purple-300",
     "bg-purple-400",
+    "bg-purple-500",
+    "bg-purple-600",
+    "bg-indigo-300",
     "bg-indigo-400",
+    "bg-indigo-500",
+    "bg-indigo-600",
+    "bg-violet-300",
     "bg-violet-400",
-    "bg-teal-400",
+    "bg-violet-500",
+    "bg-violet-600",
   ];
 
   // 구간 색상 할당 함수
@@ -154,22 +154,22 @@ export default function HeadcountTable() {
             <tbody>
               {intervals.map((interval, idx) => {
                 const intervalColor = getIntervalColor(idx);
-                // 배경색을 lightness가 높은 버전으로 변환 (400 -> 50)
+                // 배경색을 lightness가 높은 버전으로 변환
                 const bgColorMap: Record<string, string> = {
-                  "bg-blue-400": "bg-blue-50",
-                  "bg-cyan-400": "bg-cyan-50",
-                  "bg-green-400": "bg-green-50",
-                  "bg-lime-400": "bg-lime-50",
-                  "bg-yellow-400": "bg-yellow-50",
-                  "bg-orange-400": "bg-orange-50",
-                  "bg-red-400": "bg-red-50",
-                  "bg-pink-400": "bg-pink-50",
+                  "bg-purple-300": "bg-purple-50",
                   "bg-purple-400": "bg-purple-50",
+                  "bg-purple-500": "bg-purple-100",
+                  "bg-purple-600": "bg-purple-100",
+                  "bg-indigo-300": "bg-indigo-50",
                   "bg-indigo-400": "bg-indigo-50",
+                  "bg-indigo-500": "bg-indigo-100",
+                  "bg-indigo-600": "bg-indigo-100",
+                  "bg-violet-300": "bg-violet-50",
                   "bg-violet-400": "bg-violet-50",
-                  "bg-teal-400": "bg-teal-50",
+                  "bg-violet-500": "bg-violet-100",
+                  "bg-violet-600": "bg-violet-100",
                 };
-                const bgColor = bgColorMap[intervalColor] || "bg-blue-50";
+                const bgColor = bgColorMap[intervalColor] || "bg-purple-50";
 
                 return (
                   <tr
@@ -200,7 +200,7 @@ export default function HeadcountTable() {
                               className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded"
                               title={`${task.name} (P: ${task.P})`}
                             >
-                              {task.id} ({task.P})
+                              {task.name}
                             </span>
                           ))}
                         </div>
