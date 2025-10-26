@@ -143,12 +143,12 @@ export default function HeadcountTable() {
           구간별 상세 정보
         </h4>
         <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
-          <table className="table table-sm">
+          <table className="table table-sm w-full">
             <thead className="bg-gray-100 sticky top-0">
               <tr>
-                <th className="text-center">구간 (Week)</th>
-                <th className="text-center">필요인력 (P)</th>
-                <th className="text-left">진행 중인 작업</th>
+                <th className="text-center w-28">구간 (Week)</th>
+                <th className="text-center w-24">필요인력 (P)</th>
+                <th className="text-left flex-1">진행 중인 작업</th>
               </tr>
             </thead>
             <tbody>
@@ -176,11 +176,11 @@ export default function HeadcountTable() {
                     key={idx}
                     className={`hover:bg-gray-50 ${bgColor}`}
                   >
-                    <td className="text-center font-mono text-sm">
+                    <td className="text-center font-mono text-sm w-28">
                       {interval.startWeek.toFixed(2)} ~{" "}
                       {interval.endWeek.toFixed(2)}
                     </td>
-                    <td className="text-center">
+                    <td className="text-center w-24">
                       <span
                         className={`font-bold ${
                           interval.headcount > 0
@@ -191,7 +191,7 @@ export default function HeadcountTable() {
                         {interval.headcount.toFixed(1)}
                       </span>
                     </td>
-                    <td>
+                    <td className="flex-1">
                       {interval.tasks.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {interval.tasks.map((task) => (
