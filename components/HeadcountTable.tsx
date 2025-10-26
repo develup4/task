@@ -60,7 +60,7 @@ export default function HeadcountTable() {
           </div>
 
           {/* 차트 영역 */}
-          <div className="absolute left-12 right-0 top-0 bottom-0 border-l border-b border-gray-300">
+          <div className="absolute left-12 right-0 top-0 bottom-12 border-l border-b border-gray-300">
             {/* 가로 그리드 라인 */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
               <div
@@ -80,25 +80,36 @@ export default function HeadcountTable() {
                 interval.headcount === maxHeadcount && maxHeadcount > 0;
 
               return (
-                <div
-                  key={idx}
-                  className={`absolute ${
-                    isMaxInterval ? "bg-purple-500" : "bg-blue-400"
-                  } opacity-80 hover:opacity-100 transition-opacity cursor-pointer`}
-                  style={{
-                    left: `${leftPercent}%`,
-                    bottom: 0,
-                    width: `${widthPercent}%`,
-                    height: `${heightPercent}%`,
-                  }}
-                  title={`${interval.startWeek.toFixed(2)}w ~ ${interval.endWeek.toFixed(2)}w: ${interval.headcount.toFixed(1)}명`}
-                />
+                <div key={idx}>
+                  {/* 구간 막대 */}
+                  <div
+                    className={`absolute ${
+                      isMaxInterval ? "bg-purple-500" : "bg-blue-400"
+                    } opacity-80 hover:opacity-100 transition-opacity cursor-pointer`}
+                    style={{
+                      left: `${leftPercent}%`,
+                      bottom: 0,
+                      width: `${widthPercent}%`,
+                      height: `${heightPercent}%`,
+                    }}
+                    title={`${interval.startWeek.toFixed(2)}w ~ ${interval.endWeek.toFixed(2)}w: ${interval.headcount.toFixed(1)}명`}
+                  />
+                  {/* 구간 끝 border (마지막 구간 제외) */}
+                  {idx < intervals.length - 1 && (
+                    <div
+                      className="absolute top-0 bottom-0 border-l border-gray-300"
+                      style={{
+                        left: `${((interval.endWeek / totalWeeks) * 100)}%`,
+                      }}
+                    />
+                  )}
+                </div>
               );
             })}
           </div>
 
           {/* X축 (주) */}
-          <div className="absolute left-12 right-0 -bottom-6 flex justify-between text-xs text-gray-500">
+          <div className="absolute left-12 right-0 top-[calc(100%+8px)] flex justify-between text-xs text-gray-500 pr-2">
             <span>0w</span>
             <span>{(totalWeeks * 0.25).toFixed(1)}w</span>
             <span>{(totalWeeks * 0.5).toFixed(1)}w</span>

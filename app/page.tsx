@@ -300,7 +300,7 @@ export default function Home() {
                     </div>
                     {/* Headcount Drawer */}
                     <div
-                      className={`absolute right-0 top-0 bottom-0 w-96 bg-white shadow-2xl z-40 border-l border-gray-200 transition-all duration-300 ease-in-out overflow-y-auto ${
+                      className={`absolute right-0 top-0 bottom-0 w-[550px] bg-white shadow-2xl z-40 border-l border-gray-200 transition-all duration-300 ease-in-out overflow-y-auto ${
                         showHeadcountTable
                           ? "translate-x-0 opacity-100"
                           : "translate-x-full opacity-0 pointer-events-none"
@@ -320,7 +320,7 @@ export default function Home() {
                     {/* Overlay when drawer is open */}
                     {showHeadcountTable && (
                       <div
-                        className="absolute inset-0 bg-black/10 z-30 right-96"
+                        className="absolute inset-0 bg-black/10 z-30 right-[550px]"
                         onClick={() => setShowHeadcountTable(false)}
                       />
                     )}
