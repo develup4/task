@@ -161,7 +161,7 @@ export default function Home() {
                   <div className="flex gap-2 items-center mb-1">
                     <button
                       onClick={toggleTooltips}
-                      className={`p-1.5 rounded-md font-medium cursur-pointer text-sm transition-colors ${
+                      className={`p-1.5 rounded-md font-medium cursor-pointer text-sm transition-colors ${
                         showTooltips ? "text-white" : "text-gray-600"
                       }`}
                       title={showTooltips ? "툴팁 숨기기" : "툴팁 보이기"}

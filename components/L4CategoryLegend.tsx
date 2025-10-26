@@ -28,10 +28,8 @@ export default function L4CategoryLegend({
   }
 
   return (
-    <div
-      className={`bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 px-6 py-3 ${className}`}
-    >
-      <div className="flex items-center gap-2 flex-wrap">
+    <div className={`px-6 py-3 ${className} flex justify-end pt-6`}>
+      <div className="flex items-center gap-4 flex-wrap">
         {categories.map((category) => {
           const colors = getColorForCategory(category);
           const isVisible = visibleL4Categories.has(category);
@@ -42,8 +40,8 @@ export default function L4CategoryLegend({
               key={category}
               onClick={() => toggleL4Category(category)}
               className={`
-                inline-flex items-center gap-2 px-4 py-2 rounded-full
-                font-medium text-sm transition-all duration-200
+                inline-flex items-center gap-2 px-2 py-1 rounded-full
+                font-medium text-sm transition-all duration-200 cursor-pointer
                 ${
                   isVisible
                     ? "shadow-md hover:shadow-lg transform hover:scale-105"
@@ -63,7 +61,9 @@ export default function L4CategoryLegend({
             >
               {/* 색상 점 */}
               <div
-                className={`w-3 h-3 rounded-full ${isVisible ? "ring-2 ring-white" : ""}`}
+                className={`w-3 h-3 rounded-full ${
+                  isVisible ? "ring-2 ring-white" : ""
+                }`}
                 style={{
                   backgroundColor: colors.border,
                 }}

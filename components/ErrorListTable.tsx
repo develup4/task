@@ -98,7 +98,7 @@ export default function ErrorListTable({
                 borderBottom: "2px solid #ddd",
               }}
             >
-              <th style={{ padding: "12px", textAlign: "center" }}>순위</th>
+              <th style={{ padding: "12px", textAlign: "center" }}></th>
               <th style={{ padding: "12px", textAlign: "center" }}>레벨</th>
               <th style={{ padding: "12px", textAlign: "center" }}>
                 오류 유형
