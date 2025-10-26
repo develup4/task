@@ -53,7 +53,7 @@ export default function FileUploader() {
       />
       <button
         onClick={handleClick}
-        className="px-5 py-2.5 bg-[#38BDF8] text-white rounded-lg hover:bg--[#38BDF8]/80 transition-colors text-sm font-medium flex items-center gap-2 shadow-sm"
+        className="px-5 py-2.5 bg-[#38BDF8] text-white rounded-lg hover:bg--[#38BDF8]/80 transition-colors text-sm font-medium flex items-center gap-2 shadow-sm cursor-pointer"
       >
         UPLOAD
       </button>

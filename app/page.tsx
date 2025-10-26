@@ -87,7 +87,7 @@ export default function Home() {
     <div className="flex flex-col h-screen">
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-[95%] mx-auto px-6 py-4">
+        <div className="max-w-[95%] mx-auto py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Tailwind Logo */}
@@ -120,9 +120,9 @@ export default function Home() {
         {/* Tabs - 탭이 border 위에 위치 */}
         {processedData && (
           <div className="max-w-[95%] mx-auto">
-            <div className="bg-white px-6">
+            <div className="bg-white">
               <div className="flex justify-between items-center">
-                <div role="tablist" className="tabs tabs-bordered">
+                <div role="tablist" className="tabs tabs-border">
                   {(Object.keys(tabInfo) as Tab[]).map((tab) => (
                     <button
                       key={tab}
@@ -139,7 +139,7 @@ export default function Home() {
                       {tab === "error-list" &&
                         processedData?.errors &&
                         processedData.errors.length > 0 && (
-                          <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                          <span className="ml-1 px-1 py-0.5 bg-red-500 text-white text-xs rounded-full">
                             {processedData.errors.length}
                           </span>
                         )}
@@ -161,7 +161,7 @@ export default function Home() {
                   <div className="flex gap-2 items-center mb-1">
                     <button
                       onClick={toggleTooltips}
-                      className={`px-3 py-1.5 rounded-md font-medium cursur-pointer text-sm transition-colors ${
+                      className={`p-1.5 rounded-md font-medium cursur-pointer text-sm transition-colors ${
                         showTooltips ? "text-white" : "text-gray-600"
                       }`}
                       title={showTooltips ? "툴팁 숨기기" : "툴팁 보이기"}
@@ -173,7 +173,7 @@ export default function Home() {
                     <TeamFilter />
                     <input
                       type="text"
-                      placeholder="Search..."
+                      placeholder="Search"
                       value={searchQuery}
                       onChange={(e) => {
                         setSearchQuery(e.target.value);
@@ -184,7 +184,7 @@ export default function Home() {
                           setSearchTrigger((prev) => prev + 1);
                         }
                       }}
-                      className="input input-ghost input-sm px-3 py-1.5 border-gray-200 rounded-md focus:outline-none focus:ring focus:ring-sky-400 focus:bg-white text-sm"
+                      className="input input-ghost input-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring focus:ring-sky-400 focus:bg-white text-sm"
                     />
                     {searchResultCount > 0 && (
                       <span className="text-sm text-gray-600 font-medium">

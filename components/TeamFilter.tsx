@@ -38,7 +38,7 @@ export default function TeamFilter() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="pl-0.5 pr-2 bg-white border-gray-300 rounded-lg hover:bg-gray-50 hover:border-sky-400 focus:outline-none focus:ring focus:ring-sky-400 focus:border-sky-400 text-sm font-medium flex items-center gap-2 transition-colors"
+        className="pl-0.5 pr-2 py-2 bg-white border-gray-300 rounded-lg hover:bg-gray-50 hover:border-sky-400 focus:outline-none focus:ring focus:ring-sky-400 focus:border-sky-400 text-sm font-medium flex items-center gap-2 transition-colors"
       >
         <svg
           className="w-4 h-4 text-sky-600"

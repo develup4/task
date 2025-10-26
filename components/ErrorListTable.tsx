@@ -48,7 +48,7 @@ export default function ErrorListTable({
     } else if (sourceLevel === "L6") {
       // L6인 경우 L5 task로 찾아서 이동
       const l5Task = Array.from(processedData?.l5Tasks.values() || []).find(
-        (task) => task.l6Tasks?.some((l6) => l6.id === sourceTask),
+        (task) => task.l6Tasks?.some((l6) => l6.id === sourceTask)
       );
 
       if (l5Task) {
@@ -98,16 +98,18 @@ export default function ErrorListTable({
                 borderBottom: "2px solid #ddd",
               }}
             >
-              <th style={{ padding: "12px", textAlign: "left" }}>순위</th>
-              <th style={{ padding: "12px", textAlign: "left" }}>레벨</th>
-              <th style={{ padding: "12px", textAlign: "left" }}>오류 유형</th>
-              <th style={{ padding: "12px", textAlign: "left" }}>
+              <th style={{ padding: "12px", textAlign: "center" }}>순위</th>
+              <th style={{ padding: "12px", textAlign: "center" }}>레벨</th>
+              <th style={{ padding: "12px", textAlign: "center" }}>
+                오류 유형
+              </th>
+              <th style={{ padding: "12px", textAlign: "center" }}>
                 소스 프로세스
               </th>
-              <th style={{ padding: "12px", textAlign: "left" }}>
+              <th style={{ padding: "12px", textAlign: "center" }}>
                 관련 프로세스
               </th>
-              <th style={{ padding: "12px", textAlign: "left" }}>설명</th>
+              <th style={{ padding: "12px", textAlign: "center" }}>설명</th>
             </tr>
           </thead>
           <tbody>
@@ -134,7 +136,7 @@ export default function ErrorListTable({
                     scrollMarginTop: "20px", // 스크롤 시 상단 여백
                   }}
                   onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.bg;
+                    e.currentTarget.style.backgroundColor = colors.bg;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "transparent";
@@ -161,7 +163,7 @@ export default function ErrorListTable({
                       {error.sourceLevel}
                     </span>
                   </td>
-                  <td style={{ padding: "12px" }}>
+                  <td className="min-w-32" style={{ padding: "12px" }}>
                     <span
                       style={{
                         display: "inline-block",
@@ -171,66 +173,57 @@ export default function ErrorListTable({
                           error.type === "missing_predecessor"
                             ? "#fed7aa"
                             : error.type === "missing_successor"
-                              ? "#e9d5ff"
-                              : error.type === "self_loop_error"
-                                ? "#fef3c7"
-                                : error.type ===
-                                    "empty_predecessor_but_referenced"
-                                  ? "#fde68a"
-                                  : error.type ===
-                                      "empty_successor_but_referenced"
-                                    ? "#fde68a"
-                                    : error.type === "case_mismatch"
-                                      ? "#dbeafe"
-                                      : error.type ===
-                                          "mismatch_predecessor_successor"
-                                        ? "#fce7f3"
-                                        : error.type === "missing_l5_reference"
-                                          ? "#fecdd3"
-                                          : "#fecaca",
+                            ? "#e9d5ff"
+                            : error.type === "self_loop_error"
+                            ? "#fef3c7"
+                            : error.type === "empty_predecessor_but_referenced"
+                            ? "#fde68a"
+                            : error.type === "empty_successor_but_referenced"
+                            ? "#fde68a"
+                            : error.type === "case_mismatch"
+                            ? "#dbeafe"
+                            : error.type === "mismatch_predecessor_successor"
+                            ? "#fce7f3"
+                            : error.type === "missing_l5_reference"
+                            ? "#fecdd3"
+                            : "#fecaca",
                         color:
                           error.type === "missing_predecessor"
                             ? "#9a3412"
                             : error.type === "missing_successor"
-                              ? "#6b21a8"
-                              : error.type === "self_loop_error"
-                                ? "#92400e"
-                                : error.type ===
-                                    "empty_predecessor_but_referenced"
-                                  ? "#78350f"
-                                  : error.type ===
-                                      "empty_successor_but_referenced"
-                                    ? "#78350f"
-                                    : error.type === "case_mismatch"
-                                      ? "#1e40af"
-                                      : error.type ===
-                                          "mismatch_predecessor_successor"
-                                        ? "#9f1239"
-                                        : error.type === "missing_l5_reference"
-                                          ? "#be123c"
-                                          : "#991b1b",
+                            ? "#6b21a8"
+                            : error.type === "self_loop_error"
+                            ? "#92400e"
+                            : error.type === "empty_predecessor_but_referenced"
+                            ? "#78350f"
+                            : error.type === "empty_successor_but_referenced"
+                            ? "#78350f"
+                            : error.type === "case_mismatch"
+                            ? "#1e40af"
+                            : error.type === "mismatch_predecessor_successor"
+                            ? "#9f1239"
+                            : error.type === "missing_l5_reference"
+                            ? "#be123c"
+                            : "#991b1b",
                         fontSize: "12px",
                         border: `1px solid ${
                           error.type === "missing_predecessor"
                             ? "#fb923c"
                             : error.type === "missing_successor"
-                              ? "#c084fc"
-                              : error.type === "self_loop_error"
-                                ? "#fbbf24"
-                                : error.type ===
-                                    "empty_predecessor_but_referenced"
-                                  ? "#fbbf24"
-                                  : error.type ===
-                                      "empty_successor_but_referenced"
-                                    ? "#fbbf24"
-                                    : error.type === "case_mismatch"
-                                      ? "#93c5fd"
-                                      : error.type ===
-                                          "mismatch_predecessor_successor"
-                                        ? "#f9a8d4"
-                                        : error.type === "missing_l5_reference"
-                                          ? "#fda4af"
-                                          : "#f87171"
+                            ? "#c084fc"
+                            : error.type === "self_loop_error"
+                            ? "#fbbf24"
+                            : error.type === "empty_predecessor_but_referenced"
+                            ? "#fbbf24"
+                            : error.type === "empty_successor_but_referenced"
+                            ? "#fbbf24"
+                            : error.type === "case_mismatch"
+                            ? "#93c5fd"
+                            : error.type === "mismatch_predecessor_successor"
+                            ? "#f9a8d4"
+                            : error.type === "missing_l5_reference"
+                            ? "#fda4af"
+                            : "#f87171"
                         }`,
                         fontWeight: 500,
                       }}
@@ -238,23 +231,22 @@ export default function ErrorListTable({
                       {error.type === "missing_predecessor"
                         ? "누락된 선행"
                         : error.type === "missing_successor"
-                          ? "누락된 후행"
-                          : error.type === "self_loop_error"
-                            ? "Self-Loop 오류"
-                            : error.type === "empty_predecessor_but_referenced"
-                              ? "선행 입력 누락"
-                              : error.type === "empty_successor_but_referenced"
-                                ? "후행 입력 누락"
-                                : error.type === "case_mismatch"
-                                  ? "대소문자 오류"
-                                  : error.type ===
-                                      "mismatch_predecessor_successor"
-                                    ? "선행/후행 불일치"
-                                    : error.type === "missing_l5_reference"
-                                      ? "누락된 L5 참조"
-                                      : error.type === "bidirectional_error"
-                                        ? "양방향 오류"
-                                        : "알 수 없는 오류"}
+                        ? "누락된 후행"
+                        : error.type === "self_loop_error"
+                        ? "Self-Loop 오류"
+                        : error.type === "empty_predecessor_but_referenced"
+                        ? "선행 입력 누락"
+                        : error.type === "empty_successor_but_referenced"
+                        ? "후행 입력 누락"
+                        : error.type === "case_mismatch"
+                        ? "대소문자 오류"
+                        : error.type === "mismatch_predecessor_successor"
+                        ? "선행/후행 불일치"
+                        : error.type === "missing_l5_reference"
+                        ? "누락된 L5 참조"
+                        : error.type === "bidirectional_error"
+                        ? "양방향 오류"
+                        : "알 수 없는 오류"}
                     </span>
                   </td>
                   <td style={{ padding: "12px", fontWeight: 500 }}>
@@ -270,18 +262,18 @@ export default function ErrorListTable({
                     {error.type === "bidirectional_error"
                       ? error.relatedTask
                       : error.type === "self_loop_error"
-                        ? "-"
-                        : error.type === "empty_predecessor_but_referenced"
-                          ? error.relatedTask
-                          : error.type === "empty_successor_but_referenced"
-                            ? error.relatedTask
-                            : error.type === "case_mismatch"
-                              ? error.relatedTask
-                              : error.type === "mismatch_predecessor_successor"
-                                ? error.relatedTask
-                                : error.type === "missing_l5_reference"
-                                  ? error.missingTask
-                                  : error.missingTask}
+                      ? "-"
+                      : error.type === "empty_predecessor_but_referenced"
+                      ? error.relatedTask
+                      : error.type === "empty_successor_but_referenced"
+                      ? error.relatedTask
+                      : error.type === "case_mismatch"
+                      ? error.relatedTask
+                      : error.type === "mismatch_predecessor_successor"
+                      ? error.relatedTask
+                      : error.type === "missing_l5_reference"
+                      ? error.missingTask
+                      : error.missingTask}
                   </td>
                   <td style={{ padding: "12px", color: "#666" }}>
                     {error.description}
@@ -305,7 +297,7 @@ export default function ErrorListTable({
         <span style={{ fontWeight: 600, color: "#dc2626" }}>
           {errors.length}
         </span>
-        개의 검증 오류가 발견되었습니다.
+        개의 오류가 발견되었습니다.
       </div>
     </div>
   );
