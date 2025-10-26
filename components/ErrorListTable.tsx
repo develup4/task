@@ -128,15 +128,13 @@ export default function ErrorListTable({
                     handleRowClick(error.sourceTask, error.sourceLevel)
                   }
                   style={{
-                    cursor: isL5 ? "pointer" : "default",
+                    cursor: "pointer",
                     borderBottom: "1px solid #eee",
                     transition: "background-color 0.2s",
                     scrollMarginTop: "20px", // 스크롤 시 상단 여백
                   }}
                   onMouseEnter={(e) => {
-                    if (isL5) {
                       e.currentTarget.style.backgroundColor = colors.bg;
-                    }
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "transparent";

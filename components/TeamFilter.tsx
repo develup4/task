@@ -38,7 +38,7 @@ export default function TeamFilter() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
+        className="pl-0.5 pr-2 bg-white border-gray-300 rounded-lg hover:bg-gray-50 hover:border-sky-400 focus:outline-none focus:ring focus:ring-sky-400 focus:border-sky-400 text-sm font-medium flex items-center gap-2 transition-colors"
       >
         <svg
           className="w-4 h-4 text-sky-600"
@@ -53,11 +53,13 @@ export default function TeamFilter() {
             d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
           />
         </svg>
-        <span className="text-gray-700">
+        <span className="text-gray-700 font-normal">
           Filter ({selectedCount}/{totalCount})
         </span>
         <svg
-          className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-gray-500 transition-transform cursor-pointer ${
+            isOpen ? "rotate-180" : ""
+          }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

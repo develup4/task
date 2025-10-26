@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
+import { calculateCriticalPath } from "@/utils/criticalPath";
+import { calculateDailyHeadcount } from "@/utils/headcountCalculator";
 import FileUploader from "@/components/FileUploader";
 import L5FlowGraph from "@/components/L5FlowGraph";
 import L6FlowGraph from "@/components/L6FlowGraph";
@@ -9,12 +11,11 @@ import MMSummaryTable from "@/components/MMSummaryTable";
 import ErrorListTable from "@/components/ErrorListTable";
 import TeamFilter from "@/components/TeamFilter";
 import LeftmostNodeMMTable from "@/components/LeftmostNodeMMTable";
-import HelpGuide from "@/components/HelpGuide";
 import HeadcountTable from "@/components/HeadcountTable";
-import { calculateCriticalPath } from "@/utils/criticalPath";
-import { calculateDailyHeadcount } from "@/utils/headcountCalculator";
+import Image from "next/image";
+import Link from "next/link";
 
-type Tab = "graph" | "l5-table" | "error-list" | "help";
+type Tab = "graph" | "l5-table" | "error-list";
 
 export default function Home() {
   const {
@@ -56,7 +57,6 @@ export default function Home() {
     graph: { name: "Work Flow", icon: "⚡" },
     "l5-table": { name: "MM Summary", icon: "📊" },
     "error-list": { name: "Error Report", icon: "⚠️" },
-    help: { name: "Help", icon: "📖" },
   };
 
   // Breadcrumb 생성 함수
@@ -70,21 +70,17 @@ export default function Home() {
     ) {
       const selectedTask = getL5Task(selectedL5);
       if (selectedTask) {
-        // L4(부모) 정보 추가
-        if (selectedTask.l4Category) {
-          parts.push(selectedTask.l4Category);
-        }
         // L5 정보 추가
         parts.push(selectedTask.name);
 
         // L6 모드일 때 L6 표시 추가 (실제 L6 이름은 나중에 선택 시 추가 가능)
         if (viewMode === "l6-detail") {
-          parts.push("L6 Details");
+          parts.push("L6 GRAPH");
         }
       }
     }
 
-    return parts.join(" > ");
+    return parts.join(" - ");
   };
 
   return (
@@ -95,18 +91,31 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Tailwind Logo */}
-              <img
-                src="/tailwind-logo.svg"
-                alt="Tailwind CSS"
-                className="h-8"
+              <Image
+                src="/images/favicon.svg"
+                alt="Logo"
+                width={30}
+                height={30}
               />
               {/* Breadcrumb */}
-              <div className="bg-[#1A222D] text-white px-4 py-2 rounded-lg text-sm font-medium">
-                {getBreadcrumb()}
-              </div>
+              {processedData && (
+                <div className="bg-[#E8EAEE] text-gray-600 px-4 py-2 rounded-xl text-sm font-medium">
+                  {getBreadcrumb()}
+                </div>
+              )}
+              {!processedData && (
+                <h1 className="text-xl font-bold text-gray-800">
+                  Workflow Viewer
+                </h1>
+              )}
             </div>
             <FileUploader />
           </div>
+          {processedData && (
+            <h1 className="text-2xl font-bold text-gray-800 mt-4">
+              Workflow Viewer
+            </h1>
+          )}
         </div>
         {/* Tabs - 탭이 border 위에 위치 */}
         {processedData && (
@@ -119,7 +128,11 @@ export default function Home() {
                       key={tab}
                       role="tab"
                       onClick={() => setActiveTab(tab)}
-                      className={`tab gap-2 ${activeTab === tab ? "tab-active" : ""}`}
+                      className={`tab text-xs gap-2 mr-5 cursor-pointer hover:font-bold hover:text-gray-700 ${
+                        activeTab === tab
+                          ? "tab-active font-bold text-gray-700"
+                          : "text-gray-800"
+                      }`}
                     >
                       <span>{tabInfo[tab].icon}</span>
                       <span>{tabInfo[tab].name}</span>
@@ -132,21 +145,30 @@ export default function Home() {
                         )}
                     </button>
                   ))}
+                  <button
+                    key="Help"
+                    role="tab"
+                    className="tab text-xs gap-2 mr-5 cursor-pointer hover:font-bold hover:text-gray-700 text-gray-800"
+                  >
+                    <Link href="" role="tab" target="_blank">
+                      <p>📃 Guide</p>
+                    </Link>
+                  </button>
                 </div>
 
                 {/* Search box and filters - only show in graph tab and l5-all mode */}
                 {activeTab === "graph" && viewMode === "l5-all" && (
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-2 items-center mb-1">
                     <button
                       onClick={toggleTooltips}
-                      className={`px-3 py-1.5 rounded-md font-medium text-sm transition-colors ${
-                        showTooltips
-                          ? "bg-blue-500 text-white hover:bg-blue-600"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                      className={`px-3 py-1.5 rounded-md font-medium cursur-pointer text-sm transition-colors ${
+                        showTooltips ? "text-white" : "text-gray-600"
                       }`}
                       title={showTooltips ? "툴팁 숨기기" : "툴팁 보이기"}
                     >
-                      {showTooltips ? "💬" : "🚫"}
+                      <p className="hover:scale-110 transition-all duration-75">
+                        {showTooltips ? "📜" : "🚫"}
+                      </p>
                     </button>
                     <TeamFilter />
                     <input
@@ -162,20 +184,13 @@ export default function Home() {
                           setSearchTrigger((prev) => prev + 1);
                         }
                       }}
-                      className="input input-ghost input-sm px-3 py-1.5 border-none bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white text-sm"
+                      className="input input-ghost input-sm px-3 py-1.5 border-gray-200 rounded-md focus:outline-none focus:ring focus:ring-sky-400 focus:bg-white text-sm"
                     />
                     {searchResultCount > 0 && (
                       <span className="text-sm text-gray-600 font-medium">
                         {currentSearchIndex}/{searchResultCount}
                       </span>
                     )}
-                    <button
-                      onClick={() => setSearchTrigger((prev) => prev + 1)}
-                      disabled={!searchQuery.trim()}
-                      className="px-3 py-1.5 bg-sky-500 text-white rounded-md hover:bg-sky-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                    >
-                      Next
-                    </button>
                   </div>
                 )}
               </div>
@@ -189,11 +204,11 @@ export default function Home() {
         <div className="flex-1 flex items-center justify-center bg-gray-50">
           <div className="max-w-[95%] mx-auto text-center">
             <div className="text-6xl mb-4">📊</div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              엑셀 파일을 업로드하세요
+            <h2 className="text-xl font-semibold text-gray-700 mb-1">
+              Upload Excel File
             </h2>
             <p className="text-gray-500">
-              프로세스 workflow를 시각화하고 분석할 수 있습니다.
+              EDM에서 프로세서 체계도 파일을 업로드하세요
             </p>
           </div>
         </div>
@@ -329,12 +344,11 @@ export default function Home() {
                   <div className="bg-white rounded-lg shadow">
                     <div className="p-4 border-b border-gray-200">
                       <h2 className="text-lg font-semibold text-gray-800">
-                        가장 왼쪽 노드 누적 MM 요약 (내림차순)
+                        최종 노드 누적 MM 요약
                       </h2>
                       <p className="text-sm text-gray-500 mt-1">
-                        L5-all 그래프에서 가장 왼쪽에 위치한 최하단 노드(더 이상
-                        후행이 없는 노드)들의 누적 MM입니다. 클릭하면 해당
-                        노드를 중심으로 필터링됩니다.
+                        그래프에서 가장 왼쪽에 위치한 최종 노드들의 누적
+                        MM입니다. 클릭하면 해당 노드를 중심으로 필터링됩니다.
                       </p>
                     </div>
                     <LeftmostNodeMMTable
@@ -344,8 +358,12 @@ export default function Home() {
                   <div className="bg-white rounded-lg shadow">
                     <div className="p-4 border-b border-gray-200">
                       <h2 className="text-lg font-semibold text-gray-800">
-                        L5 Task MM 요약 (내림차순)
+                        L5 Task MM 요약
                       </h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        L5 노드들의 MM 테이블입니다. 클릭하면 해당 노드를
+                        중심으로 필터링됩니다.
+                      </p>
                     </div>
                     <MMSummaryTable
                       type="l5"
@@ -360,12 +378,11 @@ export default function Home() {
                 <div className="bg-white rounded-lg shadow h-full flex flex-col">
                   <div className="p-4 border-b border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-800">
-                      프로세스 검증 오류 목록
+                      Error Report
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
-                      선행/후행 프로세스 중 정의되지 않은 프로세스들이
-                      표시됩니다. 클릭하면 해당 노드를 중심으로 그래프가
-                      필터링됩니다.
+                      프로세스 연결 중 발생한 오류들이 표시됩니다. 클릭하면 해당
+                      노드를 중심으로 그래프가 필터링됩니다.
                     </p>
                   </div>
                   <div className="flex-1 overflow-hidden">
@@ -374,11 +391,6 @@ export default function Home() {
                     />
                   </div>
                 </div>
-              </div>
-            )}
-            {activeTab === "help" && (
-              <div className="w-full h-full">
-                <HelpGuide />
               </div>
             )}
           </div>

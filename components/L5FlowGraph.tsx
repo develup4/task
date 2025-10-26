@@ -97,7 +97,7 @@ const edgeTypes = {
 const getLayoutedElements = (
   nodes: Node[],
   edges: Edge[],
-  isFilteredMode: boolean = false,
+  isFilteredMode: boolean = false
 ): { nodes: Node[]; edges: Edge[]; levels: Map<string, number> } => {
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
   const levels = new Map<string, number>();
@@ -142,7 +142,7 @@ const getLayoutedElements = (
     } else {
       // 후행 노드들의 레벨 계산
       const successorLevels = outgoingEdges.map((e) =>
-        calculateLevel(e.target, depth + 1),
+        calculateLevel(e.target, depth + 1)
       );
       const maxSuccessorLevel = Math.max(...successorLevels, 0);
 
@@ -371,7 +371,7 @@ function L5FlowGraphInner({
 
       return predecessors;
     },
-    [],
+    []
   );
 
   // 노드와 엣지 생성
@@ -426,7 +426,7 @@ function L5FlowGraphInner({
               const errorIndex = nodeErrors.get(task.id)?.[0];
               if (errorIndex !== undefined) {
                 const errorRow = document.getElementById(
-                  `error-row-${task.id}-${errorIndex}`,
+                  `error-row-${task.id}-${errorIndex}`
                 );
                 if (errorRow) {
                   errorRow.scrollIntoView({
@@ -575,16 +575,16 @@ function L5FlowGraphInner({
     if (viewMode === "l5-filtered" && selectedL5) {
       const predecessorIds = getAllPredecessors(
         selectedL5,
-        processedData.l5Tasks,
+        processedData.l5Tasks
       );
 
       // 선행 노드만 필터링
       filteredNodes = initialNodes.filter((node) =>
-        predecessorIds.has(node.id),
+        predecessorIds.has(node.id)
       );
       filteredEdges = initialEdges.filter(
         (edge) =>
-          predecessorIds.has(edge.source) && predecessorIds.has(edge.target),
+          predecessorIds.has(edge.source) && predecessorIds.has(edge.target)
       );
 
       // 필터링된 노드들의 MM 합계 계산
@@ -605,7 +605,7 @@ function L5FlowGraphInner({
     } = getLayoutedElements(
       filteredNodes,
       filteredEdges,
-      viewMode === "l5-filtered",
+      viewMode === "l5-filtered"
     );
 
     // 가장 왼쪽 노드들 찾기 (레벨 0 노드들 = 최후단 작업)
@@ -620,7 +620,7 @@ function L5FlowGraphInner({
     const cumulativeMMs = new Map<string, number>();
     const calculateCumulativeMM = (
       nodeId: string,
-      visited = new Set<string>(),
+      visited = new Set<string>()
     ): number => {
       // 이미 계산된 경우
       if (cumulativeMMs.has(nodeId)) {
@@ -646,8 +646,8 @@ function L5FlowGraphInner({
         // 선행 작업들 중 최대 누적 MM
         maxPredecessorMM = Math.max(
           ...incomingEdges.map((e) =>
-            calculateCumulativeMM(e.source, newVisited),
-          ),
+            calculateCumulativeMM(e.source, newVisited)
+          )
         );
       }
 
@@ -731,7 +731,7 @@ function L5FlowGraphInner({
           setCenter(
             selectedNode.position.x + 110, // 노드 너비의 절반 (220/2)
             selectedNode.position.y + 50, // 노드 높이의 절반 (100/2)
-            { zoom: 1, duration: 800 }, // 부드러운 애니메이션
+            { zoom: 1, duration: 800 } // 부드러운 애니메이션
           );
         }, 100);
       }
@@ -790,7 +790,7 @@ function L5FlowGraphInner({
         setViewMode("l6-detail");
       }
     },
-    [viewMode, selectedL5, setSelectedL5, setViewMode],
+    [viewMode, selectedL5, setSelectedL5, setViewMode]
   );
 
   // 엣지 클릭 핸들러
@@ -811,7 +811,7 @@ function L5FlowGraphInner({
         }
       }
     },
-    [selectedEdge, nodes, setCenter],
+    [selectedEdge, nodes, setCenter]
   );
 
   // 백그라운드 클릭: 전체 뷰로 복귀 또는 선택 해제
@@ -826,7 +826,7 @@ function L5FlowGraphInner({
         setCenter(
           selectedNode.position.x + 110, // 노드 너비의 절반
           selectedNode.position.y + 50, // 노드 높이의 절반
-          { zoom: 1, duration: 800 },
+          { zoom: 1, duration: 800 }
         );
       }
       // 애니메이션 후 모드 변경
@@ -888,7 +888,7 @@ function L5FlowGraphInner({
       setCenter(
         targetNode.position.x + 110, // 노드 너비의 절반
         targetNode.position.y + 50, // 노드 높이의 절반
-        { zoom: 1.2, duration: 500 },
+        { zoom: 1.2, duration: 500 }
       );
     }
 
@@ -926,6 +926,7 @@ function L5FlowGraphInner({
           maxZoom={2}
           edgesFocusable={true}
           elementsSelectable={true}
+          nodesConnectable={false}
         >
           <Controls className="sky-controls" />
           <Background />

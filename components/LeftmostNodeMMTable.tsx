@@ -52,7 +52,7 @@ export default function LeftmostNodeMMTable({
 
     const calculateCumulativeMM = (
       nodeId: string,
-      visitedNodes = new Set<string>(),
+      visitedNodes = new Set<string>()
     ): number => {
       if (cumulativeMMs.has(nodeId)) {
         return cumulativeMMs.get(nodeId)!;
@@ -74,8 +74,8 @@ export default function LeftmostNodeMMTable({
       if (incomingEdges.length > 0) {
         maxPredecessorMM = Math.max(
           ...incomingEdges.map((e) =>
-            calculateCumulativeMM(e.source, newVisited),
-          ),
+            calculateCumulativeMM(e.source, newVisited)
+          )
         );
       }
 
@@ -140,7 +140,7 @@ export default function LeftmostNodeMMTable({
           >
             <th style={{ padding: "12px", textAlign: "left" }}>순위</th>
             <th style={{ padding: "12px", textAlign: "left" }}>Task 이름</th>
-            <th style={{ padding: "12px", textAlign: "left" }}>카테고리</th>
+            <th style={{ padding: "12px", textAlign: "left" }}>L4 프로세스</th>
             <th style={{ padding: "12px", textAlign: "right" }}>
               필요인력 (P)
             </th>

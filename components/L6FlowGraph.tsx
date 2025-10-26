@@ -96,7 +96,7 @@ const edgeTypes = {
 // 컴팩트한 계층적 레이아웃
 const getLayoutedElements = (
   nodes: Node[],
-  edges: Edge[],
+  edges: Edge[]
 ): { nodes: Node[]; edges: Edge[]; levels: Map<string, number> } => {
   const levels = new Map<string, number>();
   const visited = new Set<string>();
@@ -212,7 +212,7 @@ function L6FlowGraphInner({
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [criticalPathIds, setCriticalPathIds] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const { fitView, setCenter } = useReactFlow();
 
@@ -405,7 +405,7 @@ function L6FlowGraphInner({
         l6EdgesBase.findIndex(
           (e) =>
             (e.source === edge.source && e.target === edge.target) ||
-            (e.source === edge.target && e.target === edge.source),
+            (e.source === edge.target && e.target === edge.source)
         ) === index;
 
       // 양방향 엣지의 경우 offset 적용
@@ -420,8 +420,8 @@ function L6FlowGraphInner({
       const strokeColor = isInCriticalPath
         ? criticalPathColor
         : edge.isBidirectional
-          ? "rgba(244, 67, 54, 0.5)"
-          : colors.border;
+        ? "rgba(244, 67, 54, 0.5)"
+        : colors.border;
 
       return {
         id: edge.id,
@@ -441,10 +441,10 @@ function L6FlowGraphInner({
           opacity: isHidden
             ? 0.1
             : isInCriticalPath
-              ? 1
-              : edge.isBidirectional
-                ? 1
-                : 0.6,
+            ? 1
+            : edge.isBidirectional
+            ? 1
+            : 0.6,
           cursor: "pointer",
         },
         interactionWidth: 20,
@@ -539,7 +539,7 @@ function L6FlowGraphInner({
               const errorIndex = nodeErrors.get(task.id)?.[0];
               if (errorIndex !== undefined) {
                 const errorRow = document.getElementById(
-                  `error-row-${task.id}-${errorIndex}`,
+                  `error-row-${task.id}-${errorIndex}`
                 );
                 if (errorRow) {
                   errorRow.scrollIntoView({
@@ -555,12 +555,12 @@ function L6FlowGraphInner({
           selectedEdge && !isHighlighted
             ? { opacity: 0.3 }
             : isInCriticalPath
-              ? {
-                  border: "3px solid #f59e0b",
-                  borderRadius: "12px",
-                  boxShadow: "0 0 0 3px rgba(245, 158, 11, 0.3)",
-                }
-              : undefined,
+            ? {
+                border: "3px solid #f59e0b",
+                borderRadius: "12px",
+                boxShadow: "0 0 0 3px rgba(245, 158, 11, 0.3)",
+              }
+            : undefined,
       };
     });
 
@@ -636,7 +636,7 @@ function L6FlowGraphInner({
         }
       }
     },
-    [selectedEdge, nodes, setCenter],
+    [selectedEdge, nodes, setCenter]
   );
 
   // 패널 클릭 시 L5-filtered 모드로 복귀
@@ -665,6 +665,7 @@ function L6FlowGraphInner({
         maxZoom={2}
         edgesFocusable={true}
         elementsSelectable={true}
+        nodesConnectable={false}
       >
         <Controls className="sky-controls" />
         <Background />

@@ -101,7 +101,7 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
       return () => {
         parentElement.removeEventListener("mouseenter", updatePosition);
         parentElement.removeEventListener("mouseleave", () =>
-          setIsHovered(false),
+          setIsHovered(false)
         );
         window.removeEventListener("scroll", updatePosition, true);
         window.removeEventListener("resize", updatePosition);
@@ -141,7 +141,7 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
           <h3 className="font-bold text-xl text-gray-900 mt-2">{data.name}</h3>
           {data.l4Category && (
             <div className="mt-2 text-sm text-gray-700">
-              <span className="font-semibold text-gray-800">카테고리:</span>{" "}
+              <span className="font-semibold text-gray-800">L4:</span>{" "}
               <span className="text-blue-600">{data.l4Category}</span>
             </div>
           )}
@@ -199,56 +199,56 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
           <div className="mb-3 space-y-2">
             {"프로세스 오너부서(L5)" in data &&
               data["프로세스 오너부서(L5)"] && (
-                <div className="flex items-start">
-                  <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+                <div className="flex items-center">
+                  <span className="font-semibold text-xs text-gray-600 mr-1">
                     프로세스 오너부서:
                   </span>
                   {renderPipeSeparatedValue(data["프로세스 오너부서(L5)"])}
                 </div>
               )}
             {"산출물(L5)" in data && data["산출물(L5)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   산출물:
                 </span>
                 {renderPipeSeparatedValue(data["산출물(L5)"])}
               </div>
             )}
             {"준수지표(L5)" in data && data["준수지표(L5)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   준수지표:
                 </span>
                 {renderPipeSeparatedValue(data["준수지표(L5)"])}
               </div>
             )}
             {"소요기간(L5)" in data && data["소요기간(L5)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   소요기간:
                 </span>
                 {renderPipeSeparatedValue(data["소요기간(L5)"])}
               </div>
             )}
             {"수행주기(L5)" in data && data["수행주기(L5)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   수행주기:
                 </span>
                 {renderPipeSeparatedValue(data["수행주기(L5)"])}
               </div>
             )}
             {"참여(L5)" in data && data["참여(L5)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   참여:
                 </span>
                 {renderPipeSeparatedValue(data["참여(L5)"])}
               </div>
             )}
             {"바로가기 URL(L5)" in data && data["바로가기 URL(L5)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   바로가기 URL:
                 </span>
                 <a
@@ -268,40 +268,40 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
         {isL6 && (
           <div className="mb-3 space-y-2">
             {"업무담당부서(L6)" in data && data["업무담당부서(L6)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   업무담당부서:
                 </span>
                 {renderPipeSeparatedValue(data["업무담당부서(L6)"])}
               </div>
             )}
             {"참여부서(L6)" in data && data["참여부서(L6)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   참여부서:
                 </span>
                 {renderPipeSeparatedValue(data["참여부서(L6)"])}
               </div>
             )}
             {"시스템" in data && data.시스템 && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   시스템:
                 </span>
                 {renderPipeSeparatedValue(data.시스템)}
               </div>
             )}
             {"작업방식(L6)" in data && data["작업방식(L6)"] && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   작업방식:
                 </span>
                 {renderPipeSeparatedValue(data["작업방식(L6)"])}
               </div>
             )}
             {"l5Parent" in data && data.l5Parent && (
-              <div className="flex items-start">
-                <span className="font-semibold text-xs text-gray-600 min-w-[100px]">
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
                   상위 L5:
                 </span>
                 <span className="text-sm text-gray-800">{data.l5Parent}</span>
@@ -410,7 +410,7 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
 
         {/* Warning for cycles */}
         {data.hasCycle && (
-          <div className="mt-4 pt-4 border-t border-red-200 bg-gradient-to-r from-red-50 to-red-100 p-3 rounded-lg border border-red-300">
+          <div className="mt-4 pt-4 bg-gradient-to-r from-red-50 to-red-100 p-3 rounded-lg border border-red-300">
             <div className="flex items-center text-red-700">
               <span className="text-lg mr-2">⚠️</span>
               <span className="font-semibold text-sm">양방향 연결 감지됨</span>

@@ -89,7 +89,7 @@ export default function MMSummaryTable({
           >
             <th style={{ padding: "12px", textAlign: "left" }}>순위</th>
             <th style={{ padding: "12px", textAlign: "left" }}>Task 이름</th>
-            <th style={{ padding: "12px", textAlign: "left" }}>카테고리</th>
+            <th style={{ padding: "12px", textAlign: "left" }}>L4 프로세스</th>
             <th style={{ padding: "12px", textAlign: "right" }}>
               필요인력 (P)
             </th>
