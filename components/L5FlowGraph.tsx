@@ -401,7 +401,8 @@ function L5FlowGraphInner({
       const hasError = nodeErrors.has(task.id);
 
       // 선택된 L5 노드인 경우 maxHeadcount를 사용, 아니면 기존 필요인력 사용
-      const displayHeadcount = task.id === selectedL5 ? l5MaxHeadcount : task.필요인력;
+      // l5MaxHeadcount > 0인 경우만 사용 (계산이 완료된 경우)
+      const displayHeadcount = selectedL5 && task.id === selectedL5 && l5MaxHeadcount > 0 ? l5MaxHeadcount : task.필요인력;
 
       return {
         id: task.id,
