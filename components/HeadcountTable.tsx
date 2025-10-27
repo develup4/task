@@ -73,7 +73,7 @@ export default function HeadcountTable() {
       </div>
 
       {/* 필요인력 차트 */}
-      <div className="border rounded-lg p-4">
+      <div className="border border-gray-400 rounded-lg p-4 pb-8">
         <h4 className="text-sm font-semibold text-gray-700 mb-3">
           필요인력 변화 그래프
         </h4>
@@ -88,7 +88,7 @@ export default function HeadcountTable() {
           </div>
 
           {/* 차트 영역 */}
-          <div className="absolute left-12 right-0 top-0 bottom-12 border-l border-b border-gray-300">
+          <div className="absolute left-12 right-0 top-0 bottom-2 border-l border-b border-gray-300">
             {/* 가로 그리드 라인 */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
               <div
@@ -149,17 +149,17 @@ export default function HeadcountTable() {
       </div>
 
       {/* 구간별 상세 테이블 */}
-      <div className="border rounded-lg overflow-hidden">
-        <h4 className="text-sm font-semibold text-gray-700 p-3 bg-gray-50 border-b">
+      <div className="border border-gray-400 rounded-lg overflow-hidden">
+        <h4 className="text-sm font-semibold text-gray-700 p-3 bg-gray-50">
           구간별 상세 정보
         </h4>
         <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
           <table className="table table-sm w-full">
             <thead className="bg-gray-100 sticky top-0">
               <tr>
-                <th className="text-center w-28">구간 (Week)</th>
-                <th className="text-center w-24">필요인력 (P)</th>
-                <th className="text-left flex-1">진행 중인 작업</th>
+                <th className="text-center w-28 p-3">구간 (Week)</th>
+                <th className="text-center w-24 p-3">필요인력 (P)</th>
+                <th className="text-left flex-1 p-3">진행 중인 작업</th>
               </tr>
             </thead>
             <tbody>
@@ -187,15 +187,15 @@ export default function HeadcountTable() {
                     key={idx}
                     className={`${bgColor} [&:not(:last-child)]:border-b border-purple-100`}
                   >
-                    <td className="text-center font-mono text-sm w-28">
+                    <td className="text-center text-sm w-28">
                       {interval.startWeek.toFixed(2)} ~{" "}
                       {interval.endWeek.toFixed(2)}
                     </td>
                     <td className="text-center w-24">
                       <span
-                        className={`font-bold ${
+                        className={`font-bold text-xs ${
                           interval.headcount > 0
-                            ? "text-gray-800"
+                            ? "text-gray-600"
                             : "text-gray-400"
                         }`}
                       >
@@ -204,14 +204,13 @@ export default function HeadcountTable() {
                     </td>
                     <td className="flex-1">
                       {interval.tasks.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 p-1">
                           {interval.tasks.map((task) => (
                             <span
                               key={task.id}
                               className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded"
-                              title={`${task.name} (P: ${task.P})`}
                             >
-                              {task.name}
+                              {task.name} ({task.P})
                             </span>
                           ))}
                         </div>
