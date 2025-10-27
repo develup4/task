@@ -380,6 +380,18 @@ function L5FlowGraphInner({
   useEffect(() => {
     if (!processedData) return;
 
+    // 모든 L5 노드의 maxHeadcount를 미리 계산하여 저장
+    const l5TasksArray = Array.from(processedData.l5Tasks.values());
+    l5TasksArray.forEach((l5Task) => {
+      const l6Tasks = Array.from(processedData.l6Tasks.values()).filter(
+        (task) => task.l5Parent === l5Task.id,
+      );
+      const headcountResult = calculateDailyHeadcount(l6Tasks);
+      if (headcountResult) {
+        useAppStore.getState().setL5MaxHeadcount(l5Task.id, headcountResult.maxHeadcount);
+      }
+    });
+
     const tasks = getFilteredL5Tasks();
 
     // 초기 로드 시에만 fitView 활성화
@@ -792,23 +804,12 @@ function L5FlowGraphInner({
         // 첫 번째 클릭: 필터링 모드로 전환
         setSelectedL5(node.id);
         setViewMode("l5-filtered");
-
-        // 클릭한 노드의 L6 태스크들의 maxHeadcount 계산
-        if (processedData) {
-          const l6Tasks = Array.from(processedData.l6Tasks.values()).filter(
-            (task) => task.l5Parent === node.id,
-          );
-          const headcountResult = calculateDailyHeadcount(l6Tasks);
-          if (headcountResult) {
-            useAppStore.getState().setL5MaxHeadcount(node.id, headcountResult.maxHeadcount);
-          }
-        }
       } else if (viewMode === "l5-filtered" && selectedL5 === node.id) {
         // 두 번째 클릭: L6 상세 뷰로 전환
         setViewMode("l6-detail");
       }
     },
-    [viewMode, selectedL5, setSelectedL5, setViewMode, processedData]
+    [viewMode, selectedL5, setSelectedL5, setViewMode]
   );
 
   // 엣지 클릭 핸들러
