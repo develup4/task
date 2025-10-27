@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { L5Task, L6Task } from "@/types/task";
 import { formatDecimal } from "@/utils/format";
+import { useAppStore } from "@/lib/store";
 
 interface NodeTooltipProps {
   data: Partial<L5Task> | Partial<L6Task>;
@@ -44,6 +45,10 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const parentRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const l5MaxHeadcountMap = useAppStore((state) => state.l5MaxHeadcountMap);
+
+  // L5 노드인 경우 maxHeadcount를 조회, 없으면 원래 필요인력 사용
+  const displayHeadcount = isL5 && data.id ? (l5MaxHeadcountMap.get(data.id) ?? data.필요인력) : data.필요인력;
 
   useEffect(() => {
     const updatePosition = () => {
@@ -156,7 +161,7 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-2.5 rounded-lg">
               <div className="text-xs text-blue-600 mb-1">필요인력</div>
               <div className="font-bold text-gray-900 text-base">
-                {formatDecimal(data.필요인력)}명
+                {formatDecimal(displayHeadcount)}명
               </div>
             </div>
             <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-2.5 rounded-lg">
