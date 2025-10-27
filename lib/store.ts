@@ -24,8 +24,8 @@ interface AppState {
   // L5 filtered 모드의 MM 합계
   filteredMM: number;
 
-  // 선택된 L5의 최대 필요인력
-  l5MaxHeadcount: number;
+  // L5별 최대 필요인력 맵
+  l5MaxHeadcountMap: Map<string, number>;
 
   // 툴팁 표시 여부
   showTooltips: boolean;
@@ -37,7 +37,7 @@ interface AppState {
   setSearchQuery: (query: string) => void;
   setHighlightedTasks: (tasks: Set<string>) => void;
   setFilteredMM: (mm: number) => void;
-  setL5MaxHeadcount: (headcount: number) => void;
+  setL5MaxHeadcount: (l5Id: string, headcount: number) => void;
   toggleTooltips: () => void;
 
   // L4 카테고리 필터 액션
@@ -69,7 +69,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   visibleL4Categories: new Set(),
   visibleTeams: new Set(),
   filteredMM: 0,
-  l5MaxHeadcount: 0,
+  l5MaxHeadcountMap: new Map(),
   showTooltips: true,
 
   // 액션
@@ -97,7 +97,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setFilteredMM: (mm) => set({ filteredMM: mm }),
 
-  setL5MaxHeadcount: (headcount) => set({ l5MaxHeadcount: headcount }),
+  setL5MaxHeadcount: (l5Id, headcount) =>
+    set((state) => {
+      const newMap = new Map(state.l5MaxHeadcountMap);
+      newMap.set(l5Id, headcount);
+      return { l5MaxHeadcountMap: newMap };
+    }),
 
   toggleTooltips: () => set((state) => ({ showTooltips: !state.showTooltips })),
 

@@ -332,7 +332,7 @@ function L5FlowGraphInner({
     highlightedTasks,
     visibleL4Categories,
     visibleTeams,
-    l5MaxHeadcount,
+    l5MaxHeadcountMap,
     setSelectedL5,
     setViewMode,
     getFilteredL5Tasks,
@@ -401,9 +401,9 @@ function L5FlowGraphInner({
     const initialNodes = tasks.map((task) => {
       const hasError = nodeErrors.has(task.id);
 
-      // 선택된 L5 노드인 경우 maxHeadcount를 사용, 아니면 기존 필요인력 사용
-      // l5MaxHeadcount > 0인 경우만 사용 (계산이 완료된 경우)
-      const displayHeadcount = selectedL5 && task.id === selectedL5 && l5MaxHeadcount > 0 ? l5MaxHeadcount : task.필요인력;
+      // 맵에서 해당 L5 노드의 maxHeadcount를 조회, 없으면 원래 필요인력 사용
+      const maxHeadcount = l5MaxHeadcountMap.get(task.id);
+      const displayHeadcount = maxHeadcount !== undefined && maxHeadcount > 0 ? maxHeadcount : task.필요인력;
 
       return {
         id: task.id,
@@ -719,7 +719,7 @@ function L5FlowGraphInner({
     highlightedTasks,
     visibleL4Categories,
     visibleTeams,
-    l5MaxHeadcount,
+    l5MaxHeadcountMap,
     getFilteredL5Tasks,
     setNodes,
     setEdges,
@@ -800,7 +800,7 @@ function L5FlowGraphInner({
           );
           const headcountResult = calculateDailyHeadcount(l6Tasks);
           if (headcountResult) {
-            useAppStore.setState({ l5MaxHeadcount: headcountResult.maxHeadcount });
+            useAppStore.getState().setL5MaxHeadcount(node.id, headcountResult.maxHeadcount);
           }
         }
       } else if (viewMode === "l5-filtered" && selectedL5 === node.id) {

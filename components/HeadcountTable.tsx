@@ -18,12 +18,10 @@ export default function HeadcountTable() {
 
   // maxHeadcount가 변경될 때 store에 저장
   useEffect(() => {
-    if (headcountResult) {
-      setL5MaxHeadcount(headcountResult.maxHeadcount);
-    } else {
-      setL5MaxHeadcount(0);
+    if (selectedL5 && headcountResult) {
+      setL5MaxHeadcount(selectedL5, headcountResult.maxHeadcount);
     }
-  }, [headcountResult, setL5MaxHeadcount]);
+  }, [selectedL5, headcountResult, setL5MaxHeadcount]);
 
   if (!headcountResult || headcountResult.totalWeeks === 0) {
     return (
