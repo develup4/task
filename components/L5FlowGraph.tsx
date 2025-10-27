@@ -21,6 +21,7 @@ import { useAppStore } from "@/lib/store";
 import TaskNode, { TaskNodeData } from "./TaskNode";
 import L4CategoryLegend from "./L4CategoryLegend";
 import { getColorForCategory } from "@/utils/colors";
+import { calculateDailyHeadcount } from "@/utils/headcountCalculator";
 
 // 커스텀 엣지 컴포넌트 - offset을 적용한 Bezier 곡선
 function CustomEdge({
@@ -791,12 +792,23 @@ function L5FlowGraphInner({
         // 첫 번째 클릭: 필터링 모드로 전환
         setSelectedL5(node.id);
         setViewMode("l5-filtered");
+
+        // 클릭한 노드의 L6 태스크들의 maxHeadcount 계산
+        if (processedData) {
+          const l6Tasks = Array.from(processedData.l6Tasks.values()).filter(
+            (task) => task.l5Parent === node.id,
+          );
+          const headcountResult = calculateDailyHeadcount(l6Tasks);
+          if (headcountResult) {
+            useAppStore.setState({ l5MaxHeadcount: headcountResult.maxHeadcount });
+          }
+        }
       } else if (viewMode === "l5-filtered" && selectedL5 === node.id) {
         // 두 번째 클릭: L6 상세 뷰로 전환
         setViewMode("l6-detail");
       }
     },
-    [viewMode, selectedL5, setSelectedL5, setViewMode]
+    [viewMode, selectedL5, setSelectedL5, setViewMode, processedData]
   );
 
   // 엣지 클릭 핸들러
