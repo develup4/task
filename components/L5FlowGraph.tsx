@@ -376,11 +376,13 @@ function L5FlowGraphInner({
     []
   );
 
-  // 노드와 엣지 생성
+  // 데이터 로드 시 모든 L5 노드의 maxHeadcount 미리 계산
   useEffect(() => {
     if (!processedData) return;
 
-    // 모든 L5 노드의 maxHeadcount를 미리 계산하여 저장
+    // 이미 계산된 경우 스킵
+    if (l5MaxHeadcountMap.size > 0) return;
+
     const l5TasksArray = Array.from(processedData.l5Tasks.values());
     l5TasksArray.forEach((l5Task) => {
       const l6Tasks = Array.from(processedData.l6Tasks.values()).filter(
@@ -391,6 +393,11 @@ function L5FlowGraphInner({
         useAppStore.getState().setL5MaxHeadcount(l5Task.id, headcountResult.maxHeadcount);
       }
     });
+  }, [processedData, l5MaxHeadcountMap.size]);
+
+  // 노드와 엣지 생성
+  useEffect(() => {
+    if (!processedData) return;
 
     const tasks = getFilteredL5Tasks();
 
