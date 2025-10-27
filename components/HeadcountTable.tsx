@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import {
   calculateDailyHeadcount,
@@ -8,13 +8,22 @@ import {
 } from "@/utils/headcountCalculator";
 
 export default function HeadcountTable() {
-  const { getL6TasksForL5, selectedL5 } = useAppStore();
+  const { getL6TasksForL5, selectedL5, setL5MaxHeadcount } = useAppStore();
 
   const headcountResult = useMemo(() => {
     if (!selectedL5) return null;
     const l6Tasks = getL6TasksForL5(selectedL5);
     return calculateDailyHeadcount(l6Tasks);
   }, [selectedL5, getL6TasksForL5]);
+
+  // maxHeadcount가 변경될 때 store에 저장
+  useEffect(() => {
+    if (headcountResult) {
+      setL5MaxHeadcount(headcountResult.maxHeadcount);
+    } else {
+      setL5MaxHeadcount(0);
+    }
+  }, [headcountResult, setL5MaxHeadcount]);
 
   if (!headcountResult || headcountResult.totalWeeks === 0) {
     return (

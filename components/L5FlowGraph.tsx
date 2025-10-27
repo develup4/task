@@ -331,6 +331,7 @@ function L5FlowGraphInner({
     highlightedTasks,
     visibleL4Categories,
     visibleTeams,
+    l5MaxHeadcount,
     setSelectedL5,
     setViewMode,
     getFilteredL5Tasks,
@@ -399,6 +400,9 @@ function L5FlowGraphInner({
     const initialNodes = tasks.map((task) => {
       const hasError = nodeErrors.has(task.id);
 
+      // 선택된 L5 노드인 경우 maxHeadcount를 사용, 아니면 기존 필요인력 사용
+      const displayHeadcount = task.id === selectedL5 ? l5MaxHeadcount : task.필요인력;
+
       return {
         id: task.id,
         type: "task",
@@ -406,7 +410,7 @@ function L5FlowGraphInner({
         data: {
           label: task.name,
           category: task.l4Category,
-          필요인력: task.필요인력,
+          필요인력: displayHeadcount,
           필요기간: task.필요기간,
           MM: task.MM,
           cumulativeMM: task.cumulativeMM,
@@ -713,6 +717,7 @@ function L5FlowGraphInner({
     highlightedTasks,
     visibleL4Categories,
     visibleTeams,
+    l5MaxHeadcount,
     getFilteredL5Tasks,
     setNodes,
     setEdges,
