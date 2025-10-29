@@ -66,22 +66,22 @@ const detectCycles = (tasks: Map<string, L5Task | L6Task>): void => {
 const detectL5Cycles = (tasks: Map<string, L5Task>): ValidationError[] => {
   const errors: ValidationError[] = [];
   const visited = new Set<string>();
-  const cycleNodes = new Set<string>();
+  let cyclePath: string[] | null = null;
 
   // DFS로 순환 감지
-  const dfs = (nodeId: string, path: Set<string>): Set<string> | null => {
-    if (path.has(nodeId)) {
-      // 순환 발견
-      return path;
+  const dfs = (nodeId: string, path: string[]): string[] | null => {
+    // 경로에 현재 노드가 있으면 순환 발견
+    const cycleStartIndex = path.indexOf(nodeId);
+    if (cycleStartIndex !== -1) {
+      // 순환 시작점부터의 경로 반환
+      return path.slice(cycleStartIndex).concat([nodeId]);
     }
 
     if (visited.has(nodeId)) {
       return null;
     }
 
-    const newPath = new Set(path);
-    newPath.add(nodeId);
-
+    const newPath = [...path, nodeId];
     const task = tasks.get(nodeId);
     if (!task) return null;
 
@@ -89,8 +89,6 @@ const detectL5Cycles = (tasks: Map<string, L5Task>): ValidationError[] => {
       if (tasks.has(succId)) {
         const cycle = dfs(succId, newPath);
         if (cycle) {
-          // 순환 경로에 포함된 노드들을 수집
-          cycle.forEach((id) => cycleNodes.add(id));
           return cycle;
         }
       }
@@ -101,23 +99,28 @@ const detectL5Cycles = (tasks: Map<string, L5Task>): ValidationError[] => {
   };
 
   // 모든 노드에서 DFS 시작
-  tasks.forEach((task) => {
+  for (const task of tasks.values()) {
     if (!visited.has(task.id)) {
-      dfs(task.id, new Set());
+      const cycle = dfs(task.id, []);
+      if (cycle) {
+        cyclePath = cycle;
+        break;
+      }
     }
-  });
+  }
 
   // 순환이 있으면 에러 추가 (가장 작은 ID를 sourceTask로 선택)
-  if (cycleNodes.size > 0) {
-    const sortedCycleNodes = Array.from(cycleNodes).sort();
+  if (cyclePath && cyclePath.length > 0) {
+    // 순환 경로를 화살표로 표현
+    const cyclePathStr = cyclePath.join(" => ");
+    const sortedCycleNodes = Array.from(new Set(cyclePath)).sort();
     const sourceTask = sortedCycleNodes[0];
-    const relatedNodes = sortedCycleNodes.join(", ");
 
     errors.push({
       type: "cycle_error",
       sourceTask,
       sourceLevel: "L5",
-      relatedTask: relatedNodes,
+      relatedTask: cyclePathStr,
       description: `L5 프로세스들 사이에 순환 의존성이 존재합니다.`,
     });
   }
