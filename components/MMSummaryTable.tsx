@@ -10,11 +10,15 @@ type SortOrder = "asc" | "desc";
 interface MMSummaryTableProps {
   type: "l5" | "final";
   onNavigateToGraph?: () => void;
+  selectedL4Categories?: Set<string>;
+  onL4CategoriesChange?: (categories: Set<string>) => void;
 }
 
 export default function MMSummaryTable({
   type,
   onNavigateToGraph,
+  selectedL4Categories: externalSelectedL4Categories,
+  onL4CategoriesChange,
 }: MMSummaryTableProps) {
   const {
     processedData,
@@ -26,7 +30,17 @@ export default function MMSummaryTable({
 
   const [sortColumn, setSortColumn] = useState<SortColumn>("MM");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [selectedL4Categories, setSelectedL4Categories] = useState<Set<string>>(new Set());
+  const [internalSelectedL4Categories, setInternalSelectedL4Categories] = useState<Set<string>>(new Set());
+
+  // 외부에서 전달되면 그것을 사용, 아니면 내부 상태 사용
+  const selectedL4Categories = externalSelectedL4Categories !== undefined ? externalSelectedL4Categories : internalSelectedL4Categories;
+  const setSelectedL4Categories = (categories: Set<string>) => {
+    if (externalSelectedL4Categories !== undefined && onL4CategoriesChange) {
+      onL4CategoriesChange(categories);
+    } else {
+      setInternalSelectedL4Categories(categories);
+    }
+  };
 
   const allL4Categories = useMemo(() => {
     if (!processedData) return [];
@@ -51,32 +65,23 @@ export default function MMSummaryTable({
     if (type === "l5") {
       // L5 task들 정렬
       tasks.sort((a, b) => {
-        let aVal: string | number;
-        let bVal: string | number;
-
-        switch (sortColumn) {
-          case "l4Category":
-            aVal = a.l4Category;
-            bVal = b.l4Category;
-            break;
-          case "MM":
-            aVal = a.MM;
-            bVal = b.MM;
-            break;
-          default:
-            aVal = a.MM;
-            bVal = b.MM;
+        // L4 프로세스로 정렬할 때는 같은 L4 안에서 MM 내림차순
+        if (sortColumn === "l4Category") {
+          const categoryCompare = a.l4Category.localeCompare(b.l4Category);
+          if (categoryCompare !== 0) {
+            return sortOrder === "asc" ? categoryCompare : -categoryCompare;
+          }
+          // 같은 L4 카테고리면 MM으로 내림차순 정렬
+          return b.MM - a.MM;
         }
 
-        if (typeof aVal === "string" && typeof bVal === "string") {
-          return sortOrder === "asc"
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
+        // MM으로 정렬
+        if (sortColumn === "MM") {
+          return sortOrder === "asc" ? a.MM - b.MM : b.MM - a.MM;
         }
 
-        const numA = Number(aVal);
-        const numB = Number(bVal);
-        return sortOrder === "asc" ? numA - numB : numB - numA;
+        // 기본값 (MM 내림차순)
+        return b.MM - a.MM;
       });
       return tasks;
     } else {
@@ -86,32 +91,25 @@ export default function MMSummaryTable({
       );
 
       tasks.sort((a, b) => {
-        let aVal: string | number;
-        let bVal: string | number;
-
-        switch (sortColumn) {
-          case "l4Category":
-            aVal = a.l4Category;
-            bVal = b.l4Category;
-            break;
-          case "cumulativeMM":
-            aVal = a.cumulativeMM || 0;
-            bVal = b.cumulativeMM || 0;
-            break;
-          default:
-            aVal = a.cumulativeMM || 0;
-            bVal = b.cumulativeMM || 0;
+        // L4 프로세스로 정렬할 때는 같은 L4 안에서 누적MM 내림차순
+        if (sortColumn === "l4Category") {
+          const categoryCompare = a.l4Category.localeCompare(b.l4Category);
+          if (categoryCompare !== 0) {
+            return sortOrder === "asc" ? categoryCompare : -categoryCompare;
+          }
+          // 같은 L4 카테고리면 누적MM으로 내림차순 정렬
+          return (b.cumulativeMM || 0) - (a.cumulativeMM || 0);
         }
 
-        if (typeof aVal === "string" && typeof bVal === "string") {
-          return sortOrder === "asc"
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
+        // 누적MM으로 정렬
+        if (sortColumn === "cumulativeMM") {
+          const valA = a.cumulativeMM || 0;
+          const valB = b.cumulativeMM || 0;
+          return sortOrder === "asc" ? valA - valB : valB - valA;
         }
 
-        const numA = Number(aVal);
-        const numB = Number(bVal);
-        return sortOrder === "asc" ? numA - numB : numB - numA;
+        // 기본값 (누적MM 내림차순)
+        return (b.cumulativeMM || 0) - (a.cumulativeMM || 0);
       });
       return tasks;
     }
@@ -175,59 +173,6 @@ export default function MMSummaryTable({
 
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Filter Controls */}
-      <div style={{ padding: "16px", borderBottom: "1px solid #eee", backgroundColor: "#fafafa" }}>
-        <div style={{ marginBottom: "12px" }}>
-          <label style={{ fontSize: "12px", fontWeight: 600, color: "#666", display: "block", marginBottom: "8px" }}>
-            L4 프로세스 필터
-          </label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {allL4Categories.map((category) => {
-              const colors = getColorForCategory(category);
-              const isSelected = selectedL4Categories.has(category);
-              return (
-                <button
-                  key={category}
-                  onClick={() => handleL4FilterToggle(category)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "4px",
-                    border: `2px solid ${colors.border}`,
-                    backgroundColor: isSelected ? colors.bg : "white",
-                    color: isSelected ? colors.text : colors.text,
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    opacity: isSelected ? 1 : 0.6,
-                  }}
-                >
-                  {category}
-                </button>
-              );
-            })}
-            {selectedL4Categories.size > 0 && (
-              <button
-                onClick={() => setSelectedL4Categories(new Set())}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                  backgroundColor: "#f0f0f0",
-                  color: "#666",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                필터 초기화
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Table */}
       <div style={{ flex: 1, overflow: "auto" }}>
         <table

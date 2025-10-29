@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import { calculateCriticalPath } from "@/utils/criticalPath";
 import { calculateDailyHeadcount } from "@/utils/headcountCalculator";
+import { getColorForCategory } from "@/utils/colors";
 import FileUploader from "@/components/FileUploader";
 import L5FlowGraph from "@/components/L5FlowGraph";
 import L6FlowGraph from "@/components/L6FlowGraph";
@@ -40,6 +41,7 @@ export default function Home() {
   const [showHeadcountTable, setShowHeadcountTable] = useState(false);
   const [maxHeadcount, setMaxHeadcount] = useState(0);
   const [criticalPathBeforeHeadcount, setCriticalPathBeforeHeadcount] = useState(false);
+  const [tableL4Filter, setTableL4Filter] = useState<Set<string>>(new Set());
 
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
@@ -59,6 +61,15 @@ export default function Home() {
     "l5-table": { name: "MM Summary", icon: "📊" },
     "error-list": { name: "Error Report", icon: "⚠️" },
   };
+
+  // 모든 L4 카테고리 가져오기
+  const allL4Categories = useMemo(() => {
+    if (!processedData) return [];
+    const categories = new Set(
+      Array.from(processedData.l5Tasks.values()).map((t) => t.l4Category)
+    );
+    return Array.from(categories).sort();
+  }, [processedData]);
 
   // Breadcrumb 생성 함수
   const getBreadcrumb = () => {
@@ -82,6 +93,16 @@ export default function Home() {
     }
 
     return parts.join(" - ");
+  };
+
+  const handleTableL4FilterToggle = (category: string) => {
+    const newSelected = new Set(tableL4Filter);
+    if (newSelected.has(category)) {
+      newSelected.delete(category);
+    } else {
+      newSelected.add(category);
+    }
+    setTableL4Filter(newSelected);
   };
 
   return (
@@ -374,17 +395,72 @@ export default function Home() {
                   </div>
                   <div className="bg-white rounded-lg shadow">
                     <div className="p-4 border-b border-gray-200">
-                      <h2 className="text-lg font-semibold text-gray-800">
-                        L5 Task MM 요약
-                      </h2>
-                      <p className="text-sm text-gray-500 mt-1">
-                        L5 노드들의 MM 테이블입니다. 클릭하면 해당 노드를
-                        중심으로 필터링됩니다.
-                      </p>
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h2 className="text-lg font-semibold text-gray-800">
+                            L5 Task MM 요약
+                          </h2>
+                          <p className="text-sm text-gray-500 mt-1">
+                            L5 노드들의 MM 테이블입니다. 클릭하면 해당 노드를
+                            중심으로 필터링됩니다.
+                          </p>
+                        </div>
+                        <div className="ml-4">
+                          <label style={{ fontSize: "12px", fontWeight: 600, color: "#666", display: "block", marginBottom: "8px" }}>
+                            L4 필터
+                          </label>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "flex-end" }}>
+                            {allL4Categories.map((category) => {
+                              const colors = getColorForCategory(category);
+                              const isSelected = tableL4Filter.has(category);
+                              return (
+                                <button
+                                  key={category}
+                                  onClick={() => handleTableL4FilterToggle(category)}
+                                  style={{
+                                    padding: "4px 10px",
+                                    borderRadius: "4px",
+                                    border: `2px solid ${colors.border}`,
+                                    backgroundColor: isSelected ? colors.bg : "white",
+                                    color: colors.text,
+                                    fontSize: "11px",
+                                    fontWeight: 500,
+                                    cursor: "pointer",
+                                    transition: "all 0.2s",
+                                    opacity: isSelected ? 1 : 0.6,
+                                  }}
+                                >
+                                  {category}
+                                </button>
+                              );
+                            })}
+                            {tableL4Filter.size > 0 && (
+                              <button
+                                onClick={() => setTableL4Filter(new Set())}
+                                style={{
+                                  padding: "4px 10px",
+                                  borderRadius: "4px",
+                                  border: "1px solid #ccc",
+                                  backgroundColor: "#f0f0f0",
+                                  color: "#666",
+                                  fontSize: "11px",
+                                  fontWeight: 500,
+                                  cursor: "pointer",
+                                  transition: "all 0.2s",
+                                }}
+                              >
+                                초기화
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <MMSummaryTable
                       type="l5"
                       onNavigateToGraph={() => setActiveTab("graph")}
+                      selectedL4Categories={tableL4Filter}
+                      onL4CategoriesChange={setTableL4Filter}
                     />
                   </div>
                 </div>
