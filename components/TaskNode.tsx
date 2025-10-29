@@ -26,6 +26,7 @@ export interface TaskNodeData {
   isL6?: boolean;
   hasError?: boolean; // 에러가 있는 노드인지
   onErrorClick?: () => void; // 에러 아이콘 클릭 핸들러
+  onNodeHover?: (isHovered: boolean) => void; // 노드 hover 핸들러
 }
 
 const TaskNode = memo(({ data }: NodeProps<any>) => {
@@ -67,7 +68,12 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
     : colors.bg;
 
   return (
-    <div className="group relative" style={{ zIndex: 1 }}>
+    <div
+      className="group relative"
+      style={{ zIndex: 1 }}
+      onMouseEnter={() => data.onNodeHover?.(true)}
+      onMouseLeave={() => data.onNodeHover?.(false)}
+    >
       <div
         style={{
           padding: "12px 16px",

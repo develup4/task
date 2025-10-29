@@ -347,6 +347,7 @@ function L5FlowGraphInner({
   const [returnTarget, setReturnTarget] = useState<string | null>(null);
   const [returnZoom, setReturnZoom] = useState<number | null>(null);
   const [shouldFitView, setShouldFitView] = useState(true);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const { setCenter, fitView, getZoom } = useReactFlow();
 
   // 선택한 노드까지의 모든 선행 노드를 찾는 함수
@@ -461,6 +462,9 @@ function L5FlowGraphInner({
                 }
               }
             }, 100);
+          },
+          onNodeHover: (isHovered: boolean) => {
+            setHoveredNodeId(isHovered ? task.id : null);
           },
         },
       };
@@ -729,8 +733,39 @@ function L5FlowGraphInner({
       };
     });
 
+    // 호버된 노드와 연결된 엣지 하이라이트
+    const finalEdges = layoutedEdges.map((edge) => {
+      const isConnectedToHoveredNode =
+        hoveredNodeId && (edge.source === hoveredNodeId || edge.target === hoveredNodeId);
+
+      if (isConnectedToHoveredNode) {
+        // 호버된 노드와 연결된 엣지는 더 밝은 색상과 두꺼운 선으로 표시
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            strokeWidth: 3,
+            opacity: 1,
+          },
+        };
+      }
+
+      // 호버 중이지만 연결되지 않은 엣지는 투명도 감소
+      if (hoveredNodeId) {
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            opacity: 0.2,
+          },
+        };
+      }
+
+      return edge;
+    });
+
     setNodes(finalNodes as any);
-    setEdges(layoutedEdges as any);
+    setEdges(finalEdges as any);
   }, [
     processedData,
     viewMode,
@@ -744,6 +779,7 @@ function L5FlowGraphInner({
     setEdges,
     selectedEdge,
     searchedNodeId,
+    hoveredNodeId,
     getAllPredecessors,
   ]);
 

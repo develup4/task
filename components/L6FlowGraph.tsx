@@ -216,6 +216,7 @@ function L6FlowGraphInner({
   const [criticalPathIds, setCriticalPathIds] = useState<Set<string>>(
     new Set()
   );
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const { fitView, setCenter } = useReactFlow();
 
   // 크리티컬 패스 계산
@@ -560,6 +561,9 @@ function L6FlowGraphInner({
               }
             }, 100);
           },
+          onNodeHover: (isHovered: boolean) => {
+            setHoveredNodeId(isHovered ? task.id : null);
+          },
         },
         style:
           selectedEdge && !isHighlighted
@@ -595,6 +599,9 @@ function L6FlowGraphInner({
         data: {
           ...node.data,
           isHighlighted,
+          onNodeHover: (isHovered: boolean) => {
+            setHoveredNodeId(isHovered ? node.id : null);
+          },
         },
         style: {
           ...node.style,
@@ -611,8 +618,39 @@ function L6FlowGraphInner({
       levels,
     } = getLayoutedElements(allNodes, allEdges);
 
+    // 호버된 노드와 연결된 엣지 하이라이트
+    const finalEdges = layoutedEdges.map((edge) => {
+      const isConnectedToHoveredNode =
+        hoveredNodeId && (edge.source === hoveredNodeId || edge.target === hoveredNodeId);
+
+      if (isConnectedToHoveredNode) {
+        // 호버된 노드와 연결된 엣지는 더 밝은 색상과 두꺼운 선으로 표시
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            strokeWidth: 3,
+            opacity: 1,
+          },
+        };
+      }
+
+      // 호버 중이지만 연결되지 않은 엣지는 투명도 감소
+      if (hoveredNodeId) {
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            opacity: 0.2,
+          },
+        };
+      }
+
+      return edge;
+    });
+
     setNodes(layoutedNodes as any);
-    setEdges(layoutedEdges as any);
+    setEdges(finalEdges as any);
   }, [
     processedData,
     selectedL5,
@@ -624,6 +662,7 @@ function L6FlowGraphInner({
     criticalPathIds,
     showHeadcountTable,
     l5MaxHeadcountNodeIds,
+    hoveredNodeId,
     onNavigateToErrorReport,
   ]);
 
