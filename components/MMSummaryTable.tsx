@@ -10,15 +10,15 @@ type SortOrder = "asc" | "desc";
 interface MMSummaryTableProps {
   type: "l5" | "final";
   onNavigateToGraph?: () => void;
-  selectedL4Categories?: Set<string>;
-  onL4CategoriesChange?: (categories: Set<string>) => void;
+  hiddenL4Categories?: Set<string>;
+  onHiddenL4CategoriesChange?: (categories: Set<string>) => void;
 }
 
 export default function MMSummaryTable({
   type,
   onNavigateToGraph,
-  selectedL4Categories: externalSelectedL4Categories,
-  onL4CategoriesChange,
+  hiddenL4Categories: externalHiddenL4Categories,
+  onHiddenL4CategoriesChange,
 }: MMSummaryTableProps) {
   const {
     processedData,
@@ -30,15 +30,15 @@ export default function MMSummaryTable({
 
   const [sortColumn, setSortColumn] = useState<SortColumn>("MM");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [internalSelectedL4Categories, setInternalSelectedL4Categories] = useState<Set<string>>(new Set());
+  const [internalHiddenL4Categories, setInternalHiddenL4Categories] = useState<Set<string>>(new Set());
 
   // 외부에서 전달되면 그것을 사용, 아니면 내부 상태 사용
-  const selectedL4Categories = externalSelectedL4Categories !== undefined ? externalSelectedL4Categories : internalSelectedL4Categories;
-  const setSelectedL4Categories = (categories: Set<string>) => {
-    if (externalSelectedL4Categories !== undefined && onL4CategoriesChange) {
-      onL4CategoriesChange(categories);
+  const hiddenL4Categories = externalHiddenL4Categories !== undefined ? externalHiddenL4Categories : internalHiddenL4Categories;
+  const setHiddenL4Categories = (categories: Set<string>) => {
+    if (externalHiddenL4Categories !== undefined && onHiddenL4CategoriesChange) {
+      onHiddenL4CategoriesChange(categories);
     } else {
-      setInternalSelectedL4Categories(categories);
+      setInternalHiddenL4Categories(categories);
     }
   };
 
@@ -55,10 +55,10 @@ export default function MMSummaryTable({
 
     let tasks = Array.from(processedData.l5Tasks.values());
 
-    // L4 카테고리 필터 적용
-    if (selectedL4Categories.size > 0) {
+    // L4 카테고리 필터 적용 (숨겨진 카테고리 제외)
+    if (hiddenL4Categories.size > 0) {
       tasks = tasks.filter((task) =>
-        selectedL4Categories.has(task.l4Category)
+        !hiddenL4Categories.has(task.l4Category)
       );
     }
 
@@ -113,7 +113,7 @@ export default function MMSummaryTable({
       });
       return tasks;
     }
-  }, [processedData, type, sortColumn, sortOrder, selectedL4Categories]);
+  }, [processedData, type, sortColumn, sortOrder, hiddenL4Categories]);
 
   const handleRowClick = (taskId: string) => {
     setSelectedL5(taskId);
@@ -145,13 +145,13 @@ export default function MMSummaryTable({
   };
 
   const handleL4FilterToggle = (category: string) => {
-    const newSelected = new Set(selectedL4Categories);
-    if (newSelected.has(category)) {
-      newSelected.delete(category);
+    const newHidden = new Set(hiddenL4Categories);
+    if (newHidden.has(category)) {
+      newHidden.delete(category);
     } else {
-      newSelected.add(category);
+      newHidden.add(category);
     }
-    setSelectedL4Categories(newSelected);
+    setHiddenL4Categories(newHidden);
   };
 
   const handleSortColumnClick = (column: SortColumn) => {

@@ -40,8 +40,9 @@ export default function Home() {
   const [criticalPathDuration, setCriticalPathDuration] = useState(0);
   const [showHeadcountTable, setShowHeadcountTable] = useState(false);
   const [maxHeadcount, setMaxHeadcount] = useState(0);
-  const [criticalPathBeforeHeadcount, setCriticalPathBeforeHeadcount] = useState(false);
-  const [tableL4Filter, setTableL4Filter] = useState<Set<string>>(new Set());
+  const [criticalPathBeforeHeadcount, setCriticalPathBeforeHeadcount] =
+    useState(false);
+  const [hiddenTableL4Categories, setHiddenTableL4Categories] = useState<Set<string>>(new Set());
 
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
@@ -96,13 +97,13 @@ export default function Home() {
   };
 
   const handleTableL4FilterToggle = (category: string) => {
-    const newSelected = new Set(tableL4Filter);
-    if (newSelected.has(category)) {
-      newSelected.delete(category);
+    const newHidden = new Set(hiddenTableL4Categories);
+    if (newHidden.has(category)) {
+      newHidden.delete(category);
     } else {
-      newSelected.add(category);
+      newHidden.add(category);
     }
-    setTableL4Filter(newSelected);
+    setHiddenTableL4Categories(newHidden);
   };
 
   return (
@@ -179,48 +180,49 @@ export default function Home() {
                 </div>
 
                 {/* Search box and filters - show in graph tab for l5-all and l5-filtered modes */}
-                {activeTab === "graph" && (viewMode === "l5-all" || viewMode === "l5-filtered") && (
-                  <div className="flex gap-2 items-center mb-1">
-                    {viewMode === "l5-all" && (
-                      <button
-                        onClick={toggleTooltips}
-                        className={`p-1.5 rounded-md font-medium cursor-pointer text-sm transition-colors ${
-                          showTooltips ? "text-white" : "text-gray-600"
-                        }`}
-                        title={showTooltips ? "툴팁 숨기기" : "툴팁 보이기"}
-                      >
-                        <p className="hover:scale-110 transition-all duration-75">
-                          {showTooltips ? "📜" : "🚫"}
-                        </p>
-                      </button>
-                    )}
-                    <TeamFilter />
-                    {viewMode === "l5-all" && (
-                      <>
-                        <input
-                          type="text"
-                          placeholder="Search"
-                          value={searchQuery}
-                          onChange={(e) => {
-                            setSearchQuery(e.target.value);
-                            setCurrentSearchIndex(0);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              setSearchTrigger((prev) => prev + 1);
-                            }
-                          }}
-                          className="input input-ghost input-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring focus:ring-sky-400 focus:bg-white text-sm"
-                        />
-                        {searchResultCount > 0 && (
-                          <span className="text-sm text-gray-600 font-medium">
-                            {currentSearchIndex}/{searchResultCount}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
+                {activeTab === "graph" &&
+                  (viewMode === "l5-all" || viewMode === "l5-filtered") && (
+                    <div className="flex gap-2 items-center mb-1">
+                      {viewMode === "l5-all" && (
+                        <button
+                          onClick={toggleTooltips}
+                          className={`p-1.5 rounded-md font-medium cursor-pointer text-sm transition-colors ${
+                            showTooltips ? "text-white" : "text-gray-600"
+                          }`}
+                          title={showTooltips ? "툴팁 숨기기" : "툴팁 보이기"}
+                        >
+                          <p className="hover:scale-110 transition-all duration-75">
+                            {showTooltips ? "📜" : "🚫"}
+                          </p>
+                        </button>
+                      )}
+                      <TeamFilter />
+                      {viewMode === "l5-all" && (
+                        <>
+                          <input
+                            type="text"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => {
+                              setSearchQuery(e.target.value);
+                              setCurrentSearchIndex(0);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                setSearchTrigger((prev) => prev + 1);
+                              }
+                            }}
+                            className="input input-ghost input-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring focus:ring-sky-400 focus:bg-white text-sm"
+                          />
+                          {searchResultCount > 0 && (
+                            <span className="text-sm text-gray-600 font-medium">
+                              {currentSearchIndex}/{searchResultCount}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -395,7 +397,7 @@ export default function Home() {
                   </div>
                   <div className="bg-white rounded-lg shadow">
                     <div className="p-4 border-b border-gray-200">
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start justify-between">
                         <div>
                           <h2 className="text-lg font-semibold text-gray-800">
                             L5 Task MM 요약
@@ -405,38 +407,46 @@ export default function Home() {
                             중심으로 필터링됩니다.
                           </p>
                         </div>
-                        <div className="ml-4">
-                          <label style={{ fontSize: "12px", fontWeight: 600, color: "#666", display: "block", marginBottom: "8px" }}>
-                            L4 필터
-                          </label>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "flex-end" }}>
+                        <div className="mt-4">
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "6px",
+                              justifyContent: "flex-end",
+                            }}
+                          >
                             {allL4Categories.map((category) => {
                               const colors = getColorForCategory(category);
-                              const isSelected = tableL4Filter.has(category);
+                              const isHidden = hiddenTableL4Categories.has(category);
                               return (
                                 <button
                                   key={category}
-                                  onClick={() => handleTableL4FilterToggle(category)}
+                                  onClick={() =>
+                                    handleTableL4FilterToggle(category)
+                                  }
                                   style={{
                                     padding: "4px 10px",
                                     borderRadius: "4px",
                                     border: `2px solid ${colors.border}`,
-                                    backgroundColor: isSelected ? colors.bg : "white",
+                                    backgroundColor: isHidden
+                                      ? "white"
+                                      : colors.bg,
                                     color: colors.text,
                                     fontSize: "11px",
                                     fontWeight: 500,
                                     cursor: "pointer",
                                     transition: "all 0.2s",
-                                    opacity: isSelected ? 1 : 0.6,
+                                    opacity: isHidden ? 0.4 : 1,
                                   }}
                                 >
                                   {category}
                                 </button>
                               );
                             })}
-                            {tableL4Filter.size > 0 && (
+                            {hiddenTableL4Categories.size > 0 && (
                               <button
-                                onClick={() => setTableL4Filter(new Set())}
+                                onClick={() => setHiddenTableL4Categories(new Set())}
                                 style={{
                                   padding: "4px 10px",
                                   borderRadius: "4px",
@@ -459,8 +469,8 @@ export default function Home() {
                     <MMSummaryTable
                       type="l5"
                       onNavigateToGraph={() => setActiveTab("graph")}
-                      selectedL4Categories={tableL4Filter}
-                      onL4CategoriesChange={setTableL4Filter}
+                      hiddenL4Categories={hiddenTableL4Categories}
+                      onHiddenL4CategoriesChange={setHiddenTableL4Categories}
                     />
                   </div>
                 </div>
