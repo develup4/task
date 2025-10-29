@@ -84,7 +84,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   filteredMM: 0,
   l5MaxHeadcountMap: new Map(),
   l5MaxHeadcountNodeIds: new Map(),
-  showTooltips: true,
+  showTooltips: false,
   l5AllNodePositions: new Map(),
   l5FilteredNodePositions: new Map(),
   l6DetailNodePositions: new Map(),
