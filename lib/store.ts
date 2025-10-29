@@ -245,7 +245,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       collectPredecessors(selectedL5);
 
-      return allTasks.filter((task) => predecessorIds.has(task.id));
+      // L4 카테고리 필터 적용
+      return allTasks.filter(
+        (task) =>
+          predecessorIds.has(task.id) &&
+          visibleL4Categories.has(task.l4Category),
+      );
     }
 
     return allTasks;
