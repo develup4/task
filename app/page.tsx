@@ -226,7 +226,7 @@ export default function Home() {
                   </div>
                   {showCriticalPath && (
                     <div className="flex items-center gap-2">
-                      <span className="text-amber-600">크리티컬 패스 T:</span>
+                      <span className="text-amber-600">최대 필요 시간 T:</span>
                       <span className="font-bold">
                         {criticalPathDuration.toFixed(2)} weeks
                       </span>
@@ -251,8 +251,8 @@ export default function Home() {
                     }`}
                   >
                     {showCriticalPath
-                      ? "크리티컬 패스 숨기기"
-                      : "크리티컬 패스 보기"}
+                      ? "최대 필요 시간 경로 숨기기"
+                      : "최대 필요 시간 경로 보기"}
                   </button>
                   <button
                     onClick={() => {
