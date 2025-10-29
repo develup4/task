@@ -257,11 +257,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       collectPredecessors(selectedL5);
 
-      // L4 카테고리 필터 적용
+      // L4 카테고리 및 팀 필터 적용
       return allTasks.filter(
         (task) =>
           predecessorIds.has(task.id) &&
-          visibleL4Categories.has(task.l4Category),
+          visibleL4Categories.has(task.l4Category) &&
+          (!task.작성팀 || visibleTeams.has(task.작성팀)),
       );
     }
 
