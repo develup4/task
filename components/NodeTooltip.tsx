@@ -202,6 +202,14 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
         {/* L5 Specific Information */}
         {isL5 && (
           <div className="mb-3 space-y-2">
+            {"작성팀" in data && data.작성팀 && (
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
+                  작성팀:
+                </span>
+                {renderPipeSeparatedValue(data.작성팀)}
+              </div>
+            )}
             {"프로세스 오너부서(L5)" in data &&
               data["프로세스 오너부서(L5)"] && (
                 <div className="flex items-center">
@@ -272,6 +280,14 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
         {/* L6 Specific Information */}
         {isL6 && (
           <div className="mb-3 space-y-2">
+            {"작성팀" in data && data.작성팀 && (
+              <div className="flex items-center">
+                <span className="font-semibold text-xs text-gray-600 mr-1">
+                  작성팀:
+                </span>
+                {renderPipeSeparatedValue(data.작성팀)}
+              </div>
+            )}
             {"업무담당부서(L6)" in data && data["업무담당부서(L6)"] && (
               <div className="flex items-center">
                 <span className="font-semibold text-xs text-gray-600 mr-1">
