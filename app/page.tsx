@@ -39,6 +39,7 @@ export default function Home() {
   const [criticalPathDuration, setCriticalPathDuration] = useState(0);
   const [showHeadcountTable, setShowHeadcountTable] = useState(false);
   const [maxHeadcount, setMaxHeadcount] = useState(0);
+  const [criticalPathBeforeHeadcount, setCriticalPathBeforeHeadcount] = useState(false);
 
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
@@ -254,7 +255,17 @@ export default function Home() {
                       : "크리티컬 패스 보기"}
                   </button>
                   <button
-                    onClick={() => setShowHeadcountTable(!showHeadcountTable)}
+                    onClick={() => {
+                      if (!showHeadcountTable) {
+                        // Drawer를 열 때: 크리티컬 패스 상태 저장 후 숨기기
+                        setCriticalPathBeforeHeadcount(showCriticalPath);
+                        setShowCriticalPath(false);
+                      } else {
+                        // Drawer를 닫을 때: 이전 크리티컬 패스 상태 복구
+                        setShowCriticalPath(criticalPathBeforeHeadcount);
+                      }
+                      setShowHeadcountTable(!showHeadcountTable);
+                    }}
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       showHeadcountTable
                         ? "bg-purple-500 text-white hover:bg-purple-600"
