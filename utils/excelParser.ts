@@ -22,6 +22,12 @@ const splitByPipe = (text: string | undefined): string[] => {
     .filter((s) => s);
 };
 
+// Month를 Week로 변환 (Month * 30 / 7)
+const convertMonthToWeek = (monthValue: number): number => {
+  if (monthValue === 0) return 0;
+  return (monthValue * 30) / 7;
+};
+
 // 대소문자 무시하고 task ID 찾기 (case mismatch 감지)
 const findTaskIdCaseInsensitive = (
   targetId: string,
@@ -163,7 +169,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
                 l4Category: removePrefixes(taskData.L4),
                 작성팀: taskData.작성팀,
                 필요인력: taskData.필요인력,
-                필요기간: taskData.필요기간,
+                필요기간: convertMonthToWeek(taskData.필요기간),
                 MM: taskData.MM,
                 정의: taskData.정의,
                 "프로세스 오너부서(L5)": taskData["프로세스 오너부서(L5)"],
@@ -186,7 +192,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               l4Category: removePrefixes(taskData.L4),
               l5Parent,
               필요인력: taskData.필요인력,
-              필요기간: taskData.필요기간,
+              필요기간: convertMonthToWeek(taskData.필요기간),
               MM: taskData.MM,
               정의: taskData.정의,
               "업무담당부서(L6)": taskData["업무담당부서(L6)"],
