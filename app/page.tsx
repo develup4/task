@@ -42,7 +42,9 @@ export default function Home() {
   const [maxHeadcount, setMaxHeadcount] = useState(0);
   const [criticalPathBeforeHeadcount, setCriticalPathBeforeHeadcount] =
     useState(false);
-  const [hiddenTableL4Categories, setHiddenTableL4Categories] = useState<Set<string>>(new Set());
+  const [hiddenTableL4Categories, setHiddenTableL4Categories] = useState<
+    Set<string>
+  >(new Set());
 
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
@@ -279,7 +281,7 @@ export default function Home() {
                         setShowHeadcountTable(false);
                       }
                     }}
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-md font-medium transition-colors cursor-pointer ${
                       showCriticalPath
                         ? "bg-amber-500 text-white hover:bg-amber-600"
                         : "bg-white text-amber-600 border-2 border-amber-500 hover:bg-amber-50"
@@ -301,7 +303,7 @@ export default function Home() {
                       }
                       setShowHeadcountTable(!showHeadcountTable);
                     }}
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-md font-medium transition-colors cursor-pointer ${
                       showHeadcountTable
                         ? "bg-purple-500 text-white hover:bg-purple-600"
                         : "bg-white text-purple-600 border-2 border-purple-500 hover:bg-purple-50"
@@ -418,7 +420,8 @@ export default function Home() {
                           >
                             {allL4Categories.map((category) => {
                               const colors = getColorForCategory(category);
-                              const isHidden = hiddenTableL4Categories.has(category);
+                              const isHidden =
+                                hiddenTableL4Categories.has(category);
                               return (
                                 <button
                                   key={category}
@@ -446,7 +449,9 @@ export default function Home() {
                             })}
                             {hiddenTableL4Categories.size > 0 && (
                               <button
-                                onClick={() => setHiddenTableL4Categories(new Set())}
+                                onClick={() =>
+                                  setHiddenTableL4Categories(new Set())
+                                }
                                 style={{
                                   padding: "4px 10px",
                                   borderRadius: "4px",
