@@ -62,6 +62,69 @@ const detectCycles = (tasks: Map<string, L5Task | L6Task>): void => {
   });
 };
 
+// L5 tasks에서 순환 경로를 감지
+const detectL5Cycles = (tasks: Map<string, L5Task>): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  const visited = new Set<string>();
+  const cycleNodes = new Set<string>();
+
+  // DFS로 순환 감지
+  const dfs = (nodeId: string, path: Set<string>): Set<string> | null => {
+    if (path.has(nodeId)) {
+      // 순환 발견
+      return path;
+    }
+
+    if (visited.has(nodeId)) {
+      return null;
+    }
+
+    const newPath = new Set(path);
+    newPath.add(nodeId);
+
+    const task = tasks.get(nodeId);
+    if (!task) return null;
+
+    for (const succId of task.successors) {
+      if (tasks.has(succId)) {
+        const cycle = dfs(succId, newPath);
+        if (cycle) {
+          // 순환 경로에 포함된 노드들을 수집
+          cycle.forEach((id) => cycleNodes.add(id));
+          return cycle;
+        }
+      }
+    }
+
+    visited.add(nodeId);
+    return null;
+  };
+
+  // 모든 노드에서 DFS 시작
+  tasks.forEach((task) => {
+    if (!visited.has(task.id)) {
+      dfs(task.id, new Set());
+    }
+  });
+
+  // 순환이 있으면 에러 추가 (가장 작은 ID를 sourceTask로 선택)
+  if (cycleNodes.size > 0) {
+    const sortedCycleNodes = Array.from(cycleNodes).sort();
+    const sourceTask = sortedCycleNodes[0];
+    const relatedNodes = sortedCycleNodes.join(", ");
+
+    errors.push({
+      type: "cycle_error",
+      sourceTask,
+      sourceLevel: "L5",
+      relatedTask: relatedNodes,
+      description: `L5 프로세스들 사이에 순환 의존성이 존재합니다.`,
+    });
+  }
+
+  return errors;
+};
+
 // 최종 노드(후행이 없는 노드)의 누적 MM 계산
 const calculateCumulativeMM = (tasks: Map<string, L5Task>): void => {
   const visited = new Set<string>();
@@ -318,7 +381,10 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
         calculateCumulativeMM(l5Tasks);
 
         // 누락된 프로세스 감지 및 추가
-        const errors: ValidationError[] = [...caseMismatchErrors];
+        const errors: ValidationError[] = [
+          ...caseMismatchErrors,
+          ...detectL5Cycles(l5Tasks),
+        ];
 
         // 양방향 오류 수집 (L5)
         l5Tasks.forEach((task) => {

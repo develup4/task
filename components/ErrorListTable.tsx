@@ -186,6 +186,8 @@ export default function ErrorListTable({
                             ? "#fce7f3"
                             : error.type === "missing_l5_reference"
                             ? "#fecdd3"
+                            : error.type === "cycle_error"
+                            ? "#f5d0a9"
                             : "#fecaca",
                         color:
                           error.type === "missing_predecessor"
@@ -204,6 +206,8 @@ export default function ErrorListTable({
                             ? "#9f1239"
                             : error.type === "missing_l5_reference"
                             ? "#be123c"
+                            : error.type === "cycle_error"
+                            ? "#92400e"
                             : "#991b1b",
                         fontSize: "12px",
                         border: `1px solid ${
@@ -223,6 +227,8 @@ export default function ErrorListTable({
                             ? "#f9a8d4"
                             : error.type === "missing_l5_reference"
                             ? "#fda4af"
+                            : error.type === "cycle_error"
+                            ? "#f5a25d"
                             : "#f87171"
                         }`,
                         fontWeight: 500,
@@ -246,6 +252,8 @@ export default function ErrorListTable({
                         ? "누락된 L5 참조"
                         : error.type === "bidirectional_error"
                         ? "양방향 오류"
+                        : error.type === "cycle_error"
+                        ? "순환 오류"
                         : "알 수 없는 오류"}
                     </span>
                   </td>
@@ -263,6 +271,8 @@ export default function ErrorListTable({
                       ? error.relatedTask
                       : error.type === "self_loop_error"
                       ? "-"
+                      : error.type === "cycle_error"
+                      ? error.relatedTask
                       : error.type === "empty_predecessor_but_referenced"
                       ? error.relatedTask
                       : error.type === "empty_successor_but_referenced"

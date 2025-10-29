@@ -95,7 +95,8 @@ export interface ValidationError {
     | "mismatch_predecessor_successor"
     | "empty_predecessor_but_referenced"
     | "empty_successor_but_referenced"
-    | "case_mismatch";
+    | "case_mismatch"
+    | "cycle_error";
   sourceTask: string;
   sourceLevel: "L5" | "L6";
   missingTask?: string;
