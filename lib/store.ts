@@ -27,6 +27,9 @@ interface AppState {
   // L5별 최대 필요인력 맵
   l5MaxHeadcountMap: Map<string, number>;
 
+  // L5별 최대 필요인력 계산에 참여한 노드 ID들
+  l5MaxHeadcountNodeIds: Map<string, string[]>;
+
   // 툴팁 표시 여부
   showTooltips: boolean;
 
@@ -38,6 +41,7 @@ interface AppState {
   setHighlightedTasks: (tasks: Set<string>) => void;
   setFilteredMM: (mm: number) => void;
   setL5MaxHeadcount: (l5Id: string, headcount: number) => void;
+  setL5MaxHeadcountNodeIds: (l5Id: string, nodeIds: string[]) => void;
   toggleTooltips: () => void;
 
   // L4 카테고리 필터 액션
@@ -70,6 +74,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   visibleTeams: new Set(),
   filteredMM: 0,
   l5MaxHeadcountMap: new Map(),
+  l5MaxHeadcountNodeIds: new Map(),
   showTooltips: true,
 
   // 액션
@@ -102,6 +107,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newMap = new Map(state.l5MaxHeadcountMap);
       newMap.set(l5Id, headcount);
       return { l5MaxHeadcountMap: newMap };
+    }),
+
+  setL5MaxHeadcountNodeIds: (l5Id, nodeIds) =>
+    set((state) => {
+      const newMap = new Map(state.l5MaxHeadcountNodeIds);
+      newMap.set(l5Id, nodeIds);
+      return { l5MaxHeadcountNodeIds: newMap };
     }),
 
   toggleTooltips: () => set((state) => ({ showTooltips: !state.showTooltips })),

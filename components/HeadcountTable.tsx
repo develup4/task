@@ -8,7 +8,7 @@ import {
 } from "@/utils/headcountCalculator";
 
 export default function HeadcountTable() {
-  const { getL6TasksForL5, selectedL5, setL5MaxHeadcount } = useAppStore();
+  const { getL6TasksForL5, selectedL5, setL5MaxHeadcount, setL5MaxHeadcountNodeIds } = useAppStore();
 
   const headcountResult = useMemo(() => {
     if (!selectedL5) return null;
@@ -16,12 +16,13 @@ export default function HeadcountTable() {
     return calculateDailyHeadcount(l6Tasks);
   }, [selectedL5, getL6TasksForL5]);
 
-  // maxHeadcount가 변경될 때 store에 저장
+  // maxHeadcount와 노드들이 변경될 때 store에 저장
   useEffect(() => {
     if (selectedL5 && headcountResult) {
       setL5MaxHeadcount(selectedL5, headcountResult.maxHeadcount);
+      setL5MaxHeadcountNodeIds(selectedL5, headcountResult.maxHeadcountTaskIds);
     }
-  }, [selectedL5, headcountResult, setL5MaxHeadcount]);
+  }, [selectedL5, headcountResult, setL5MaxHeadcount, setL5MaxHeadcountNodeIds]);
 
   if (!headcountResult || headcountResult.totalWeeks === 0) {
     return (

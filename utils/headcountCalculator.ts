@@ -11,6 +11,7 @@ export interface HeadcountResult {
   maxHeadcount: number; // Maximum P needed in any interval
   intervals: IntervalHeadcount[]; // Headcount for each time interval
   totalWeeks: number; // Total project duration in weeks
+  maxHeadcountTaskIds: string[]; // Task IDs that contributed to max headcount
 }
 
 /**
@@ -19,7 +20,7 @@ export interface HeadcountResult {
  */
 export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
   if (l6Tasks.length === 0) {
-    return { maxHeadcount: 0, intervals: [], totalWeeks: 0 };
+    return { maxHeadcount: 0, intervals: [], totalWeeks: 0, maxHeadcountTaskIds: [] };
   }
 
   const taskMap = new Map(l6Tasks.map((t) => [t.id, t]));
@@ -108,6 +109,7 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
   // 각 구간별 필요인력 계산
   const intervals: IntervalHeadcount[] = [];
   let maxHeadcount = 0;
+  let maxHeadcountTaskIds: string[] = [];
 
   for (let i = 0; i < sortedTimePoints.length - 1; i++) {
     const startWeek = sortedTimePoints[i];
@@ -128,7 +130,14 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
         tasks: activeTasks.map((t) => ({ id: t.id, name: t.name, P: t.P })),
       });
 
-      maxHeadcount = Math.max(maxHeadcount, headcount);
+      // 최대 필요인력이 더 크거나 같으면 업데이트
+      if (headcount > maxHeadcount) {
+        maxHeadcount = headcount;
+        maxHeadcountTaskIds = activeTasks.map((t) => t.id);
+      } else if (headcount === maxHeadcount && headcount > 0) {
+        // 같은 최대값인 경우, 이미 수집한 태스크들과 함께 유지
+        // 하지만 여러 구간이 같은 최대값을 가질 수 있으므로, 첫 번째 최대값만 추적
+      }
     }
   }
 
@@ -136,5 +145,6 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
     maxHeadcount,
     intervals,
     totalWeeks,
+    maxHeadcountTaskIds,
   };
 }

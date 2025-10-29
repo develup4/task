@@ -296,6 +296,7 @@ export default function Home() {
                           setActiveTab("error-list")
                         }
                         showCriticalPath={showCriticalPath}
+                        showHeadcountTable={showHeadcountTable}
                       />
                     </div>
                     {/* Headcount Drawer */}

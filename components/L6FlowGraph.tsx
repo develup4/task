@@ -199,13 +199,15 @@ const getLayoutedElements = (
 interface L6FlowGraphInnerProps {
   onNavigateToErrorReport?: () => void;
   showCriticalPath: boolean;
+  showHeadcountTable: boolean;
 }
 
 function L6FlowGraphInner({
   onNavigateToErrorReport,
   showCriticalPath,
+  showHeadcountTable,
 }: L6FlowGraphInnerProps) {
-  const { processedData, selectedL5, getL6TasksForL5, setViewMode } =
+  const { processedData, selectedL5, getL6TasksForL5, setViewMode, l5MaxHeadcountNodeIds } =
     useAppStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -500,6 +502,11 @@ function L6FlowGraphInner({
       }
     });
 
+    // 최대 필요인력 노드 ID 세트 가져오기
+    const maxHeadcountNodeIds = showHeadcountTable && selectedL5
+      ? new Set(l5MaxHeadcountNodeIds.get(selectedL5) || [])
+      : new Set<string>();
+
     const l6Nodes = l6Tasks.map((task) => {
       const hasError = nodeErrors.has(task.id);
       // 선택된 엣지와 연결된 노드인지 확인
@@ -513,6 +520,9 @@ function L6FlowGraphInner({
 
       // 크리티컬 패스에 속하는지 확인
       const isInCriticalPath = showCriticalPath && criticalPathIds.has(task.id);
+
+      // 최대 필요인력 계산에 참여했는지 확인
+      const isInMaxHeadcount = maxHeadcountNodeIds.has(task.id);
 
       return {
         id: task.id,
@@ -560,6 +570,12 @@ function L6FlowGraphInner({
                 borderRadius: "12px",
                 boxShadow: "0 0 0 3px rgba(245, 158, 11, 0.3)",
               }
+            : isInMaxHeadcount
+            ? {
+                border: "3px solid #a855f7",
+                borderRadius: "12px",
+                boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.3)",
+              }
             : undefined,
       };
     });
@@ -606,6 +622,8 @@ function L6FlowGraphInner({
     selectedEdge,
     showCriticalPath,
     criticalPathIds,
+    showHeadcountTable,
+    l5MaxHeadcountNodeIds,
     onNavigateToErrorReport,
   ]);
 
@@ -690,17 +708,20 @@ function L6FlowGraphInner({
 interface L6FlowGraphProps {
   onNavigateToErrorReport?: () => void;
   showCriticalPath: boolean;
+  showHeadcountTable: boolean;
 }
 
 export default function L6FlowGraph({
   onNavigateToErrorReport,
   showCriticalPath,
+  showHeadcountTable,
 }: L6FlowGraphProps) {
   return (
     <ReactFlowProvider>
       <L6FlowGraphInner
         onNavigateToErrorReport={onNavigateToErrorReport}
         showCriticalPath={showCriticalPath}
+        showHeadcountTable={showHeadcountTable}
       />
     </ReactFlowProvider>
   );
