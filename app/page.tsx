@@ -329,13 +329,6 @@ export default function Home() {
                         <HeadcountTable />
                       </div>
                     </div>
-                    {/* Overlay when drawer is open */}
-                    {showHeadcountTable && (
-                      <div
-                        className="absolute inset-0 bg-black/10 z-30 right-[550px]"
-                        onClick={() => setShowHeadcountTable(false)}
-                      />
-                    )}
                   </>
                 ) : (
                   <L5FlowGraph
