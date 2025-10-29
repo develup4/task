@@ -194,7 +194,7 @@ export default function LeftmostNodeMMTable({
                   {l5MaxHeadcountMap.get(node.id) || 0}
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {node.필요기간}W
+                  {node.필요기간.toFixed(2)}W
                 </td>
                 <td
                   style={{

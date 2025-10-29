@@ -149,7 +149,7 @@ export default function MMSummaryTable({
                   {l5MaxHeadcountMap.get(task.id) || 0}
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {task.필요기간}W
+                  {task.필요기간.toFixed(2)}W
                 </td>
                 <td
                   style={{
