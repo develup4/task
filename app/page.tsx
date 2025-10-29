@@ -243,7 +243,13 @@ export default function Home() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setShowCriticalPath(!showCriticalPath)}
+                    onClick={() => {
+                      setShowCriticalPath(!showCriticalPath);
+                      // 최대 필요 시간 경로를 보일 때 headcount drawer 닫기
+                      if (!showCriticalPath && showHeadcountTable) {
+                        setShowHeadcountTable(false);
+                      }
+                    }}
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       showCriticalPath
                         ? "bg-amber-500 text-white hover:bg-amber-600"
