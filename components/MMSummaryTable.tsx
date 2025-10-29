@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { getColorForCategory } from "@/utils/colors";
 
-type SortColumn = "MM" | "cumulativeMM";
+type SortColumn = "MM" | "cumulativeMM" | "l4Category";
+type SortOrder = "asc" | "desc";
 
 interface MMSummaryTableProps {
   type: "l5" | "final";
@@ -23,21 +24,98 @@ export default function MMSummaryTable({
     l5MaxHeadcountMap,
   } = useAppStore();
 
+  const [sortColumn, setSortColumn] = useState<SortColumn>("MM");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [selectedL4Categories, setSelectedL4Categories] = useState<Set<string>>(new Set());
+
+  const allL4Categories = useMemo(() => {
+    if (!processedData) return [];
+    const categories = new Set(
+      Array.from(processedData.l5Tasks.values()).map((t) => t.l4Category)
+    );
+    return Array.from(categories).sort();
+  }, [processedData]);
+
   const sortedTasks = useMemo(() => {
     if (!processedData) return [];
 
-    const tasks = Array.from(processedData.l5Tasks.values());
+    let tasks = Array.from(processedData.l5Tasks.values());
+
+    // L4 카테고리 필터 적용
+    if (selectedL4Categories.size > 0) {
+      tasks = tasks.filter((task) =>
+        selectedL4Categories.has(task.l4Category)
+      );
+    }
 
     if (type === "l5") {
-      // L5 task들을 MM 기준으로 정렬
-      return tasks.sort((a, b) => b.MM - a.MM);
+      // L5 task들 정렬
+      tasks.sort((a, b) => {
+        let aVal: string | number;
+        let bVal: string | number;
+
+        switch (sortColumn) {
+          case "l4Category":
+            aVal = a.l4Category;
+            bVal = b.l4Category;
+            break;
+          case "MM":
+            aVal = a.MM;
+            bVal = b.MM;
+            break;
+          default:
+            aVal = a.MM;
+            bVal = b.MM;
+        }
+
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortOrder === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        const numA = Number(aVal);
+        const numB = Number(bVal);
+        return sortOrder === "asc" ? numA - numB : numB - numA;
+      });
+      return tasks;
     } else {
-      // 최종 노드들을 누적 MM 기준으로 정렬
-      return tasks
-        .filter((task) => task.isFinalNode && task.cumulativeMM !== undefined)
-        .sort((a, b) => (b.cumulativeMM || 0) - (a.cumulativeMM || 0));
+      // 최종 노드들 필터링 및 정렬
+      tasks = tasks.filter(
+        (task) => task.isFinalNode && task.cumulativeMM !== undefined
+      );
+
+      tasks.sort((a, b) => {
+        let aVal: string | number;
+        let bVal: string | number;
+
+        switch (sortColumn) {
+          case "l4Category":
+            aVal = a.l4Category;
+            bVal = b.l4Category;
+            break;
+          case "cumulativeMM":
+            aVal = a.cumulativeMM || 0;
+            bVal = b.cumulativeMM || 0;
+            break;
+          default:
+            aVal = a.cumulativeMM || 0;
+            bVal = b.cumulativeMM || 0;
+        }
+
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortOrder === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        const numA = Number(aVal);
+        const numB = Number(bVal);
+        return sortOrder === "asc" ? numA - numB : numB - numA;
+      });
+      return tasks;
     }
-  }, [processedData, type]);
+  }, [processedData, type, sortColumn, sortOrder, selectedL4Categories]);
 
   const handleRowClick = (taskId: string) => {
     setSelectedL5(taskId);
@@ -68,6 +146,25 @@ export default function MMSummaryTable({
     onNavigateToGraph?.();
   };
 
+  const handleL4FilterToggle = (category: string) => {
+    const newSelected = new Set(selectedL4Categories);
+    if (newSelected.has(category)) {
+      newSelected.delete(category);
+    } else {
+      newSelected.add(category);
+    }
+    setSelectedL4Categories(newSelected);
+  };
+
+  const handleSortColumnClick = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortOrder("desc");
+    }
+  };
+
   if (sortedTasks.length === 0) {
     return (
       <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
@@ -77,8 +174,63 @@ export default function MMSummaryTable({
   }
 
   return (
-    <div style={{ width: "100%", height: "100%", overflow: "auto" }}>
-      <table
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Filter Controls */}
+      <div style={{ padding: "16px", borderBottom: "1px solid #eee", backgroundColor: "#fafafa" }}>
+        <div style={{ marginBottom: "12px" }}>
+          <label style={{ fontSize: "12px", fontWeight: 600, color: "#666", display: "block", marginBottom: "8px" }}>
+            L4 프로세스 필터
+          </label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {allL4Categories.map((category) => {
+              const colors = getColorForCategory(category);
+              const isSelected = selectedL4Categories.has(category);
+              return (
+                <button
+                  key={category}
+                  onClick={() => handleL4FilterToggle(category)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "4px",
+                    border: `2px solid ${colors.border}`,
+                    backgroundColor: isSelected ? colors.bg : "white",
+                    color: isSelected ? colors.text : colors.text,
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    opacity: isSelected ? 1 : 0.6,
+                  }}
+                >
+                  {category}
+                </button>
+              );
+            })}
+            {selectedL4Categories.size > 0 && (
+              <button
+                onClick={() => setSelectedL4Categories(new Set())}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                  backgroundColor: "#f0f0f0",
+                  color: "#666",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                필터 초기화
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div style={{ flex: 1, overflow: "auto" }}>
+        <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
@@ -94,16 +246,68 @@ export default function MMSummaryTable({
           >
             <th style={{ padding: "12px", textAlign: "left" }}>순위</th>
             <th style={{ padding: "12px", textAlign: "left" }}>Task 이름</th>
-            <th style={{ padding: "12px", textAlign: "left" }}>L4 프로세스</th>
+            <th
+              onClick={() => handleSortColumnClick("l4Category")}
+              style={{
+                padding: "12px",
+                textAlign: "left",
+                cursor: "pointer",
+                userSelect: "none",
+                backgroundColor: sortColumn === "l4Category" ? "#e8e8e8" : "inherit",
+                transition: "background-color 0.2s",
+              }}
+              title="클릭하여 정렬"
+            >
+              L4 프로세스{" "}
+              {sortColumn === "l4Category" && (
+                <span style={{ marginLeft: "4px" }}>
+                  {sortOrder === "asc" ? "↑" : "↓"}
+                </span>
+              )}
+            </th>
             <th style={{ padding: "12px", textAlign: "right" }}>
               필요인력 (P)
             </th>
             <th style={{ padding: "12px", textAlign: "right" }}>
               필요기간 (T)
             </th>
-            <th style={{ padding: "12px", textAlign: "right" }}>MM</th>
+            <th
+              onClick={() => handleSortColumnClick("MM")}
+              style={{
+                padding: "12px",
+                textAlign: "right",
+                cursor: "pointer",
+                userSelect: "none",
+                backgroundColor: sortColumn === "MM" ? "#e8e8e8" : "inherit",
+                transition: "background-color 0.2s",
+              }}
+              title="클릭하여 정렬"
+            >
+              MM {sortColumn === "MM" && (
+                <span style={{ marginLeft: "4px" }}>
+                  {sortOrder === "asc" ? "↑" : "↓"}
+                </span>
+              )}
+            </th>
             {type === "final" && (
-              <th style={{ padding: "12px", textAlign: "right" }}>누적 MM</th>
+              <th
+                onClick={() => handleSortColumnClick("cumulativeMM")}
+                style={{
+                  padding: "12px",
+                  textAlign: "right",
+                  cursor: "pointer",
+                  userSelect: "none",
+                  backgroundColor: sortColumn === "cumulativeMM" ? "#e8e8e8" : "inherit",
+                  transition: "background-color 0.2s",
+                }}
+                title="클릭하여 정렬"
+              >
+                누적 MM {sortColumn === "cumulativeMM" && (
+                  <span style={{ marginLeft: "4px" }}>
+                    {sortOrder === "asc" ? "↑" : "↓"}
+                  </span>
+                )}
+              </th>
             )}
           </tr>
         </thead>
@@ -176,7 +380,8 @@ export default function MMSummaryTable({
             );
           })}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }
