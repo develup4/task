@@ -337,6 +337,8 @@ function L5FlowGraphInner({
     setViewMode,
     getFilteredL5Tasks,
     setFilteredMM,
+    setNodePositions,
+    getNodePositions,
   } = useAppStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -349,6 +351,27 @@ function L5FlowGraphInner({
   const [shouldFitView, setShouldFitView] = useState(true);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const { setCenter, fitView, getZoom } = useReactFlow();
+
+  // 노드 변경 시 위치 저장 (드래그 등)
+  const handleNodesChange = useCallback(
+    (changes: any[]) => {
+      onNodesChange(changes);
+
+      // 드래그로 인한 위치 변경만 저장
+      const positions = new Map<string, { x: number; y: number }>();
+
+      for (const change of changes) {
+        if (change?.type === "position" && change?.position) {
+          positions.set(change.id, change.position);
+        }
+      }
+
+      if (positions.size > 0) {
+        setNodePositions(viewMode, positions);
+      }
+    },
+    [setNodePositions, viewMode]
+  );
 
   // 선택한 노드까지의 모든 선행 노드를 찾는 함수
   const getAllPredecessors = useCallback(
@@ -692,6 +715,9 @@ function L5FlowGraphInner({
       calculateCumulativeMM(node.id);
     });
 
+    // 저장된 노드 위치 로드
+    const savedPositions = getNodePositions(viewMode);
+
     // 노드에 하이라이팅 및 시작 노드 플래그 추가
     const finalNodes = layoutedNodes.map((node) => {
       // 선택된 엣지와 연결된 노드인지 확인
@@ -714,8 +740,14 @@ function L5FlowGraphInner({
       const shouldShowAsStartNode =
         viewMode === "l5-filtered" ? false : isStartNode;
 
+      // 저장된 위치가 있으면 그것을 사용, 없으면 레이아웃된 위치 사용
+      const position = savedPositions.has(node.id)
+        ? savedPositions.get(node.id)!
+        : node.position;
+
       return {
         ...node,
+        position,
         data: {
           ...node.data,
           isHighlighted,
@@ -781,6 +813,7 @@ function L5FlowGraphInner({
     searchedNodeId,
     hoveredNodeId,
     getAllPredecessors,
+    getNodePositions,
   ]);
 
   // L5-filtered 모드 진입 시 선택된 노드를 화면 중앙으로 이동
@@ -976,7 +1009,7 @@ function L5FlowGraphInner({
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
           onEdgeClick={onEdgeClick}

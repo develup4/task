@@ -207,8 +207,16 @@ function L6FlowGraphInner({
   showCriticalPath,
   showHeadcountTable,
 }: L6FlowGraphInnerProps) {
-  const { processedData, selectedL5, getL6TasksForL5, setViewMode, l5MaxHeadcountNodeIds } =
-    useAppStore();
+  const {
+    processedData,
+    selectedL5,
+    viewMode,
+    getL6TasksForL5,
+    setViewMode,
+    l5MaxHeadcountNodeIds,
+    setNodePositions,
+    getNodePositions,
+  } = useAppStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -218,6 +226,27 @@ function L6FlowGraphInner({
   );
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const { fitView, setCenter } = useReactFlow();
+
+  // 노드 변경 시 위치 저장 (드래그 등)
+  const handleNodesChange = useCallback(
+    (changes: any[]) => {
+      onNodesChange(changes);
+
+      // 드래그로 인한 위치 변경만 저장
+      const positions = new Map<string, { x: number; y: number }>();
+
+      for (const change of changes) {
+        if (change?.type === "position" && change?.position) {
+          positions.set(change.id, change.position);
+        }
+      }
+
+      if (positions.size > 0) {
+        setNodePositions(viewMode, positions);
+      }
+    },
+    [setNodePositions, viewMode]
+  );
 
   // 크리티컬 패스 계산
   useEffect(() => {
@@ -649,7 +678,18 @@ function L6FlowGraphInner({
       return edge;
     });
 
-    setNodes(layoutedNodes as any);
+    // 저장된 노드 위치 로드
+    const savedPositions = getNodePositions(viewMode);
+
+    // 저장된 위치가 있으면 적용
+    const finalNodes = layoutedNodes.map((node) => {
+      const position = savedPositions.has(node.id)
+        ? savedPositions.get(node.id)!
+        : node.position;
+      return { ...node, position };
+    });
+
+    setNodes(finalNodes as any);
     setEdges(finalEdges as any);
   }, [
     processedData,
@@ -664,6 +704,8 @@ function L6FlowGraphInner({
     l5MaxHeadcountNodeIds,
     hoveredNodeId,
     onNavigateToErrorReport,
+    getNodePositions,
+    viewMode,
   ]);
 
   // L6 진입 시 전체 그래프가 보이도록 fitView
@@ -712,7 +754,7 @@ function L6FlowGraphInner({
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
+        onNodesChange={handleNodesChange}
         onEdgesChange={onEdgesChange}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}

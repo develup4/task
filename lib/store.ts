@@ -33,6 +33,11 @@ interface AppState {
   // 툴팁 표시 여부
   showTooltips: boolean;
 
+  // 노드 위치 저장 (viewMode별로 분리)
+  l5AllNodePositions: Map<string, { x: number; y: number }>;
+  l5FilteredNodePositions: Map<string, { x: number; y: number }>;
+  l6DetailNodePositions: Map<string, { x: number; y: number }>;
+
   // 액션
   setProcessedData: (data: ProcessedData) => void;
   setViewMode: (mode: ViewMode) => void;
@@ -56,6 +61,10 @@ interface AppState {
   hideAllTeams: () => void;
   getTeams: () => string[];
 
+  // 노드 위치 저장 액션
+  setNodePositions: (mode: ViewMode, positions: Map<string, { x: number; y: number }>) => void;
+  getNodePositions: (mode: ViewMode) => Map<string, { x: number; y: number }>;
+
   // 유틸리티
   getL5Task: (id: string) => L5Task | undefined;
   getL6Task: (id: string) => L6Task | undefined;
@@ -76,6 +85,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   l5MaxHeadcountMap: new Map(),
   l5MaxHeadcountNodeIds: new Map(),
   showTooltips: true,
+  l5AllNodePositions: new Map(),
+  l5FilteredNodePositions: new Map(),
+  l6DetailNodePositions: new Map(),
 
   // 액션
   setProcessedData: (data) => {
@@ -276,5 +288,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     return Array.from(processedData.l6Tasks.values()).filter(
       (task) => task.l5Parent === l5Id,
     );
+  },
+
+  setNodePositions: (mode, positions) => {
+    if (mode === "l5-all") {
+      set({ l5AllNodePositions: new Map(positions) });
+    } else if (mode === "l5-filtered") {
+      set({ l5FilteredNodePositions: new Map(positions) });
+    } else if (mode === "l6-detail") {
+      set({ l6DetailNodePositions: new Map(positions) });
+    }
+  },
+
+  getNodePositions: (mode) => {
+    const state = get();
+    if (mode === "l5-all") return state.l5AllNodePositions;
+    if (mode === "l5-filtered") return state.l5FilteredNodePositions;
+    if (mode === "l6-detail") return state.l6DetailNodePositions;
+    return new Map();
   },
 }));
