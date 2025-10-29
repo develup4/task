@@ -157,40 +157,46 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* Search box and filters - only show in graph tab and l5-all mode */}
-                {activeTab === "graph" && viewMode === "l5-all" && (
+                {/* Search box and filters - show in graph tab for l5-all and l5-filtered modes */}
+                {activeTab === "graph" && (viewMode === "l5-all" || viewMode === "l5-filtered") && (
                   <div className="flex gap-2 items-center mb-1">
-                    <button
-                      onClick={toggleTooltips}
-                      className={`p-1.5 rounded-md font-medium cursor-pointer text-sm transition-colors ${
-                        showTooltips ? "text-white" : "text-gray-600"
-                      }`}
-                      title={showTooltips ? "툴팁 숨기기" : "툴팁 보이기"}
-                    >
-                      <p className="hover:scale-110 transition-all duration-75">
-                        {showTooltips ? "📜" : "🚫"}
-                      </p>
-                    </button>
+                    {viewMode === "l5-all" && (
+                      <button
+                        onClick={toggleTooltips}
+                        className={`p-1.5 rounded-md font-medium cursor-pointer text-sm transition-colors ${
+                          showTooltips ? "text-white" : "text-gray-600"
+                        }`}
+                        title={showTooltips ? "툴팁 숨기기" : "툴팁 보이기"}
+                      >
+                        <p className="hover:scale-110 transition-all duration-75">
+                          {showTooltips ? "📜" : "🚫"}
+                        </p>
+                      </button>
+                    )}
                     <TeamFilter />
-                    <input
-                      type="text"
-                      placeholder="Search"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setCurrentSearchIndex(0);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          setSearchTrigger((prev) => prev + 1);
-                        }
-                      }}
-                      className="input input-ghost input-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring focus:ring-sky-400 focus:bg-white text-sm"
-                    />
-                    {searchResultCount > 0 && (
-                      <span className="text-sm text-gray-600 font-medium">
-                        {currentSearchIndex}/{searchResultCount}
-                      </span>
+                    {viewMode === "l5-all" && (
+                      <>
+                        <input
+                          type="text"
+                          placeholder="Search"
+                          value={searchQuery}
+                          onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setCurrentSearchIndex(0);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              setSearchTrigger((prev) => prev + 1);
+                            }
+                          }}
+                          className="input input-ghost input-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring focus:ring-sky-400 focus:bg-white text-sm"
+                        />
+                        {searchResultCount > 0 && (
+                          <span className="text-sm text-gray-600 font-medium">
+                            {currentSearchIndex}/{searchResultCount}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
