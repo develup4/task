@@ -273,8 +273,8 @@ export default function Home() {
                     }`}
                   >
                     {showHeadcountTable
-                      ? "필요인력 테이블 숨기기"
-                      : "필요인력 테이블 보기"}
+                      ? "최대 필요인력 테이블 숨기기"
+                      : "최대 필요인력 테이블 보기"}
                   </button>
                 </div>
               </div>
