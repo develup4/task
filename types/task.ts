@@ -70,6 +70,7 @@ export interface L6Task {
   name: string;
   l4Category: string;
   l5Parent: string;
+  작성팀?: string;
   필요인력: number;
   필요기간: number;
   MM: number;

@@ -257,6 +257,7 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               name: removePrefixes(taskData.L6),
               l4Category: removePrefixes(taskData.L4),
               l5Parent,
+              작성팀: taskData.작성팀,
               필요인력: taskData.필요인력,
               필요기간: convertMonthToWeek(taskData.필요기간),
               MM: taskData.MM,
@@ -374,6 +375,24 @@ export const parseExcelFile = async (file: File): Promise<ProcessedData> => {
               succTask.predecessors.push(task.id);
             }
           });
+        });
+
+        // L5의 작성팀이 비어있으면 하위 L6들의 작성팀으로 채우기
+        l5Tasks.forEach((l5Task) => {
+          if (!l5Task.작성팀 || l5Task.작성팀.trim() === "") {
+            // 해당 L5의 모든 L6 작성팀 수집
+            const l6Teams = new Set<string>();
+            l5Task.l6Tasks.forEach((l6Task) => {
+              if (l6Task.작성팀 && l6Task.작성팀.trim() !== "") {
+                l6Teams.add(l6Task.작성팀);
+              }
+            });
+
+            // 수집된 작성팀이 있으면 첫 번째 팀으로 설정 (또는 모두 연결)
+            if (l6Teams.size > 0) {
+              l5Task.작성팀 = Array.from(l6Teams).join(" | ");
+            }
+          }
         });
 
         // 양방향 연결 감지
