@@ -21,7 +21,8 @@ interface LeftmostNodeMMTableProps {
 export default function LeftmostNodeMMTable({
   onNavigateToGraph,
 }: LeftmostNodeMMTableProps) {
-  const { processedData, setSelectedL5, setViewMode } = useAppStore();
+  const { processedData, setSelectedL5, setViewMode, l5MaxHeadcountMap } =
+    useAppStore();
 
   const leftmostNodes = useMemo<LeftmostNodeData[]>(() => {
     if (!processedData) return [];
@@ -190,7 +191,7 @@ export default function LeftmostNodeMMTable({
                   </span>
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {node.필요인력}
+                  {l5MaxHeadcountMap.get(node.id) || 0}
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
                   {node.필요기간}W

@@ -15,8 +15,13 @@ export default function MMSummaryTable({
   type,
   onNavigateToGraph,
 }: MMSummaryTableProps) {
-  const { processedData, setSelectedL5, setViewMode, setHighlightedTasks } =
-    useAppStore();
+  const {
+    processedData,
+    setSelectedL5,
+    setViewMode,
+    setHighlightedTasks,
+    l5MaxHeadcountMap,
+  } = useAppStore();
 
   const sortedTasks = useMemo(() => {
     if (!processedData) return [];
@@ -141,7 +146,7 @@ export default function MMSummaryTable({
                   </span>
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {task.필요인력}
+                  {l5MaxHeadcountMap.get(task.id) || 0}
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
                   {task.필요기간}W
