@@ -13,14 +13,23 @@ interface HeadcountTableProps {
 }
 
 export default function HeadcountTable({ tasks }: HeadcountTableProps) {
-  const { getL6TasksForL5, selectedL5, setL5MaxHeadcount, setL5MaxHeadcountNodeIds } = useAppStore();
+  const { getL6TasksForL5, selectedL5, setL5MaxHeadcount, setL5MaxHeadcountNodeIds, l5MaxHeadcountMap } = useAppStore();
 
   const headcountResult = useMemo(() => {
     if (!selectedL5) return null;
     // tasks가 전달되면 그걸 사용, 아니면 L6 tasks 사용 (기존 동작)
-    const tasksToUse = tasks || getL6TasksForL5(selectedL5);
+    let tasksToUse = tasks || getL6TasksForL5(selectedL5);
+
+    // tasks가 L5Task인 경우, 필요인력을 노드의 displayHeadcount로 대체
+    if (tasks && tasks.length > 0 && 'l6Tasks' in tasks[0]) {
+      tasksToUse = tasks.map(task => ({
+        ...task,
+        필요인력: l5MaxHeadcountMap.get(task.id) || task.필요인력
+      }));
+    }
+
     return calculateDailyHeadcount(tasksToUse as L6Task[]);
-  }, [selectedL5, getL6TasksForL5, tasks]);
+  }, [selectedL5, getL6TasksForL5, tasks, l5MaxHeadcountMap]);
 
   // maxHeadcount와 노드들이 변경될 때 store에 저장
   useEffect(() => {

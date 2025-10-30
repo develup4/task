@@ -5,6 +5,7 @@ import { useAppStore } from "@/lib/store";
 import { calculateCriticalPath, calculateL5CriticalPath } from "@/utils/criticalPath";
 import { calculateDailyHeadcount } from "@/utils/headcountCalculator";
 import { getColorForCategory } from "@/utils/colors";
+import { L5Task, L6Task } from "@/types/task";
 import FileUploader from "@/components/FileUploader";
 import L5FlowGraph from "@/components/L5FlowGraph";
 import L6FlowGraph from "@/components/L6FlowGraph";
@@ -510,7 +511,7 @@ export default function Home() {
                           >
                             ✕
                           </button>
-                          <HeadcountTable tasks={filteredL5TasksForHeadcount} />
+                          <HeadcountTable tasks={filteredL5TasksForHeadcount as (L5Task | L6Task)[]} />
                         </div>
                       </div>
                     )}
