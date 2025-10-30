@@ -4,6 +4,13 @@ import { useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatDecimal } from "@/utils/format";
 
+interface IntervalHeadcount {
+  startWeek: number;
+  endWeek: number;
+  headcount: number;
+  tasks: { id: string; name: string; P: number }[];
+}
+
 export default function L5HeadcountTable() {
   const { processedData, selectedL5 } = useAppStore();
 
@@ -34,27 +41,124 @@ export default function L5HeadcountTable() {
       (t) => predecessorIds.has(t.id)
     );
 
-    // 필요인력 정렬 및 통계
-    const headcounts = filteredL5Tasks
-      .map((t) => ({
-        id: t.id,
-        name: t.name,
-        headcount: t.필요인력 || 0,
-      }))
-      .sort((a, b) => b.headcount - a.headcount);
+    if (filteredL5Tasks.length === 0) return null;
 
-    const maxHeadcount = Math.max(...headcounts.map((h) => h.headcount), 0);
-    const avgHeadcount =
-      headcounts.length > 0
-        ? headcounts.reduce((sum, h) => sum + h.headcount, 0) /
-          headcounts.length
-        : 0;
+    // L5 tasks를 사용하여 타임테이블 기반 최대 필요인력 계산
+    const taskMap = new Map(filteredL5Tasks.map((t) => [t.id, t]));
+
+    interface TaskSchedule {
+      startWeek: number;
+      endWeek: number;
+      P: number;
+      id: string;
+      name: string;
+    }
+
+    const schedules: TaskSchedule[] = [];
+    const taskStartWeeks = new Map<string, number>();
+
+    // DFS로 각 태스크의 시작 week 계산
+    const calculateStartWeek = (
+      taskId: string,
+      visited: Set<string> = new Set(),
+    ): number => {
+      if (taskStartWeeks.has(taskId)) {
+        return taskStartWeeks.get(taskId)!;
+      }
+
+      if (visited.has(taskId)) {
+        return 0;
+      }
+
+      const task = taskMap.get(taskId);
+      if (!task) return 0;
+
+      visited.add(taskId);
+
+      // 선행 작업이 없거나 선행 작업이 필터링된 경우 0 week에 시작
+      if (task.predecessors.length === 0) {
+        taskStartWeeks.set(taskId, 0);
+        visited.delete(taskId);
+        return 0;
+      }
+
+      // 모든 선행 작업이 끝난 후에 시작
+      let maxEndWeek = 0;
+      for (const predId of task.predecessors) {
+        if (taskMap.has(predId)) {
+          const predStartWeek = calculateStartWeek(predId, new Set(visited));
+          const predTask = taskMap.get(predId)!;
+          const predDuration = predTask.필요기간 || 0;
+          const predEndWeek = predStartWeek + predDuration;
+          maxEndWeek = Math.max(maxEndWeek, predEndWeek);
+        }
+      }
+
+      taskStartWeeks.set(taskId, maxEndWeek);
+      visited.delete(taskId);
+      return maxEndWeek;
+    };
+
+    // 모든 L5 태스크의 시작/종료 week 계산
+    filteredL5Tasks.forEach((task) => {
+      const startWeek = calculateStartWeek(task.id);
+      const duration = task.필요기간 || 0;
+      const endWeek = startWeek + duration;
+
+      schedules.push({
+        startWeek,
+        endWeek,
+        P: task.필요인력 || 0,
+        id: task.id,
+        name: task.name,
+      });
+    });
+
+    // 모든 시작/종료 시점을 수집하여 정렬 (구간 나누기)
+    const timePoints = new Set<number>();
+    timePoints.add(0);
+    schedules.forEach((s) => {
+      timePoints.add(s.startWeek);
+      timePoints.add(s.endWeek);
+    });
+
+    const sortedTimePoints = Array.from(timePoints).sort((a, b) => a - b);
+    const totalWeeks = Math.max(...sortedTimePoints, 0);
+
+    // 각 구간별 필요인력 계산
+    const intervals: IntervalHeadcount[] = [];
+    let maxHeadcount = 0;
+
+    for (let i = 0; i < sortedTimePoints.length - 1; i++) {
+      const startWeek = sortedTimePoints[i];
+      const endWeek = sortedTimePoints[i + 1];
+
+      // 이 구간에서 활성화된 태스크들 찾기
+      const activeTasks = schedules.filter(
+        (s) => s.startWeek <= startWeek && s.endWeek >= endWeek,
+      );
+
+      const headcount = activeTasks.reduce((sum, t) => sum + t.P, 0);
+
+      if (headcount > 0 || activeTasks.length > 0) {
+        intervals.push({
+          startWeek,
+          endWeek,
+          headcount,
+          tasks: activeTasks.map((t) => ({ id: t.id, name: t.name, P: t.P })),
+        });
+
+        if (headcount > maxHeadcount) {
+          maxHeadcount = headcount;
+        }
+      }
+    }
 
     return {
-      headcounts,
       maxHeadcount,
-      avgHeadcount,
-      totalTasks: headcounts.length,
+      intervals,
+      totalWeeks,
+      totalTasks: filteredL5Tasks.length,
     };
   }, [selectedL5, processedData]);
 
@@ -66,124 +170,37 @@ export default function L5HeadcountTable() {
     );
   }
 
-  const { headcounts, maxHeadcount, avgHeadcount, totalTasks } =
+  const { maxHeadcount, intervals, totalWeeks, totalTasks } =
     l5HeadcountData;
-
-  // 색상 배열
-  const colors = [
-    "bg-purple-300",
-    "bg-purple-400",
-    "bg-purple-500",
-    "bg-purple-600",
-    "bg-indigo-300",
-    "bg-indigo-400",
-    "bg-indigo-500",
-    "bg-indigo-600",
-    "bg-violet-300",
-    "bg-violet-400",
-    "bg-violet-500",
-    "bg-violet-600",
-  ];
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-800">
-          L5 노드별 필요인력
+          최대 필요인력
         </h3>
         <p className="text-sm text-gray-500 mt-1">
-          총 노드: {totalTasks}개 | 최대 필요인력:{" "}
+          최대 필요인력:{" "}
           <span className="font-bold text-purple-600">
             {formatDecimal(maxHeadcount)}명
-          </span>{" "}
-          | 평균 필요인력:{" "}
+          </span>
+          {" | "}
+          총 기간:{" "}
           <span className="font-bold text-purple-600">
-            {formatDecimal(avgHeadcount)}명
+            {formatDecimal(totalWeeks)}W
           </span>
         </p>
       </div>
 
-      {/* 필요인력 차트 */}
-      <div className="border border-gray-400 rounded-lg p-4 pb-8">
-        <h4 className="text-sm font-semibold text-gray-700 mb-3">
-          노드별 필요인력 비교
-        </h4>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            maxHeight: "400px",
-            overflowY: "auto",
-          }}
-        >
-          {headcounts.map((item, idx) => {
-            const percentage = (item.headcount / maxHeadcount) * 100;
-            const barColor = colors[idx % colors.length];
-
-            return (
-              <div key={item.id} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <div
-                  style={{
-                    minWidth: "120px",
-                    fontSize: "12px",
-                    color: "#666",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={item.name}
-                >
-                  {item.name}
-                </div>
-
-                <div
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "4px",
-                    height: "20px",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    className={barColor}
-                    style={{
-                      width: `${percentage}%`,
-                      height: "100%",
-                      transition: "width 0.3s ease",
-                    }}
-                  />
-                </div>
-
-                <div
-                  style={{
-                    minWidth: "40px",
-                    textAlign: "right",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#333",
-                  }}
-                >
-                  {formatDecimal(item.headcount)}명
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 노드 목록 테이블 */}
+      {/* 시간별 필요인력 테이블 */}
       <div className="border border-gray-400 rounded-lg overflow-hidden">
         <h4 className="text-sm font-semibold text-gray-700 p-4 pb-2">
-          상세 정보
+          기간별 필요인력
         </h4>
         <div
           style={{
             overflowX: "auto",
-            maxHeight: "300px",
+            maxHeight: "400px",
             overflowY: "auto",
           }}
         >
@@ -204,7 +221,7 @@ export default function L5HeadcountTable() {
                     color: "#374151",
                   }}
                 >
-                  노드명
+                  기간
                 </th>
                 <th
                   style={{
@@ -219,36 +236,40 @@ export default function L5HeadcountTable() {
               </tr>
             </thead>
             <tbody>
-              {headcounts.map((item, idx) => (
+              {intervals.map((interval, idx) => (
                 <tr
-                  key={item.id}
+                  key={idx}
                   style={{
                     borderBottom: "1px solid #e5e7eb",
-                    backgroundColor: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                    backgroundColor:
+                      interval.headcount === maxHeadcount && maxHeadcount > 0
+                        ? "#FFF7E6"
+                        : idx % 2 === 0
+                          ? "#ffffff"
+                          : "#f9fafb",
                   }}
                 >
                   <td
                     style={{
                       padding: "8px 12px",
                       color: "#374151",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "200px",
                     }}
-                    title={item.name}
                   >
-                    {item.name}
+                    W{formatDecimal(interval.startWeek)}-W{formatDecimal(interval.endWeek)}
                   </td>
                   <td
                     style={{
                       padding: "8px 12px",
                       textAlign: "right",
-                      color: "#374151",
-                      fontWeight: 500,
+                      color: interval.headcount === maxHeadcount && maxHeadcount > 0
+                        ? "#D97706"
+                        : "#374151",
+                      fontWeight: interval.headcount === maxHeadcount && maxHeadcount > 0
+                        ? 600
+                        : 500,
                     }}
                   >
-                    {formatDecimal(item.headcount)}명
+                    {formatDecimal(interval.headcount)}명
                   </td>
                 </tr>
               ))}
@@ -256,6 +277,98 @@ export default function L5HeadcountTable() {
           </table>
         </div>
       </div>
+
+      {/* 활성 노드 목록 */}
+      {intervals.length > 0 && (
+        <div className="border border-gray-400 rounded-lg overflow-hidden">
+          <h4 className="text-sm font-semibold text-gray-700 p-4 pb-2">
+            최대 필요인력 구간의 활성 노드
+          </h4>
+          <div
+            style={{
+              overflowX: "auto",
+              maxHeight: "250px",
+              overflowY: "auto",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "12px",
+              }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: "#f9fafb", borderBottom: "2px solid #e5e7eb" }}>
+                  <th
+                    style={{
+                      padding: "8px 12px",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      color: "#374151",
+                    }}
+                  >
+                    노드명
+                  </th>
+                  <th
+                    style={{
+                      padding: "8px 12px",
+                      textAlign: "right",
+                      fontWeight: 600,
+                      color: "#374151",
+                    }}
+                  >
+                    필요인력
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  // 최대 필요인력 구간의 활성 노드 찾기
+                  const maxInterval = intervals.find(
+                    (i) => i.headcount === maxHeadcount && maxHeadcount > 0
+                  );
+                  if (!maxInterval) return null;
+
+                  return maxInterval.tasks.map((task, idx) => (
+                    <tr
+                      key={task.id}
+                      style={{
+                        borderBottom: "1px solid #e5e7eb",
+                        backgroundColor: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "8px 12px",
+                          color: "#374151",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "200px",
+                        }}
+                        title={task.name}
+                      >
+                        {task.name}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "right",
+                          color: "#374151",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {formatDecimal(task.P)}명
+                      </td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
