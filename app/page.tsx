@@ -448,38 +448,24 @@ export default function Home() {
             selectedL5 && (
               <div className="bg-purple-50 px-6 py-3 border-b border-purple-200">
                 <div className="text-gray-700 font-medium flex items-center justify-between">
-                  <div className="flex items-center gap-8">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-purple-600">P:</span>
-                        <span className="font-bold">
-                          {maxHeadcount.toFixed(1)} 명
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-amber-600">T:</span>
-                        <span className="font-bold">
-                          {criticalPathDuration.toFixed(2)} weeks
-                        </span>
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-600">
+                        누적 MM:
+                      </span>
+                      <span className="font-bold">{(l5FilteredMMMap.get(selectedL5) || 0).toFixed(2)}</span>
                     </div>
-                    <div className="px-4 py-2 bg-orange-100 border-2 border-orange-400 rounded-lg">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-700 font-medium">누적 MM:</span>
-                          <span className="text-orange-600 font-bold text-lg">{(l5FilteredMMMap.get(selectedL5) || 0).toFixed(2)}</span>
-                        </div>
-                        <div className="flex gap-4 mt-1 pt-1 border-t border-orange-300 text-sm">
-                          <div className="flex items-center gap-1">
-                            <span className="text-gray-600">최대 T:</span>
-                            <span className="text-amber-600 font-bold">{criticalPathDuration.toFixed(2)}W</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-gray-600">최대 P:</span>
-                            <span className="text-purple-600 font-bold">{maxHeadcount.toFixed(1)}</span>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-600">최대 필요 시간 T:</span>
+                      <span className="font-bold">
+                        {criticalPathDuration.toFixed(2)} weeks
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-600">최대 필요인력 P:</span>
+                      <span className="font-bold">
+                        {maxHeadcount.toFixed(1)} 명
+                      </span>
                     </div>
                   </div>
                   <div className="flex gap-2">
