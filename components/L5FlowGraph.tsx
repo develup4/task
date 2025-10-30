@@ -661,11 +661,42 @@ function L5FlowGraphInner({
           predecessorIds.has(edge.source) && predecessorIds.has(edge.target)
       );
 
-      // 필터링된 노드들의 MM 합계 계산
-      totalFilteredMM = filteredNodes.reduce((sum, node) => {
-        const mm = Number(node.data.MM) || 0;
-        return sum + mm;
-      }, 0);
+      // 먼저 선행 노드들의 누적 MM 계산
+      const cumulativeMMs = new Map<string, number>();
+      const calculateCumulativeMM = (
+        nodeId: string,
+        visited = new Set<string>()
+      ): number => {
+        if (cumulativeMMs.has(nodeId)) {
+          return cumulativeMMs.get(nodeId)!;
+        }
+        if (visited.has(nodeId)) {
+          return 0;
+        }
+        const node = filteredNodes.find((n) => n.id === nodeId);
+        if (!node) return 0;
+
+        const newVisited = new Set(visited);
+        newVisited.add(nodeId);
+        const incomingEdges = filteredEdges.filter((e) => e.target === nodeId);
+        let maxPredecessorMM = 0;
+        if (incomingEdges.length > 0) {
+          maxPredecessorMM = Math.max(
+            ...incomingEdges.map((e) =>
+              calculateCumulativeMM(e.source, newVisited)
+            )
+          );
+        }
+        const cumulativeMM = node.data.MM + maxPredecessorMM;
+        cumulativeMMs.set(nodeId, cumulativeMM);
+        return cumulativeMM;
+      };
+
+      // 선택된 노드의 누적 MM 계산
+      filteredNodes.forEach((node) => {
+        calculateCumulativeMM(node.id);
+      });
+      totalFilteredMM = cumulativeMMs.get(selectedL5) || 0;
       setFilteredMM(totalFilteredMM);
     } else {
       // L5-filtered 모드가 아닐 때는 0으로 리셋
