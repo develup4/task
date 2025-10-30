@@ -316,22 +316,18 @@ export default function Home() {
                     <span className="text-blue-600">현재 L5:</span>
                     <span>{getL5Task(selectedL5)?.name || selectedL5}</span>
                   </div>
-                  {showCriticalPath && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-amber-600">최대 필요 시간 T:</span>
-                      <span className="font-bold">
-                        {criticalPathDuration.toFixed(2)} weeks
-                      </span>
-                    </div>
-                  )}
-                  {showHeadcountTable && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-purple-600">최대 필요인력 P:</span>
-                      <span className="font-bold">
-                        {maxHeadcount.toFixed(1)} 명
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-600">최대 필요 시간 T:</span>
+                    <span className="font-bold">
+                      {criticalPathDuration.toFixed(2)} weeks
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-600">최대 필요인력 P:</span>
+                    <span className="font-bold">
+                      {maxHeadcount.toFixed(1)} 명
+                    </span>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -392,22 +388,18 @@ export default function Home() {
                       </span>
                       <span className="font-bold">{filteredMM.toFixed(2)}</span>
                     </div>
-                    {showCriticalPath && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-amber-600">최대 필요 시간 T:</span>
-                        <span className="font-bold">
-                          {criticalPathDuration.toFixed(2)} weeks
-                        </span>
-                      </div>
-                    )}
-                    {showHeadcountTable && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-purple-600">최대 필요인력 P:</span>
-                        <span className="font-bold">
-                          {maxHeadcount.toFixed(1)} 명
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-600">최대 필요 시간 T:</span>
+                      <span className="font-bold">
+                        {criticalPathDuration.toFixed(2)} weeks
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-600">최대 필요인력 P:</span>
+                      <span className="font-bold">
+                        {maxHeadcount.toFixed(1)} 명
+                      </span>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <button
