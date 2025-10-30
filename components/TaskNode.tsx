@@ -148,7 +148,12 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
                 fontSize: "12px",
               }}
             >
-              누적: {formatDecimal(data.cumulativeMM)}MM
+              <div>누적: {formatDecimal(data.cumulativeMM)}MM</div>
+              {data.isFinalNode && (data as any).filteredMaxHeadcount !== undefined && (
+                <div style={{ fontSize: "11px", marginTop: "2px" }}>
+                  P: {formatDecimal((data as any).filteredMaxHeadcount)} | T: {formatDecimal((data as any).filteredMaxDuration)}W
+                </div>
+              )}
             </div>
           )}
         </div>
