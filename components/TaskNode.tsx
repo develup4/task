@@ -15,6 +15,8 @@ export interface TaskNodeData {
   필요기간: number;
   MM: number;
   cumulativeMM?: number;
+  filteredMaxHeadcount?: number;
+  filteredMaxDuration?: number;
   isFinalNode?: boolean;
   isStartNode?: boolean;
   hasCycle?: boolean;
@@ -149,10 +151,15 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
               }}
             >
               <div>누적: {formatDecimal(data.cumulativeMM)}MM</div>
-              {data.isFinalNode && (data as any).filteredMaxHeadcount !== undefined && (
-                <div style={{ fontSize: "11px", marginTop: "2px" }}>
-                  P: {formatDecimal((data as any).filteredMaxHeadcount)} | T: {formatDecimal((data as any).filteredMaxDuration)}W
-                </div>
+              {data.isFinalNode && data.filteredMaxHeadcount !== undefined && (
+                <>
+                  <div style={{ fontSize: "11px", marginTop: "4px" }}>
+                    Max P: {formatDecimal(data.filteredMaxHeadcount)}
+                  </div>
+                  <div style={{ fontSize: "11px", marginTop: "2px" }}>
+                    Max T: {formatDecimal(data.filteredMaxDuration)}W
+                  </div>
+                </>
               )}
             </div>
           )}
