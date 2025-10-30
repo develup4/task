@@ -22,14 +22,17 @@ export default function HeadcountTable({ tasks }: HeadcountTableProps) {
 
     // tasks가 L5Task인 경우, 필요인력을 노드의 displayHeadcount로 대체
     if (tasks && tasks.length > 0 && 'l6Tasks' in tasks[0]) {
-      tasksToUse = tasks.map(task => ({
-        ...task,
-        필요인력: l5MaxHeadcountMap.get(task.id) || task.필요인력
-      }));
+      tasksToUse = tasks.map(task => {
+        const displayHeadcount = l5MaxHeadcountMap.get(task.id);
+        return {
+          ...task,
+          필요인력: displayHeadcount !== undefined ? displayHeadcount : task.필요인력
+        };
+      });
     }
 
     return calculateDailyHeadcount(tasksToUse as L6Task[]);
-  }, [selectedL5, getL6TasksForL5, tasks, l5MaxHeadcountMap]);
+  }, [selectedL5, getL6TasksForL5, tasks]);
 
   // maxHeadcount와 노드들이 변경될 때 store에 저장
   useEffect(() => {
