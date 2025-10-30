@@ -783,6 +783,7 @@ function L5FlowGraphInner({
           cumulativeMM,
           isSearched,
           isOnCriticalPath,
+          isInMaxHeadcount: node.data.isInMaxHeadcount,
           // hasError와 onErrorClick은 명시적으로 유지
           hasError: node.data.hasError,
           onErrorClick: node.data.onErrorClick,
