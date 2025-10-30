@@ -211,10 +211,10 @@ export default function MMSummaryTable({
               )}
             </th>
             <th style={{ padding: "12px", textAlign: "right" }}>
-              필요인력 (P)
+              최대 필요인력 (P)
             </th>
             <th style={{ padding: "12px", textAlign: "right" }}>
-              필요기간 (T)
+              최대 필요기간 (T)
             </th>
             <th
               onClick={() => handleSortColumnClick("MM")}
@@ -295,7 +295,7 @@ export default function MMSummaryTable({
                   </span>
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {l5MaxHeadcountMap.get(task.id) || 0}
+                  {(l5MaxHeadcountMap.get(task.id) || task.필요인력).toFixed(1)}
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
                   {task.필요기간.toFixed(2)}W

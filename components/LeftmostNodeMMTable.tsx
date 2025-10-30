@@ -9,8 +9,8 @@ interface LeftmostNodeData {
   name: string;
   l4Category: string;
   cumulativeMM: number;
-  필요인력: number;
-  필요기간: number;
+  최대필요인력: number;
+  최대필요기간: number;
   MM: number;
 }
 
@@ -98,8 +98,8 @@ export default function LeftmostNodeMMTable({
           name: task.name,
           l4Category: task.l4Category,
           cumulativeMM: cumulativeMMs.get(nodeId) || task.MM,
-          필요인력: task.필요인력,
-          필요기간: task.필요기간,
+          최대필요인력: l5MaxHeadcountMap.get(task.id) || task.필요인력,
+          최대필요기간: task.필요기간,
           MM: task.MM,
         });
       }
@@ -143,10 +143,10 @@ export default function LeftmostNodeMMTable({
             <th style={{ padding: "12px", textAlign: "left" }}>Task 이름</th>
             <th style={{ padding: "12px", textAlign: "left" }}>L4 프로세스</th>
             <th style={{ padding: "12px", textAlign: "right" }}>
-              필요인력 (P)
+              최대 필요인력 (P)
             </th>
             <th style={{ padding: "12px", textAlign: "right" }}>
-              필요기간 (T)
+              최대 필요기간 (T)
             </th>
             <th style={{ padding: "12px", textAlign: "right" }}>MM</th>
             <th style={{ padding: "12px", textAlign: "right" }}>누적 MM</th>
@@ -191,10 +191,10 @@ export default function LeftmostNodeMMTable({
                   </span>
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {l5MaxHeadcountMap.get(node.id) || 0}
+                  {node.최대필요인력.toFixed(1)}
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {node.필요기간.toFixed(2)}W
+                  {node.최대필요기간.toFixed(2)}W
                 </td>
                 <td
                   style={{
