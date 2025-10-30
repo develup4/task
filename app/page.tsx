@@ -58,6 +58,51 @@ export default function Home() {
     setShowHeadcountTable(false);
   }, [viewMode]);
 
+  // L5-all 모드일 때: 모든 L5 노드의 경로 최대값 미리 계산
+  useEffect(() => {
+    if (viewMode === "l5-all" && processedData && l5MaxHeadcountMap.size > 0) {
+      // 모든 L5 노드에 대해 경로 최대값 계산
+      Array.from(processedData.l5Tasks.values()).forEach((l5Node) => {
+        // 이 노드까지의 모든 선행 노드 수집
+        const predecessorIds = new Set<string>([l5Node.id]);
+        const visited = new Set<string>();
+
+        const collectPredecessors = (taskId: string) => {
+          if (visited.has(taskId)) return;
+          visited.add(taskId);
+
+          const task = processedData.l5Tasks.get(taskId);
+          if (!task) return;
+
+          task.predecessors.forEach((predId) => {
+            predecessorIds.add(predId);
+            collectPredecessors(predId);
+          });
+        };
+
+        collectPredecessors(l5Node.id);
+
+        // 필터링된 L5 노드들
+        const filteredL5Tasks = Array.from(processedData.l5Tasks.values()).filter(
+          (t) => predecessorIds.has(t.id)
+        );
+
+        // 이 노드까지의 경로에서 최대 필요기간 계산
+        const criticalPath = calculateL5CriticalPath(filteredL5Tasks);
+        setL5FilteredMaxDuration(l5Node.id, criticalPath.totalDuration);
+
+        // 이 노드까지의 경로에서 최대 필요인력 계산
+        const l5FilteredHeadcountResult = calculateDailyHeadcount(
+          filteredL5Tasks.map(task => ({
+            ...task,
+            필요인력: l5MaxHeadcountMap.get(task.id) || task.필요인력
+          })) as any
+        );
+        setL5FilteredMaxHeadcount(l5Node.id, l5FilteredHeadcountResult.maxHeadcount);
+      });
+    }
+  }, [viewMode, processedData, l5MaxHeadcountMap, setL5FilteredMaxHeadcount, setL5FilteredMaxDuration]);
+
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
     if (viewMode === "l6-detail" && selectedL5) {
