@@ -340,6 +340,7 @@ function L5FlowGraphInner({
     l5MaxHeadcountNodeIds,
     l5FilteredMaxHeadcountMap,
     l5FilteredMaxDurationMap,
+    l5FilteredMMMap,
     filteredMM,
     setSelectedL5,
     setViewMode,

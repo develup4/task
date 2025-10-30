@@ -36,6 +36,9 @@ interface AppState {
   // L5별 L5-filtered 경로의 최대 필요기간 (크리티컬 패스 길이)
   l5FilteredMaxDurationMap: Map<string, number>;
 
+  // L5별 L5-filtered 경로의 누적 MM
+  l5FilteredMMMap: Map<string, number>;
+
   // 툴팁 표시 여부
   showTooltips: boolean;
 
@@ -60,6 +63,7 @@ interface AppState {
   setL5MaxHeadcountNodeIds: (l5Id: string, nodeIds: string[]) => void;
   setL5FilteredMaxHeadcount: (l5Id: string, headcount: number) => void;
   setL5FilteredMaxDuration: (l5Id: string, duration: number) => void;
+  setL5FilteredMM: (l5Id: string, mm: number) => void;
   toggleTooltips: () => void;
   setL5FilteredCriticalPath: (nodeIds: Set<string>, edgeIds: Set<string>) => void;
 
@@ -100,6 +104,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   l5MaxHeadcountNodeIds: new Map(),
   l5FilteredMaxHeadcountMap: new Map(),
   l5FilteredMaxDurationMap: new Map(),
+  l5FilteredMMMap: new Map(),
   showTooltips: false,
   l5AllNodePositions: new Map(),
   l5FilteredNodePositions: new Map(),
@@ -158,6 +163,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newMap = new Map(state.l5FilteredMaxDurationMap);
       newMap.set(l5Id, duration);
       return { l5FilteredMaxDurationMap: newMap };
+    }),
+
+  setL5FilteredMM: (l5Id, mm) =>
+    set((state) => {
+      const newMap = new Map(state.l5FilteredMMMap);
+      newMap.set(l5Id, mm);
+      return { l5FilteredMMMap: newMap };
     }),
 
   toggleTooltips: () => set((state) => ({ showTooltips: !state.showTooltips })),

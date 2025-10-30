@@ -35,6 +35,8 @@ export default function Home() {
     l5MaxHeadcountMap,
     setL5FilteredMaxHeadcount,
     setL5FilteredMaxDuration,
+    setL5FilteredMM,
+    l5FilteredMMMap,
   } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>("graph");
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,9 +101,13 @@ export default function Home() {
           })) as any
         );
         setL5FilteredMaxHeadcount(l5Node.id, l5FilteredHeadcountResult.maxHeadcount);
+
+        // 이 노드까지의 경로에서 누적 MM 계산
+        const totalFilteredMM = filteredL5Tasks.reduce((sum, task) => sum + (task.MM || 0), 0);
+        setL5FilteredMM(l5Node.id, totalFilteredMM);
       });
     }
-  }, [viewMode, processedData, l5MaxHeadcountMap, setL5FilteredMaxHeadcount, setL5FilteredMaxDuration]);
+  }, [viewMode, processedData, l5MaxHeadcountMap, setL5FilteredMaxHeadcount, setL5FilteredMaxDuration, setL5FilteredMM]);
 
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
@@ -163,6 +169,10 @@ export default function Home() {
       // Store에도 저장
       setL5FilteredMaxHeadcount(selectedL5, l5FilteredHeadcountResult.maxHeadcount);
 
+      // 누적 MM 계산
+      const totalFilteredMM = filteredL5Tasks.reduce((sum, task) => sum + (task.MM || 0), 0);
+      setL5FilteredMM(selectedL5, totalFilteredMM);
+
       // Critical path 노드들을 store에 저장
       const criticalPathNodeSet = new Set(criticalPath.path);
 
@@ -174,7 +184,7 @@ export default function Home() {
 
       setL5FilteredCriticalPath(criticalPathNodeSet, criticalPathEdges);
     }
-  }, [viewMode, selectedL5, processedData, setL5FilteredCriticalPath, l5MaxHeadcountMap]);
+  }, [viewMode, selectedL5, processedData, setL5FilteredCriticalPath, l5MaxHeadcountMap, setL5FilteredMM]);
 
   // 탭 정보 (아이콘 포함)
   const tabInfo: Record<Tab, { name: string; icon: string }> = {
@@ -443,7 +453,7 @@ export default function Home() {
                       <span className="text-purple-600">
                         누적 MM:
                       </span>
-                      <span className="font-bold">{filteredMM.toFixed(2)}</span>
+                      <span className="font-bold">{(l5FilteredMMMap.get(selectedL5) || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-amber-600">최대 필요 시간 T:</span>
