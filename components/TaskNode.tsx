@@ -37,7 +37,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
   const borderColor = data.isSearched
     ? "#FFC107" // Yellow/Amber for searched node
     : data.isOnCriticalPath
-      ? "#DC2626" // Red for critical path node
+      ? "#F59E0B" // Amber for critical path node (same as L6)
       : data.isSelected
         ? "#000000" // Black for selected
         : data.isStartNode
@@ -61,7 +61,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
   const boxShadow = data.isSearched
     ? "0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4)"
     : data.isOnCriticalPath
-      ? "0 0 20px rgba(220, 38, 38, 0.6), 0 0 40px rgba(220, 38, 38, 0.3)"
+      ? "0 0 20px rgba(245, 158, 11, 0.6), 0 0 40px rgba(245, 158, 11, 0.3)"
       : data.isStartNode
         ? "0 6px 16px rgba(255, 107, 53, 0.4)"
         : data.isSelected
@@ -73,7 +73,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
   const backgroundColor = data.isSearched
     ? "rgba(255, 243, 224, 0.95)" // Light yellow background for searched node
     : data.isOnCriticalPath
-      ? "rgba(254, 226, 226, 0.95)" // Light red background for critical path node
+      ? "rgba(254, 243, 199, 0.95)" // Light yellow background for critical path node
       : colors.bg;
 
   return (

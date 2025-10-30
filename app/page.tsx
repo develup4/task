@@ -13,6 +13,7 @@ import ErrorListTable from "@/components/ErrorListTable";
 import TeamFilter from "@/components/TeamFilter";
 import LeftmostNodeMMTable from "@/components/LeftmostNodeMMTable";
 import HeadcountTable from "@/components/HeadcountTable";
+import L5HeadcountTable from "@/components/L5HeadcountTable";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -513,7 +514,7 @@ export default function Home() {
                           >
                             ✕
                           </button>
-                          <HeadcountTable />
+                          <L5HeadcountTable />
                         </div>
                       </div>
                     )}

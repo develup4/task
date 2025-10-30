@@ -801,12 +801,12 @@ function L5FlowGraphInner({
       }
 
       if (isOnCriticalPath) {
-        // Critical path 엣지는 빨강색으로 표시
+        // Critical path 엣지는 노란색(amber)으로 표시 (L6과 동일)
         return {
           ...edge,
           style: {
             ...edge.style,
-            stroke: "#DC2626",
+            stroke: "#F59E0B",
             strokeWidth: 3,
             opacity: 1,
           },
