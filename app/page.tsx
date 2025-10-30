@@ -441,7 +441,7 @@ export default function Home() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <span className="text-purple-600">
-                        선택된 노드 및 모든 선행 노드 총 MM:
+                        누적 MM:
                       </span>
                       <span className="font-bold">{filteredMM.toFixed(2)}</span>
                     </div>
