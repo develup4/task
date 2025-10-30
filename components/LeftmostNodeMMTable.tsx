@@ -21,23 +21,13 @@ interface LeftmostNodeMMTableProps {
 export default function LeftmostNodeMMTable({
   onNavigateToGraph,
 }: LeftmostNodeMMTableProps) {
-  const { processedData, setSelectedL5, setViewMode, l5MaxHeadcountMap, l5FilteredMaxHeadcountMap, l5FilteredMaxDurationMap } =
+  const { processedData, setSelectedL5, setViewMode, l5MaxHeadcountMap, l5FilteredMaxHeadcountMap, l5FilteredMaxDurationMap, l5FilteredMMMap } =
     useAppStore();
 
   const leftmostNodes = useMemo<LeftmostNodeData[]>(() => {
     if (!processedData) return [];
 
     const tasks = Array.from(processedData.l5Tasks.values());
-
-    // 엣지 정보 구축
-    const edges: Array<{ source: string; target: string }> = [];
-    tasks.forEach((task) => {
-      task.successors.forEach((successorId) => {
-        if (tasks.some((t) => t.id === successorId)) {
-          edges.push({ source: task.id, target: successorId });
-        }
-      });
-    });
 
     // 가장 왼쪽 최하단 노드 찾기 (후행이 없는 노드 = leaf nodes)
     const leftmostNodeIds = new Set<string>();
@@ -48,46 +38,6 @@ export default function LeftmostNodeMMTable({
       }
     });
 
-    // 누적 MM 계산
-    const cumulativeMMs = new Map<string, number>();
-
-    const calculateCumulativeMM = (
-      nodeId: string,
-      visitedNodes = new Set<string>()
-    ): number => {
-      if (cumulativeMMs.has(nodeId)) {
-        return cumulativeMMs.get(nodeId)!;
-      }
-
-      if (visitedNodes.has(nodeId)) {
-        return 0;
-      }
-
-      const task = tasks.find((t) => t.id === nodeId);
-      if (!task) return 0;
-
-      const newVisited = new Set(visitedNodes);
-      newVisited.add(nodeId);
-
-      const incomingEdges = edges.filter((e) => e.target === nodeId);
-
-      let maxPredecessorMM = 0;
-      if (incomingEdges.length > 0) {
-        maxPredecessorMM = Math.max(
-          ...incomingEdges.map((e) =>
-            calculateCumulativeMM(e.source, newVisited)
-          )
-        );
-      }
-
-      const cumulativeMM = task.MM + maxPredecessorMM;
-      cumulativeMMs.set(nodeId, cumulativeMM);
-
-      return cumulativeMM;
-    };
-
-    tasks.forEach((task) => calculateCumulativeMM(task.id));
-
     // 가장 왼쪽 노드들의 데이터 수집
     const result: LeftmostNodeData[] = [];
     leftmostNodeIds.forEach((nodeId) => {
@@ -97,7 +47,7 @@ export default function LeftmostNodeMMTable({
           id: task.id,
           name: task.name,
           l4Category: task.l4Category,
-          cumulativeMM: cumulativeMMs.get(nodeId) || task.MM,
+          cumulativeMM: l5FilteredMMMap.get(nodeId) || task.MM,
           최대필요인력: l5FilteredMaxHeadcountMap.get(task.id) || l5MaxHeadcountMap.get(task.id) || task.필요인력,
           최대필요기간: l5FilteredMaxDurationMap.get(task.id) || task.필요기간,
           MM: task.MM,
@@ -107,7 +57,7 @@ export default function LeftmostNodeMMTable({
 
     // 누적 MM 내림차순 정렬
     return result.sort((a, b) => b.cumulativeMM - a.cumulativeMM);
-  }, [processedData]);
+  }, [processedData, l5FilteredMMMap]);
 
   const handleRowClick = (nodeId: string) => {
     setSelectedL5(nodeId);
