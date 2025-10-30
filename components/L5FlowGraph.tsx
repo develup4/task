@@ -791,6 +791,18 @@ function L5FlowGraphInner({
         style:
           selectedEdge && !isHighlighted && !isSearched
             ? { opacity: 0.3 }
+            : isOnCriticalPath
+            ? {
+                border: "3px solid #f59e0b",
+                borderRadius: "12px",
+                boxShadow: "0 0 0 3px rgba(245, 158, 11, 0.3)",
+              }
+            : node.data.isInMaxHeadcount
+            ? {
+                border: "3px solid #a855f7",
+                borderRadius: "12px",
+                boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.3)",
+              }
             : undefined,
       };
     });
