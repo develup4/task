@@ -136,7 +136,7 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
             {formatDecimal(data.필요기간)}W
           </div>
           <div>MM: {formatDecimal(data.MM)}</div>
-          {data.isStartNode && data.cumulativeMM !== undefined && (
+          {(data.isStartNode || data.isFinalNode) && data.cumulativeMM !== undefined && (
             <div
               style={{
                 fontWeight: 700,

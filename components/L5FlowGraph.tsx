@@ -338,6 +338,9 @@ function L5FlowGraphInner({
     visibleTeams,
     l5MaxHeadcountMap,
     l5MaxHeadcountNodeIds,
+    l5FilteredMaxHeadcountMap,
+    l5FilteredMaxDurationMap,
+    filteredMM,
     setSelectedL5,
     setViewMode,
     getFilteredL5Tasks,
@@ -451,9 +454,23 @@ function L5FlowGraphInner({
     const initialNodes = tasks.map((task) => {
       const hasError = nodeErrors.has(task.id);
 
-      // 맵에서 해당 L5 노드의 maxHeadcount를 조회, 없으면 원래 필요인력 사용
-      const maxHeadcount = l5MaxHeadcountMap.get(task.id);
-      const displayHeadcount = maxHeadcount !== undefined && maxHeadcount > 0 ? maxHeadcount : task.필요인력;
+      // 최종 노드인 경우 L5-filtered 값 사용, 아니면 L6 기반 계산값 사용
+      let displayHeadcount: number;
+      let displayDuration: number;
+      let displayCumulativeMM: number;
+
+      if (task.isFinalNode) {
+        // 최종 노드: L5-filtered 값 사용
+        displayHeadcount = l5FilteredMaxHeadcountMap.get(task.id) || l5MaxHeadcountMap.get(task.id) || task.필요인력;
+        displayDuration = l5FilteredMaxDurationMap.get(task.id) || task.필요기간;
+        displayCumulativeMM = filteredMM;
+      } else {
+        // 일반 노드: L6 기반 계산값 사용
+        const maxHeadcount = l5MaxHeadcountMap.get(task.id);
+        displayHeadcount = maxHeadcount !== undefined && maxHeadcount > 0 ? maxHeadcount : task.필요인력;
+        displayDuration = task.필요기간;
+        displayCumulativeMM = task.cumulativeMM || task.MM;
+      }
 
       // 최대 필요인력 계산에 참여했는지 확인
       const maxHeadcountNodeIds = showHeadcountTable && selectedL5
@@ -469,9 +486,9 @@ function L5FlowGraphInner({
           label: task.name,
           category: task.l4Category,
           필요인력: displayHeadcount,
-          필요기간: task.필요기간,
+          필요기간: displayDuration,
           MM: task.MM,
-          cumulativeMM: task.cumulativeMM,
+          cumulativeMM: displayCumulativeMM,
           isFinalNode: task.isFinalNode,
           hasCycle: task.hasCycle,
           isHighlighted: highlightedTasks.has(task.id),
