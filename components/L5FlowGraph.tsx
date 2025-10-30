@@ -492,9 +492,10 @@ function L5FlowGraphInner({
               }
             }, 100);
           },
-          onNodeHover: (isHovered: boolean) => {
+          // L5-filtered 모드에서는 hover 하이라이트 기능 비활성화
+          onNodeHover: viewMode !== "l5-filtered" ? (isHovered: boolean) => {
             setHoveredNodeId(isHovered ? task.id : null);
-          },
+          } : undefined,
         },
       };
     });
@@ -780,8 +781,9 @@ function L5FlowGraphInner({
 
     // 호버된 노드와 연결된 엣지 하이라이트 및 critical path 엣지 하이라이트
     const finalEdges = layoutedEdges.map((edge) => {
+      // L5-filtered 모드에서는 hover 하이라이트 비활성화
       const isConnectedToHoveredNode =
-        hoveredNodeId && (edge.source === hoveredNodeId || edge.target === hoveredNodeId);
+        viewMode !== "l5-filtered" && hoveredNodeId && (edge.source === hoveredNodeId || edge.target === hoveredNodeId);
 
       const isOnCriticalPath =
         viewMode === "l5-filtered" && showCriticalPath
@@ -813,8 +815,9 @@ function L5FlowGraphInner({
         };
       }
 
+      // L5-filtered 모드가 아닐 때만 호버 하이라이트 적용
       // 호버 중이지만 연결되지 않은 엣지는 투명도 감소
-      if (hoveredNodeId) {
+      if (hoveredNodeId && viewMode !== "l5-filtered") {
         return {
           ...edge,
           style: {
