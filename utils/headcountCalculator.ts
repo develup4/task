@@ -115,9 +115,9 @@ export function calculateDailyHeadcount(l6Tasks: L6Task[]): HeadcountResult {
     const startWeek = sortedTimePoints[i];
     const endWeek = sortedTimePoints[i + 1];
 
-    // 이 구간에서 활성화된 태스크들 찾기
+    // 이 구간에서 활성화된 태스크들 찾기 (구간과 태스크가 겹침)
     const activeTasks = schedules.filter(
-      (s) => s.startWeek <= startWeek && s.endWeek >= endWeek,
+      (s) => s.startWeek < endWeek && s.endWeek > startWeek,
     );
 
     const headcount = activeTasks.reduce((sum, t) => sum + t.P, 0);
