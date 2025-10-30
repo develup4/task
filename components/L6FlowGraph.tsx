@@ -712,7 +712,7 @@ function L6FlowGraphInner({
   useEffect(() => {
     if (nodes.length > 0) {
       setTimeout(() => {
-        fitView({ padding: 0.2, duration: 800 });
+        fitView({ padding: 0.2, duration: 400 });
       }, 100);
     }
   }, [nodes.length, fitView]);
@@ -731,7 +731,7 @@ function L6FlowGraphInner({
         if (sourceNode && targetNode) {
           const centerX = (sourceNode.position.x + targetNode.position.x) / 2;
           const centerY = (sourceNode.position.y + targetNode.position.y) / 2;
-          setCenter(centerX, centerY, { zoom: 1, duration: 500 });
+          setCenter(centerX, centerY, { zoom: 1, duration: 250 });
         }
       }
     },

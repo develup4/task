@@ -893,7 +893,7 @@ function L5FlowGraphInner({
           setCenter(
             selectedNode.position.x + 110, // 노드 너비의 절반 (220/2)
             selectedNode.position.y + 50, // 노드 높이의 절반 (100/2)
-            { zoom: 1, duration: 800 } // 부드러운 애니메이션
+            { zoom: 1, duration: 400 } // 2배 빠른 애니메이션
           );
         }, 100);
       }
@@ -926,7 +926,7 @@ function L5FlowGraphInner({
           const zoomLevel = returnZoom ?? 1;
           setCenter(targetNode.position.x + 110, targetNode.position.y + 50, {
             zoom: zoomLevel,
-            duration: 800,
+            duration: 400,
           });
           // 복귀 완료 후 타겟 및 줌 초기화
           setReturnTarget(null);
