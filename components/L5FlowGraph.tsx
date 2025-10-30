@@ -690,7 +690,7 @@ function L5FlowGraphInner({
       }
     });
 
-    // 각 노드의 누적 MM 계산 (해당 노드부터 시작점까지의 모든 경로 중 최대값)
+    // 각 노드의 누적 MM 계산 (모든 선행 노드의 MM 합계)
     const cumulativeMMs = new Map<string, number>();
     const calculateCumulativeMM = (
       nodeId: string,
@@ -715,18 +715,16 @@ function L5FlowGraphInner({
       // 이 노드로 들어오는 엣지들 (선행 작업들)
       const incomingEdges = initialEdges.filter((e) => e.target === nodeId);
 
-      let maxPredecessorMM = 0;
+      let sumPredecessorMM = 0;
       if (incomingEdges.length > 0) {
-        // 선행 작업들 중 최대 누적 MM
-        maxPredecessorMM = Math.max(
-          ...incomingEdges.map((e) =>
-            calculateCumulativeMM(e.source, newVisited)
-          )
-        );
+        // 선행 작업들의 누적 MM 모두 합산
+        sumPredecessorMM = incomingEdges.reduce((sum, e) => {
+          return sum + calculateCumulativeMM(e.source, newVisited);
+        }, 0);
       }
 
-      // 현재 노드의 MM + 선행 작업의 최대 누적 MM
-      const cumulativeMM = node.data.MM + maxPredecessorMM;
+      // 현재 노드의 MM + 모든 선행 작업의 누적 MM 합계
+      const cumulativeMM = node.data.MM + sumPredecessorMM;
       cumulativeMMs.set(nodeId, cumulativeMM);
 
       return cumulativeMM;
