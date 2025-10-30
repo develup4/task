@@ -50,6 +50,12 @@ export default function Home() {
   >(new Set());
   const [filteredL5TasksForHeadcount, setFilteredL5TasksForHeadcount] = useState<any[]>([]);
 
+  // 뷰 모드 변경 시 critical path와 headcount table 보기 비활성화
+  useEffect(() => {
+    setShowCriticalPath(false);
+    setShowHeadcountTable(false);
+  }, [viewMode]);
+
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
     if (viewMode === "l6-detail" && selectedL5) {
