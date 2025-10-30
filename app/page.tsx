@@ -33,6 +33,8 @@ export default function Home() {
     toggleTooltips,
     setL5FilteredCriticalPath,
     l5MaxHeadcountMap,
+    setL5FilteredMaxHeadcount,
+    setL5FilteredMaxDuration,
   } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>("graph");
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,6 +103,8 @@ export default function Home() {
       // L5 노드들의 필요기간을 사용하여 critical path 계산
       const criticalPath = calculateL5CriticalPath(filteredL5Tasks);
       setCriticalPathDuration(criticalPath.totalDuration);
+      // Store에도 저장
+      setL5FilteredMaxDuration(selectedL5, criticalPath.totalDuration);
 
       // L5-filtered 모드의 최대 필요인력 계산
       // L5 노드들을 L6처럼 취급하되, displayHeadcount로 필요인력 대체
@@ -111,6 +115,8 @@ export default function Home() {
         })) as any
       );
       setMaxHeadcount(l5FilteredHeadcountResult.maxHeadcount);
+      // Store에도 저장
+      setL5FilteredMaxHeadcount(selectedL5, l5FilteredHeadcountResult.maxHeadcount);
 
       // Critical path 노드들을 store에 저장
       const criticalPathNodeSet = new Set(criticalPath.path);

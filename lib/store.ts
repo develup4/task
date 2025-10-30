@@ -24,11 +24,17 @@ interface AppState {
   // L5 filtered 모드의 MM 합계
   filteredMM: number;
 
-  // L5별 최대 필요인력 맵
+  // L5별 최대 필요인력 맵 (L6 자식들의 최대값)
   l5MaxHeadcountMap: Map<string, number>;
 
   // L5별 최대 필요인력 계산에 참여한 노드 ID들
   l5MaxHeadcountNodeIds: Map<string, string[]>;
+
+  // L5별 L5-filtered 경로의 최대 필요인력 (크리티컬 패스에서의 최대값)
+  l5FilteredMaxHeadcountMap: Map<string, number>;
+
+  // L5별 L5-filtered 경로의 최대 필요기간 (크리티컬 패스 길이)
+  l5FilteredMaxDurationMap: Map<string, number>;
 
   // 툴팁 표시 여부
   showTooltips: boolean;
@@ -52,6 +58,8 @@ interface AppState {
   setFilteredMM: (mm: number) => void;
   setL5MaxHeadcount: (l5Id: string, headcount: number) => void;
   setL5MaxHeadcountNodeIds: (l5Id: string, nodeIds: string[]) => void;
+  setL5FilteredMaxHeadcount: (l5Id: string, headcount: number) => void;
+  setL5FilteredMaxDuration: (l5Id: string, duration: number) => void;
   toggleTooltips: () => void;
   setL5FilteredCriticalPath: (nodeIds: Set<string>, edgeIds: Set<string>) => void;
 
@@ -90,6 +98,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   filteredMM: 0,
   l5MaxHeadcountMap: new Map(),
   l5MaxHeadcountNodeIds: new Map(),
+  l5FilteredMaxHeadcountMap: new Map(),
+  l5FilteredMaxDurationMap: new Map(),
   showTooltips: false,
   l5AllNodePositions: new Map(),
   l5FilteredNodePositions: new Map(),
@@ -134,6 +144,20 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newMap = new Map(state.l5MaxHeadcountNodeIds);
       newMap.set(l5Id, nodeIds);
       return { l5MaxHeadcountNodeIds: newMap };
+    }),
+
+  setL5FilteredMaxHeadcount: (l5Id, headcount) =>
+    set((state) => {
+      const newMap = new Map(state.l5FilteredMaxHeadcountMap);
+      newMap.set(l5Id, headcount);
+      return { l5FilteredMaxHeadcountMap: newMap };
+    }),
+
+  setL5FilteredMaxDuration: (l5Id, duration) =>
+    set((state) => {
+      const newMap = new Map(state.l5FilteredMaxDurationMap);
+      newMap.set(l5Id, duration);
+      return { l5FilteredMaxDurationMap: newMap };
     }),
 
   toggleTooltips: () => set((state) => ({ showTooltips: !state.showTooltips })),

@@ -26,6 +26,8 @@ export default function MMSummaryTable({
     setViewMode,
     setHighlightedTasks,
     l5MaxHeadcountMap,
+    l5FilteredMaxHeadcountMap,
+    l5FilteredMaxDurationMap,
   } = useAppStore();
 
   const [sortColumn, setSortColumn] = useState<SortColumn>("MM");
@@ -295,10 +297,10 @@ export default function MMSummaryTable({
                   </span>
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {(l5MaxHeadcountMap.get(task.id) || task.필요인력).toFixed(1)}
+                  {(l5FilteredMaxHeadcountMap.get(task.id) || l5MaxHeadcountMap.get(task.id) || task.필요인력).toFixed(1)}
                 </td>
                 <td style={{ padding: "12px", textAlign: "right" }}>
-                  {task.필요기간.toFixed(2)}W
+                  {(l5FilteredMaxDurationMap.get(task.id) || task.필요기간).toFixed(2)}W
                 </td>
                 <td
                   style={{

@@ -21,7 +21,7 @@ interface LeftmostNodeMMTableProps {
 export default function LeftmostNodeMMTable({
   onNavigateToGraph,
 }: LeftmostNodeMMTableProps) {
-  const { processedData, setSelectedL5, setViewMode, l5MaxHeadcountMap } =
+  const { processedData, setSelectedL5, setViewMode, l5MaxHeadcountMap, l5FilteredMaxHeadcountMap, l5FilteredMaxDurationMap } =
     useAppStore();
 
   const leftmostNodes = useMemo<LeftmostNodeData[]>(() => {
@@ -98,8 +98,8 @@ export default function LeftmostNodeMMTable({
           name: task.name,
           l4Category: task.l4Category,
           cumulativeMM: cumulativeMMs.get(nodeId) || task.MM,
-          최대필요인력: l5MaxHeadcountMap.get(task.id) || task.필요인력,
-          최대필요기간: task.필요기간,
+          최대필요인력: l5FilteredMaxHeadcountMap.get(task.id) || l5MaxHeadcountMap.get(task.id) || task.필요인력,
+          최대필요기간: l5FilteredMaxDurationMap.get(task.id) || task.필요기간,
           MM: task.MM,
         });
       }
