@@ -33,6 +33,7 @@ export interface TaskNodeData {
 
 const TaskNode = memo(({ data }: NodeProps<any>) => {
   const showTooltips = useAppStore((state) => state.showTooltips);
+  const viewMode = useAppStore((state) => state.viewMode);
   const colors = getColorForCategory(data.category);
 
   const borderColor = data.isSearched
@@ -79,8 +80,8 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
 
   const backgroundColor = data.isSearched
     ? "rgba(255, 243, 224, 0.95)" // Light yellow background for searched node
-    : data.isOnCriticalPath
-      ? "rgba(254, 243, 199, 0.95)" // Light yellow background for critical path node
+    : data.isOnCriticalPath && viewMode !== "l5-filtered"
+      ? "rgba(254, 243, 199, 0.95)" // Light yellow background for critical path node (L6 only)
       : colors.bg;
 
   return (
