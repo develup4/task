@@ -13,7 +13,6 @@ import ErrorListTable from "@/components/ErrorListTable";
 import TeamFilter from "@/components/TeamFilter";
 import LeftmostNodeMMTable from "@/components/LeftmostNodeMMTable";
 import HeadcountTable from "@/components/HeadcountTable";
-import L5HeadcountTable from "@/components/L5HeadcountTable";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -47,6 +46,7 @@ export default function Home() {
   const [hiddenTableL4Categories, setHiddenTableL4Categories] = useState<
     Set<string>
   >(new Set());
+  const [filteredL5TasksForHeadcount, setFilteredL5TasksForHeadcount] = useState<any[]>([]);
 
   // L6 모드일 때 크리티컬 패스 및 최대 필요인력 계산
   useEffect(() => {
@@ -87,6 +87,9 @@ export default function Home() {
         (t) => predecessorIds.has(t.id)
       );
 
+      // HeadcountTable에 전달할 L5 tasks 저장
+      setFilteredL5TasksForHeadcount(filteredL5Tasks);
+
       // L5 노드들의 필요기간을 사용하여 critical path 계산
       const criticalPath = calculateL5CriticalPath(filteredL5Tasks);
       setCriticalPathDuration(criticalPath.totalDuration);
@@ -101,13 +104,6 @@ export default function Home() {
       }
 
       setL5FilteredCriticalPath(criticalPathNodeSet, criticalPathEdges);
-
-      // L5 노드들의 필요인력을 사용하여 최대 필요인력 계산
-      const maxHeadcount = Math.max(
-        ...filteredL5Tasks.map((t) => t.필요인력 || 0),
-        0
-      );
-      setMaxHeadcount(maxHeadcount);
     }
   }, [viewMode, selectedL5, processedData, setL5FilteredCriticalPath]);
 
@@ -514,7 +510,7 @@ export default function Home() {
                           >
                             ✕
                           </button>
-                          <L5HeadcountTable />
+                          <HeadcountTable tasks={filteredL5TasksForHeadcount} />
                         </div>
                       </div>
                     )}
