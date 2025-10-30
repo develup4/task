@@ -317,6 +317,8 @@ interface L5FlowGraphInnerProps {
   searchTrigger: number;
   onSearchResultsChange?: (count: number, index: number) => void;
   onNavigateToErrorReport?: () => void;
+  showCriticalPath?: boolean;
+  showHeadcountTable?: boolean;
 }
 
 function L5FlowGraphInner({
@@ -324,6 +326,8 @@ function L5FlowGraphInner({
   searchTrigger,
   onSearchResultsChange,
   onNavigateToErrorReport,
+  showCriticalPath = false,
+  showHeadcountTable = false,
 }: L5FlowGraphInnerProps) {
   const {
     processedData,
@@ -1049,6 +1053,8 @@ interface L5FlowGraphProps {
   searchTrigger?: number;
   onSearchResultsChange?: (count: number, index: number) => void;
   onNavigateToErrorReport?: () => void;
+  showCriticalPath?: boolean;
+  showHeadcountTable?: boolean;
 }
 
 export default function L5FlowGraph({
@@ -1056,6 +1062,8 @@ export default function L5FlowGraph({
   searchTrigger = 0,
   onSearchResultsChange,
   onNavigateToErrorReport,
+  showCriticalPath = false,
+  showHeadcountTable = false,
 }: L5FlowGraphProps) {
   return (
     <ReactFlowProvider>
@@ -1064,6 +1072,8 @@ export default function L5FlowGraph({
         searchTrigger={searchTrigger}
         onSearchResultsChange={onSearchResultsChange}
         onNavigateToErrorReport={onNavigateToErrorReport}
+        showCriticalPath={showCriticalPath}
+        showHeadcountTable={showHeadcountTable}
       />
     </ReactFlowProvider>
   );

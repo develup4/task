@@ -58,6 +58,18 @@ export default function Home() {
     }
   }, [viewMode, selectedL5, getL6TasksForL5]);
 
+  // L5-filtered 모드일 때도 크리티컬 패스 및 최대 필요인력 계산
+  useEffect(() => {
+    if (viewMode === "l5-filtered" && selectedL5 && processedData) {
+      const l6Tasks = getL6TasksForL5(selectedL5);
+      const criticalPath = calculateCriticalPath(l6Tasks);
+      setCriticalPathDuration(criticalPath.totalDuration);
+
+      const headcountResult = calculateDailyHeadcount(l6Tasks);
+      setMaxHeadcount(headcountResult.maxHeadcount);
+    }
+  }, [viewMode, selectedL5, getL6TasksForL5, processedData]);
+
   // 탭 정보 (아이콘 포함)
   const tabInfo: Record<Tab, { name: string; icon: string }> = {
     graph: { name: "Work Flow", icon: "⚡" },
@@ -318,16 +330,78 @@ export default function Home() {
             </div>
           )}
 
-          {/* MM sum display for L5 filtered mode */}
+          {/* MM sum and controls display for L5 filtered mode */}
           {viewMode === "l5-filtered" &&
             activeTab === "graph" &&
             selectedL5 && (
               <div className="bg-purple-50 px-6 py-3 border-b border-purple-200">
-                <div className="text-gray-700 font-medium flex items-center gap-2">
-                  <span className="text-purple-600">
-                    선택된 노드 및 모든 선행 노드 총 MM:
-                  </span>
-                  <span className="font-bold">{filteredMM.toFixed(2)}</span>
+                <div className="text-gray-700 font-medium flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-600">
+                        선택된 노드 및 모든 선행 노드 총 MM:
+                      </span>
+                      <span className="font-bold">{filteredMM.toFixed(2)}</span>
+                    </div>
+                    {showCriticalPath && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-600">최대 필요 시간 T:</span>
+                        <span className="font-bold">
+                          {criticalPathDuration.toFixed(2)} weeks
+                        </span>
+                      </div>
+                    )}
+                    {showHeadcountTable && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-purple-600">최대 필요인력 P:</span>
+                        <span className="font-bold">
+                          {maxHeadcount.toFixed(1)} 명
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setShowCriticalPath(!showCriticalPath);
+                        // 최대 필요 시간 경로를 보일 때 headcount drawer 닫기
+                        if (!showCriticalPath && showHeadcountTable) {
+                          setShowHeadcountTable(false);
+                        }
+                      }}
+                      className={`px-4 py-2 rounded-md font-medium transition-colors cursor-pointer ${
+                        showCriticalPath
+                          ? "bg-amber-500 text-white hover:bg-amber-600"
+                          : "bg-white text-amber-600 border-2 border-amber-500 hover:bg-amber-50"
+                      }`}
+                    >
+                      {showCriticalPath
+                        ? "최대 필요 시간 경로 숨기기"
+                        : "최대 필요 시간 경로 보기"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!showHeadcountTable) {
+                          // Drawer를 열 때: 크리티컬 패스 상태 저장 후 숨기기
+                          setCriticalPathBeforeHeadcount(showCriticalPath);
+                          setShowCriticalPath(false);
+                        } else {
+                          // Drawer를 닫을 때: 이전 크리티컬 패스 상태 복구
+                          setShowCriticalPath(criticalPathBeforeHeadcount);
+                        }
+                        setShowHeadcountTable(!showHeadcountTable);
+                      }}
+                      className={`px-4 py-2 rounded-md font-medium transition-colors cursor-pointer ${
+                        showHeadcountTable
+                          ? "bg-purple-500 text-white hover:bg-purple-600"
+                          : "bg-white text-purple-600 border-2 border-purple-500 hover:bg-purple-50"
+                      }`}
+                    >
+                      {showHeadcountTable
+                        ? "최대 필요인력 테이블 숨기기"
+                        : "최대 필요인력 테이블 보기"}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -368,15 +442,42 @@ export default function Home() {
                     </div>
                   </>
                 ) : (
-                  <L5FlowGraph
-                    searchQuery={searchQuery}
-                    searchTrigger={searchTrigger}
-                    onSearchResultsChange={(count, index) => {
-                      setSearchResultCount(count);
-                      setCurrentSearchIndex(index);
-                    }}
-                    onNavigateToErrorReport={() => setActiveTab("error-list")}
-                  />
+                  <>
+                    <div className="flex-1 relative overflow-hidden">
+                      <L5FlowGraph
+                        searchQuery={searchQuery}
+                        searchTrigger={searchTrigger}
+                        onSearchResultsChange={(count, index) => {
+                          setSearchResultCount(count);
+                          setCurrentSearchIndex(index);
+                        }}
+                        onNavigateToErrorReport={() => setActiveTab("error-list")}
+                        showCriticalPath={showCriticalPath && viewMode === "l5-filtered"}
+                        showHeadcountTable={showHeadcountTable && viewMode === "l5-filtered"}
+                      />
+                    </div>
+                    {/* Headcount Drawer for L5-filtered */}
+                    {viewMode === "l5-filtered" && (
+                      <div
+                        className={`absolute right-0 top-0 bottom-0 w-[550px] bg-white shadow-2xl z-40 border-l border-gray-200 transition-all duration-300 ease-in-out overflow-y-auto ${
+                          showHeadcountTable
+                            ? "translate-x-0 opacity-100"
+                            : "translate-x-full opacity-0 pointer-events-none"
+                        }`}
+                      >
+                        <div className="p-6">
+                          <button
+                            onClick={() => setShowHeadcountTable(false)}
+                            className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            aria-label="Close headcount drawer"
+                          >
+                            ✕
+                          </button>
+                          <HeadcountTable />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
