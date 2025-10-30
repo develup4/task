@@ -32,6 +32,7 @@ export default function Home() {
     showTooltips,
     toggleTooltips,
     setL5FilteredCriticalPath,
+    l5MaxHeadcountMap,
   } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>("graph");
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,6 +96,16 @@ export default function Home() {
       const criticalPath = calculateL5CriticalPath(filteredL5Tasks);
       setCriticalPathDuration(criticalPath.totalDuration);
 
+      // L5-filtered 모드의 최대 필요인력 계산
+      // L5 노드들을 L6처럼 취급하되, displayHeadcount로 필요인력 대체
+      const l5FilteredHeadcountResult = calculateDailyHeadcount(
+        filteredL5Tasks.map(task => ({
+          ...task,
+          필요인력: l5MaxHeadcountMap.get(task.id) || task.필요인력
+        })) as any
+      );
+      setMaxHeadcount(l5FilteredHeadcountResult.maxHeadcount);
+
       // Critical path 노드들을 store에 저장
       const criticalPathNodeSet = new Set(criticalPath.path);
 
@@ -106,7 +117,7 @@ export default function Home() {
 
       setL5FilteredCriticalPath(criticalPathNodeSet, criticalPathEdges);
     }
-  }, [viewMode, selectedL5, processedData, setL5FilteredCriticalPath]);
+  }, [viewMode, selectedL5, processedData, setL5FilteredCriticalPath, l5MaxHeadcountMap]);
 
   // 탭 정보 (아이콘 포함)
   const tabInfo: Record<Tab, { name: string; icon: string }> = {
