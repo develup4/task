@@ -856,6 +856,8 @@ function L5FlowGraphInner({
     visibleL4Categories,
     visibleTeams,
     l5MaxHeadcountMap,
+    l5MaxHeadcountNodeIds,
+    showHeadcountTable,
     getFilteredL5Tasks,
     setNodes,
     setEdges,
