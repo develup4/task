@@ -706,51 +706,6 @@ function L5FlowGraphInner({
       }
     });
 
-    // 각 노드의 누적 MM 계산 (모든 선행 노드의 MM 합계)
-    const cumulativeMMs = new Map<string, number>();
-    const calculateCumulativeMM = (
-      nodeId: string,
-      visited = new Set<string>()
-    ): number => {
-      // 이미 계산된 경우
-      if (cumulativeMMs.has(nodeId)) {
-        return cumulativeMMs.get(nodeId)!;
-      }
-
-      // 순환 참조 방지
-      if (visited.has(nodeId)) {
-        return 0;
-      }
-
-      const node = initialNodes.find((n) => n.id === nodeId);
-      if (!node) return 0;
-
-      const newVisited = new Set(visited);
-      newVisited.add(nodeId);
-
-      // 이 노드로 들어오는 엣지들 (선행 작업들)
-      const incomingEdges = initialEdges.filter((e) => e.target === nodeId);
-
-      let sumPredecessorMM = 0;
-      if (incomingEdges.length > 0) {
-        // 선행 작업들의 누적 MM 모두 합산
-        sumPredecessorMM = incomingEdges.reduce((sum, e) => {
-          return sum + calculateCumulativeMM(e.source, newVisited);
-        }, 0);
-      }
-
-      // 현재 노드의 MM + 모든 선행 작업의 누적 MM 합계
-      const cumulativeMM = node.data.MM + sumPredecessorMM;
-      cumulativeMMs.set(nodeId, cumulativeMM);
-
-      return cumulativeMM;
-    };
-
-    // 모든 노드의 누적 MM 계산
-    initialNodes.forEach((node) => {
-      calculateCumulativeMM(node.id);
-    });
-
     // 저장된 노드 위치 로드
     const savedPositions = getNodePositions(viewMode);
 
@@ -766,7 +721,7 @@ function L5FlowGraphInner({
       }
 
       const isStartNode = startNodeIds.has(node.id);
-      const cumulativeMM = cumulativeMMs.get(node.id) || node.data.MM;
+      const cumulativeMM = l5FilteredMMMap.get(node.id) || node.data.MM;
       // Only set isSearched in l5-all mode
       const isSearched = viewMode === "l5-all" && searchedNodeId === node.id;
 
@@ -883,6 +838,7 @@ function L5FlowGraphInner({
     visibleTeams,
     l5MaxHeadcountMap,
     l5MaxHeadcountNodeIds,
+    l5FilteredMMMap,
     showHeadcountTable,
     getFilteredL5Tasks,
     setNodes,
