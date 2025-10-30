@@ -309,7 +309,7 @@ export default function MMSummaryTable({
                     fontWeight: 600,
                   }}
                 >
-                  {task.MM.toFixed(1)}
+                  {task.MM.toFixed(2)}
                 </td>
                 {type === "final" && (
                   <td
@@ -320,7 +320,7 @@ export default function MMSummaryTable({
                       color: colors.border,
                     }}
                   >
-                    {task.cumulativeMM?.toFixed(1)}
+                    {task.cumulativeMM?.toFixed(2)}
                   </td>
                 )}
               </tr>

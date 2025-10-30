@@ -153,7 +153,7 @@ export default function LeftmostNodeMMTable({
                     fontWeight: 600,
                   }}
                 >
-                  {node.MM.toFixed(1)}
+                  {node.MM.toFixed(2)}
                 </td>
                 <td
                   style={{
@@ -163,7 +163,7 @@ export default function LeftmostNodeMMTable({
                     color: "#FF6B00",
                   }}
                 >
-                  {node.cumulativeMM.toFixed(1)}
+                  {node.cumulativeMM.toFixed(2)}
                 </td>
               </tr>
             );
@@ -190,7 +190,7 @@ export default function LeftmostNodeMMTable({
             >
               {leftmostNodes
                 .reduce((sum, node) => sum + node.cumulativeMM, 0)
-                .toFixed(1)}
+                .toFixed(2)}
             </td>
           </tr>
         </tfoot>
