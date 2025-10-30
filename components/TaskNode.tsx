@@ -151,14 +151,18 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
               }}
             >
               <div>누적 MM: {formatDecimal(data.cumulativeMM)}</div>
-              {data.isFinalNode && data.filteredMaxHeadcount !== undefined && (
+              {(data.isFinalNode || data.isStartNode) && (data.filteredMaxHeadcount !== undefined || data.filteredMaxDuration !== undefined) && (
                 <>
-                  <div style={{ fontSize: "11px", marginTop: "4px" }}>
-                    Max P: {formatDecimal(data.filteredMaxHeadcount)}
-                  </div>
-                  <div style={{ fontSize: "11px", marginTop: "2px" }}>
-                    Max T: {formatDecimal(data.filteredMaxDuration)}W
-                  </div>
+                  {data.filteredMaxHeadcount !== undefined && (
+                    <div style={{ fontSize: "11px", marginTop: "4px" }}>
+                      최대 P: {formatDecimal(data.filteredMaxHeadcount)}
+                    </div>
+                  )}
+                  {data.filteredMaxDuration !== undefined && (
+                    <div style={{ fontSize: "11px", marginTop: "2px" }}>
+                      최대 T: {formatDecimal(data.filteredMaxDuration)}W
+                    </div>
+                  )}
                 </>
               )}
             </div>
