@@ -337,6 +337,7 @@ function L5FlowGraphInner({
     visibleL4Categories,
     visibleTeams,
     l5MaxHeadcountMap,
+    l5MaxHeadcountNodeIds,
     setSelectedL5,
     setViewMode,
     getFilteredL5Tasks,
@@ -454,6 +455,12 @@ function L5FlowGraphInner({
       const maxHeadcount = l5MaxHeadcountMap.get(task.id);
       const displayHeadcount = maxHeadcount !== undefined && maxHeadcount > 0 ? maxHeadcount : task.필요인력;
 
+      // 최대 필요인력 계산에 참여했는지 확인
+      const maxHeadcountNodeIds = showHeadcountTable && selectedL5
+        ? new Set(l5MaxHeadcountNodeIds.get(selectedL5) || [])
+        : new Set<string>();
+      const isInMaxHeadcount = maxHeadcountNodeIds.has(task.id);
+
       return {
         id: task.id,
         type: "task",
@@ -473,6 +480,7 @@ function L5FlowGraphInner({
           isL5: true,
           isL6: false,
           hasError,
+          isInMaxHeadcount,
           onErrorClick: () => {
             // 에러 리포트 탭으로 이동
             onNavigateToErrorReport?.();
@@ -497,6 +505,13 @@ function L5FlowGraphInner({
             setHoveredNodeId(isHovered ? task.id : null);
           } : undefined,
         },
+        style: isInMaxHeadcount
+          ? {
+              border: "3px solid #a855f7",
+              borderRadius: "12px",
+              boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.3)",
+            }
+          : undefined,
       };
     });
 
