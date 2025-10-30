@@ -35,12 +35,13 @@ export default function HeadcountTable({ tasks }: HeadcountTableProps) {
   }, [selectedL5, getL6TasksForL5, tasks]);
 
   // maxHeadcount와 노드들이 변경될 때 store에 저장
+  // tasks prop이 전달되지 않은 경우만 (L6 모드에서만) store 업데이트
   useEffect(() => {
-    if (selectedL5 && headcountResult) {
+    if (selectedL5 && headcountResult && !tasks) {
       setL5MaxHeadcount(selectedL5, headcountResult.maxHeadcount);
       setL5MaxHeadcountNodeIds(selectedL5, headcountResult.maxHeadcountTaskIds);
     }
-  }, [selectedL5, headcountResult, setL5MaxHeadcount, setL5MaxHeadcountNodeIds]);
+  }, [selectedL5, headcountResult, setL5MaxHeadcount, setL5MaxHeadcountNodeIds, tasks]);
 
   if (!headcountResult || headcountResult.totalWeeks === 0) {
     return (
