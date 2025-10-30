@@ -177,14 +177,6 @@ export default function NodeTooltip({ data, isL5, isL6 }: NodeTooltipProps) {
               </div>
             </div>
           </div>
-          {"cumulativeMM" in data && data.cumulativeMM !== undefined && (
-            <div className="mt-2 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 p-2.5 rounded-lg">
-              <div className="text-xs text-orange-600 mb-1">누적 MM</div>
-              <div className="font-bold text-gray-900 text-base">
-                {formatDecimal(data.cumulativeMM)}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Definition */}
