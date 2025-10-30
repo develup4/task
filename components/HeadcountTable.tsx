@@ -35,10 +35,15 @@ export default function HeadcountTable({ tasks }: HeadcountTableProps) {
   }, [selectedL5, getL6TasksForL5, tasks]);
 
   // maxHeadcount와 노드들이 변경될 때 store에 저장
-  // tasks prop이 전달되지 않은 경우만 (L6 모드에서만) store 업데이트
+  // L6 모드: maxHeadcount와 nodeIds 모두 저장
+  // L5-filtered 모드: nodeIds만 저장 (maxHeadcount는 app.tsx에서 저장)
   useEffect(() => {
-    if (selectedL5 && headcountResult && !tasks) {
-      setL5MaxHeadcount(selectedL5, headcountResult.maxHeadcount);
+    if (selectedL5 && headcountResult) {
+      if (!tasks) {
+        // L6 모드: 두 값 모두 저장
+        setL5MaxHeadcount(selectedL5, headcountResult.maxHeadcount);
+      }
+      // L5-filtered 모드와 L6 모드 모두에서 nodeIds 저장
       setL5MaxHeadcountNodeIds(selectedL5, headcountResult.maxHeadcountTaskIds);
     }
   }, [selectedL5, headcountResult, setL5MaxHeadcount, setL5MaxHeadcountNodeIds, tasks]);
