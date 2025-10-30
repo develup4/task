@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
-import { calculateCriticalPath } from "@/utils/criticalPath";
+import { calculateCriticalPath, calculateL5CriticalPath } from "@/utils/criticalPath";
 import { calculateDailyHeadcount } from "@/utils/headcountCalculator";
 import { getColorForCategory } from "@/utils/colors";
 import FileUploader from "@/components/FileUploader";
@@ -30,6 +30,7 @@ export default function Home() {
     getL6TasksForL5,
     showTooltips,
     toggleTooltips,
+    setL5FilteredCriticalPath,
   } = useAppStore();
   const [activeTab, setActiveTab] = useState<Tab>("graph");
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,17 +59,56 @@ export default function Home() {
     }
   }, [viewMode, selectedL5, getL6TasksForL5]);
 
-  // L5-filtered 모드일 때도 크리티컬 패스 및 최대 필요인력 계산
+  // L5-filtered 모드일 때: L5 노드들의 critical path 및 최대 필요인력 계산
   useEffect(() => {
     if (viewMode === "l5-filtered" && selectedL5 && processedData) {
-      const l6Tasks = getL6TasksForL5(selectedL5);
-      const criticalPath = calculateCriticalPath(l6Tasks);
+      // 선택된 L5와 모든 선행 L5 노드들 수집
+      const predecessorIds = new Set<string>([selectedL5]);
+      const visited = new Set<string>();
+
+      const collectPredecessors = (taskId: string) => {
+        if (visited.has(taskId)) return;
+        visited.add(taskId);
+
+        const task = processedData.l5Tasks.get(taskId);
+        if (!task) return;
+
+        task.predecessors.forEach((predId) => {
+          predecessorIds.add(predId);
+          collectPredecessors(predId);
+        });
+      };
+
+      collectPredecessors(selectedL5);
+
+      // 필터링된 L5 노드들로 critical path 계산
+      const filteredL5Tasks = Array.from(processedData.l5Tasks.values()).filter(
+        (t) => predecessorIds.has(t.id)
+      );
+
+      // L5 노드들의 필요기간을 사용하여 critical path 계산
+      const criticalPath = calculateL5CriticalPath(filteredL5Tasks);
       setCriticalPathDuration(criticalPath.totalDuration);
 
-      const headcountResult = calculateDailyHeadcount(l6Tasks);
-      setMaxHeadcount(headcountResult.maxHeadcount);
+      // Critical path 노드들을 store에 저장
+      const criticalPathNodeSet = new Set(criticalPath.path);
+
+      // Critical path 엣지들 생성 (연속된 노드들 사이의 엣지)
+      const criticalPathEdges = new Set<string>();
+      for (let i = 0; i < criticalPath.path.length - 1; i++) {
+        criticalPathEdges.add(`${criticalPath.path[i]}-${criticalPath.path[i + 1]}`);
+      }
+
+      setL5FilteredCriticalPath(criticalPathNodeSet, criticalPathEdges);
+
+      // L5 노드들의 필요인력을 사용하여 최대 필요인력 계산
+      const maxHeadcount = Math.max(
+        ...filteredL5Tasks.map((t) => t.필요인력 || 0),
+        0
+      );
+      setMaxHeadcount(maxHeadcount);
     }
-  }, [viewMode, selectedL5, getL6TasksForL5, processedData]);
+  }, [viewMode, selectedL5, processedData, setL5FilteredCriticalPath]);
 
   // 탭 정보 (아이콘 포함)
   const tabInfo: Record<Tab, { name: string; icon: string }> = {

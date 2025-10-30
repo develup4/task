@@ -38,6 +38,11 @@ interface AppState {
   l5FilteredNodePositions: Map<string, { x: number; y: number }>;
   l6DetailNodePositions: Map<string, { x: number; y: number }>;
 
+  // L5-filtered 크리티컬 패스 (노드 ID 목록)
+  l5FilteredCriticalPath: Set<string>;
+  // L5-filtered 크리티컬 패스 엣지들 (source-target 형태)
+  l5FilteredCriticalPathEdges: Set<string>;
+
   // 액션
   setProcessedData: (data: ProcessedData) => void;
   setViewMode: (mode: ViewMode) => void;
@@ -48,6 +53,7 @@ interface AppState {
   setL5MaxHeadcount: (l5Id: string, headcount: number) => void;
   setL5MaxHeadcountNodeIds: (l5Id: string, nodeIds: string[]) => void;
   toggleTooltips: () => void;
+  setL5FilteredCriticalPath: (nodeIds: Set<string>, edgeIds: Set<string>) => void;
 
   // L4 카테고리 필터 액션
   toggleL4Category: (category: string) => void;
@@ -88,6 +94,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   l5AllNodePositions: new Map(),
   l5FilteredNodePositions: new Map(),
   l6DetailNodePositions: new Map(),
+  l5FilteredCriticalPath: new Set(),
+  l5FilteredCriticalPathEdges: new Set(),
 
   // 액션
   setProcessedData: (data) => {
@@ -129,6 +137,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     }),
 
   toggleTooltips: () => set((state) => ({ showTooltips: !state.showTooltips })),
+
+  setL5FilteredCriticalPath: (nodeIds, edgeIds) =>
+    set({
+      l5FilteredCriticalPath: nodeIds,
+      l5FilteredCriticalPathEdges: edgeIds,
+    }),
 
   // L4 카테고리 필터 액션
   toggleL4Category: (category) =>

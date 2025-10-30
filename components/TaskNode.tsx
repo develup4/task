@@ -21,6 +21,7 @@ export interface TaskNodeData {
   isHighlighted?: boolean;
   isSelected?: boolean;
   isSearched?: boolean;
+  isOnCriticalPath?: boolean; // Critical path에 있는 노드인지
   fullData?: Partial<L5Task> | Partial<L6Task>;
   isL5?: boolean;
   isL6?: boolean;
@@ -35,37 +36,45 @@ const TaskNode = memo(({ data }: NodeProps<any>) => {
 
   const borderColor = data.isSearched
     ? "#FFC107" // Yellow/Amber for searched node
-    : data.isSelected
-      ? "#000000" // Black for selected
-      : data.isStartNode
-        ? "#FF6B35" // Orange for start node
-        : data.isHighlighted
-          ? colors.border
-          : colors.border;
+    : data.isOnCriticalPath
+      ? "#DC2626" // Red for critical path node
+      : data.isSelected
+        ? "#000000" // Black for selected
+        : data.isStartNode
+          ? "#FF6B35" // Orange for start node
+          : data.isHighlighted
+            ? colors.border
+            : colors.border;
 
   const borderWidth = data.isSearched
     ? "4px"
-    : data.isStartNode
+    : data.isOnCriticalPath
       ? "3px"
-      : data.isSelected
+      : data.isStartNode
         ? "3px"
-        : data.isHighlighted
-          ? "2px"
-          : "1px";
+        : data.isSelected
+          ? "3px"
+          : data.isHighlighted
+            ? "2px"
+            : "1px";
 
   const boxShadow = data.isSearched
     ? "0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4)"
-    : data.isStartNode
-      ? "0 6px 16px rgba(255, 107, 53, 0.4)"
-      : data.isSelected
-        ? "0 4px 12px rgba(0,0,0,0.3)"
-        : data.isHighlighted
-          ? "0 2px 8px rgba(0,0,0,0.2)"
-          : "0 1px 4px rgba(0,0,0,0.1)";
+    : data.isOnCriticalPath
+      ? "0 0 20px rgba(220, 38, 38, 0.6), 0 0 40px rgba(220, 38, 38, 0.3)"
+      : data.isStartNode
+        ? "0 6px 16px rgba(255, 107, 53, 0.4)"
+        : data.isSelected
+          ? "0 4px 12px rgba(0,0,0,0.3)"
+          : data.isHighlighted
+            ? "0 2px 8px rgba(0,0,0,0.2)"
+            : "0 1px 4px rgba(0,0,0,0.1)";
 
   const backgroundColor = data.isSearched
     ? "rgba(255, 243, 224, 0.95)" // Light yellow background for searched node
-    : colors.bg;
+    : data.isOnCriticalPath
+      ? "rgba(254, 226, 226, 0.95)" // Light red background for critical path node
+      : colors.bg;
 
   return (
     <div

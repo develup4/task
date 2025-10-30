@@ -343,6 +343,8 @@ function L5FlowGraphInner({
     setFilteredMM,
     setNodePositions,
     getNodePositions,
+    l5FilteredCriticalPath,
+    l5FilteredCriticalPathEdges,
   } = useAppStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -749,6 +751,12 @@ function L5FlowGraphInner({
         ? savedPositions.get(node.id)!
         : node.position;
 
+      // L5-filtered critical path 노드 확인
+      const isOnCriticalPath =
+        viewMode === "l5-filtered" && showCriticalPath
+          ? l5FilteredCriticalPath.has(node.id)
+          : false;
+
       return {
         ...node,
         position,
@@ -758,6 +766,7 @@ function L5FlowGraphInner({
           isStartNode: shouldShowAsStartNode,
           cumulativeMM,
           isSearched,
+          isOnCriticalPath,
           // hasError와 onErrorClick은 명시적으로 유지
           hasError: node.data.hasError,
           onErrorClick: node.data.onErrorClick,
@@ -769,10 +778,15 @@ function L5FlowGraphInner({
       };
     });
 
-    // 호버된 노드와 연결된 엣지 하이라이트
+    // 호버된 노드와 연결된 엣지 하이라이트 및 critical path 엣지 하이라이트
     const finalEdges = layoutedEdges.map((edge) => {
       const isConnectedToHoveredNode =
         hoveredNodeId && (edge.source === hoveredNodeId || edge.target === hoveredNodeId);
+
+      const isOnCriticalPath =
+        viewMode === "l5-filtered" && showCriticalPath
+          ? l5FilteredCriticalPathEdges.has(`${edge.source}-${edge.target}`)
+          : false;
 
       if (isConnectedToHoveredNode) {
         // 호버된 노드와 연결된 엣지는 더 밝은 색상과 두꺼운 선으로 표시
@@ -780,6 +794,19 @@ function L5FlowGraphInner({
           ...edge,
           style: {
             ...edge.style,
+            strokeWidth: 3,
+            opacity: 1,
+          },
+        };
+      }
+
+      if (isOnCriticalPath) {
+        // Critical path 엣지는 빨강색으로 표시
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            stroke: "#DC2626",
             strokeWidth: 3,
             opacity: 1,
           },
@@ -818,6 +845,9 @@ function L5FlowGraphInner({
     hoveredNodeId,
     getAllPredecessors,
     getNodePositions,
+    showCriticalPath,
+    l5FilteredCriticalPath,
+    l5FilteredCriticalPathEdges,
   ]);
 
   // L5-filtered 모드 진입 시 선택된 노드를 화면 중앙으로 이동
