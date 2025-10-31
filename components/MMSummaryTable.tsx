@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { getColorForCategory } from "@/utils/colors";
 
-type SortColumn = "MM" | "cumulativeMM" | "l4Category";
+type SortColumn = "MM" | "cumulativeMM" | "l4Category" | "headcount" | "duration";
 type SortOrder = "asc" | "desc";
 
 interface MMSummaryTableProps {
@@ -77,6 +77,18 @@ export default function MMSummaryTable({
           return b.MM - a.MM;
         }
 
+        // 필요인력으로 정렬
+        if (sortColumn === "headcount") {
+          const aHeadcount = l5MaxHeadcountMap.get(a.id) || 0;
+          const bHeadcount = l5MaxHeadcountMap.get(b.id) || 0;
+          return sortOrder === "asc" ? aHeadcount - bHeadcount : bHeadcount - aHeadcount;
+        }
+
+        // 필요기간으로 정렬
+        if (sortColumn === "duration") {
+          return sortOrder === "asc" ? a.필요기간 - b.필요기간 : b.필요기간 - a.필요기간;
+        }
+
         // MM으로 정렬
         if (sortColumn === "MM") {
           return sortOrder === "asc" ? a.MM - b.MM : b.MM - a.MM;
@@ -101,6 +113,18 @@ export default function MMSummaryTable({
           }
           // 같은 L4 카테고리면 누적MM으로 내림차순 정렬
           return (b.cumulativeMM || 0) - (a.cumulativeMM || 0);
+        }
+
+        // 필요인력으로 정렬
+        if (sortColumn === "headcount") {
+          const aHeadcount = l5MaxHeadcountMap.get(a.id) || 0;
+          const bHeadcount = l5MaxHeadcountMap.get(b.id) || 0;
+          return sortOrder === "asc" ? aHeadcount - bHeadcount : bHeadcount - aHeadcount;
+        }
+
+        // 필요기간으로 정렬
+        if (sortColumn === "duration") {
+          return sortOrder === "asc" ? a.필요기간 - b.필요기간 : b.필요기간 - a.필요기간;
         }
 
         // 누적MM으로 정렬
@@ -212,11 +236,43 @@ export default function MMSummaryTable({
                 </span>
               )}
             </th>
-            <th style={{ padding: "12px", textAlign: "right" }}>
-              필요인력 (P)
+            <th
+              onClick={() => handleSortColumnClick("headcount")}
+              style={{
+                padding: "12px",
+                textAlign: "right",
+                cursor: "pointer",
+                userSelect: "none",
+                backgroundColor: sortColumn === "headcount" ? "#e8e8e8" : "inherit",
+                transition: "background-color 0.2s",
+              }}
+              title="클릭하여 정렬"
+            >
+              필요인력 (P){" "}
+              {sortColumn === "headcount" && (
+                <span style={{ marginLeft: "4px" }}>
+                  {sortOrder === "asc" ? "↑" : "↓"}
+                </span>
+              )}
             </th>
-            <th style={{ padding: "12px", textAlign: "right" }}>
-              필요기간 (T)
+            <th
+              onClick={() => handleSortColumnClick("duration")}
+              style={{
+                padding: "12px",
+                textAlign: "right",
+                cursor: "pointer",
+                userSelect: "none",
+                backgroundColor: sortColumn === "duration" ? "#e8e8e8" : "inherit",
+                transition: "background-color 0.2s",
+              }}
+              title="클릭하여 정렬"
+            >
+              필요기간 (T){" "}
+              {sortColumn === "duration" && (
+                <span style={{ marginLeft: "4px" }}>
+                  {sortOrder === "asc" ? "↑" : "↓"}
+                </span>
+              )}
             </th>
             <th
               onClick={() => handleSortColumnClick("MM")}
