@@ -213,8 +213,8 @@ export default function HeadcountTable({ tasks }: HeadcountTableProps) {
                     className={`${bgColor} [&:not(:last-child)]:border-b border-purple-100`}
                   >
                     <td className="text-center text-sm w-28">
-                      {interval.startWeek.toFixed(2)} ~{" "}
-                      {interval.endWeek.toFixed(2)}
+                      {interval.startWeek.toFixed(2)} ~ {interval.endWeek.toFixed(2)} <br />
+                      <span className="text-xs text-gray-500">({(interval.endWeek - interval.startWeek).toFixed(2)}W)</span>
                     </td>
                     <td className="text-center w-24">
                       <span
