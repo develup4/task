@@ -98,7 +98,6 @@ export default function LeftmostNodeMMTable({
             <th style={{ padding: "12px", textAlign: "right" }}>
               최대 필요기간 (T)
             </th>
-            <th style={{ padding: "12px", textAlign: "right" }}>MM</th>
             <th style={{ padding: "12px", textAlign: "right" }}>누적 MM</th>
           </tr>
         </thead>
@@ -151,15 +150,6 @@ export default function LeftmostNodeMMTable({
                     padding: "12px",
                     textAlign: "right",
                     fontWeight: 600,
-                  }}
-                >
-                  {node.MM.toFixed(2)}
-                </td>
-                <td
-                  style={{
-                    padding: "12px",
-                    textAlign: "right",
-                    fontWeight: 600,
                     color: "#FF6B00",
                   }}
                 >
@@ -174,7 +164,7 @@ export default function LeftmostNodeMMTable({
             style={{ backgroundColor: "#f5f5f5", borderTop: "2px solid #ddd" }}
           >
             <td
-              colSpan={6}
+              colSpan={5}
               style={{ padding: "12px", textAlign: "right", fontWeight: 600 }}
             >
               전체 합계
