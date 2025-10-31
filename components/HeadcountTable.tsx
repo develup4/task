@@ -178,7 +178,7 @@ export default function HeadcountTable({ tasks }: HeadcountTableProps) {
         <h4 className="text-sm font-semibold text-gray-700 p-3 bg-gray-50">
           구간별 상세 정보
         </h4>
-        <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
+        <div className="overflow-x-auto">
           <table className="table table-sm w-full">
             <thead className="bg-gray-100 sticky top-0">
               <tr>
